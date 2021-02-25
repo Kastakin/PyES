@@ -1,3 +1,4 @@
+import itertools
 from typing import List
 
 import matplotlib
@@ -57,34 +58,19 @@ class WidgetPlot(QWidget):
                 legline.set_alpha(0.2)
             self.canvas.draw()
 
-        # list of colors to be used when plotting (5 colors x 3 different linestyles)
-        colors = [
-            "#648FFF",
-            "#785EF0",
-            "#DC267F",
-            "#FE6100",
-            "#FFB000",
-        ]
-        colors = colors + colors + colors
+        # list of colors to be used when plotting
+        colormap = matplotlib.cm.Dark2.colors
 
-        # linestyle to be applied to the supplied distributions
-        line_styles = [
+        # linestyles to be applied to the supplied distributions
+        l_styles = [
             "-",
-            "-",
-            "-",
-            "-",
-            "-",
-            ":",
-            ":",
-            ":",
-            ":",
-            ":",
             "--",
-            "--",
-            "--",
-            "--",
-            "--",
+            ":",
+            "-.",
         ]
+
+        # markers to be applied
+        m_styles = ["", ".", "o", "^", "*"]
 
         # Array containing all the lines plotted on the graph
         lines = []
@@ -98,9 +84,11 @@ class WidgetPlot(QWidget):
 
         # Draw a line for every distribution passed to the function
         # Store the line object into lines list
-        for i, label in enumerate(labels):
+        for (i, label), (marker, linestyle, color) in zip(
+            enumerate(labels), itertools.product(m_styles, l_styles, colormap)
+        ):
             (line,) = axes.plot(
-                x[i], y[i], ls=line_styles[i], color=colors[i], label=label
+                x[i], y[i], label=label, color=color, ls=linestyle, marker=marker
             )
             lines.append(line)
         # Set labels, titles and draw legend
