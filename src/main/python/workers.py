@@ -38,25 +38,26 @@ class optimizeWorker(QRunnable):
             return None
 
         self.signals.log.emit(r"DATA LOADED!")
-        self.signals.log.emit(r"Beginning optimization routine...")
+        self.signals.log.emit(r"Calculating distribution of the species...")
         start_time = time.time()
         self.signals.log.emit("--" * 40)
 
-        # use the provided model to optimize required parameters, store the results
+        # predict species distribution 
         try:
-            results = optimizer.predict()
+            optimizer.predict()
             # Calculate elapsed time between start to finish
             elapsed_time = round((time.time() - start_time), 5)
         except Exception as e:
             self.signals.aborted.emit(str(e))
             return None
 
-        self.signals.log.emit("\n".join(results[0]))
-        self.signals.log.emit("--" * 40)
-        self.signals.log.emit(results[1].to_string())
+        distribution = optimizer.distribution()
+
+        # Print species distribution as text in the log console
+        self.signals.log.emit(distribution.to_string())
 
         # Plot the species distribution using the optimized parameters
-        self.signals.result.emit(results[1])
+        self.signals.result.emit(distribution)
 
         self.signals.log.emit("--" * 40)
         self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)

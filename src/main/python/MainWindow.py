@@ -71,7 +71,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         potCompUpdater(self)
 
         # declare the checkline used to validate project files
-        self.check_line = {"check": "PySTAC project file --- DO NOT MODIFY THIS LINE!"}
+        self.check_line = {"check": "SSSC project file --- DO NOT MODIFY THIS LINE!"}
 
     def file_new(self):
         """
