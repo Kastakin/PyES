@@ -12,6 +12,7 @@ pandas = "*"
 
 [dev-packages]
 bump2version = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.6"

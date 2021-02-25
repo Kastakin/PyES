@@ -5,8 +5,6 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from MainWindow import MainWindow
 
-# from PyQt5.QtWidgets import QMainWindow
-
 
 class AppContext(ApplicationContext):
     def run(self):
@@ -31,5 +29,6 @@ class AppContext(ApplicationContext):
 
 
 if __name__ == "__main__":
+    # 1. Instantiate ApplicationContext
     appctxt = AppContext()
     appctxt.run()

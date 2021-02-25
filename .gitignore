@@ -153,3 +153,7 @@ dmypy.json
 compile_ui.sh
 iconCreator.py
 
+### Other files ###
+dist.svg
+dist.png
+
