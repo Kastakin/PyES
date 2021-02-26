@@ -262,6 +262,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.numComp.setValue(1)
         self.numSpecies.setValue(1)
+        self.numPhases.setValue(0)
         self.vesselVolume.setValue(0)
         self.sd_v.setValue(0)
         self.initialph.setValue(1)
@@ -286,10 +287,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.TitrationPlot.canvas.axes.cla()
         self.TitrationPlot.canvas.draw()
 
+        # at init phases are 0 so disable the modelview
+        self.solidSpeciesView.setEnabled(False)
+
         # No results should be aviable so
         # grayout export and plot buttons
-        self.plotDistButton.setEnabled(True)
-        self.exportButton.setEnabled(True)
+        self.plotDistButton.setEnabled(False)
+        self.exportButton.setEnabled(False)
         # Clear logger output
         self.consoleOutput.clear()
 
@@ -367,6 +371,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
         else:
             pass
+        if self.solidSpeciesModel.rowCount() == 0:
+            self.solidSpeciesView.setEnabled(False)
+        else:
+            self.solidSpeciesView.setEnabled(True)
 
     def updateCompName(self):
         """
