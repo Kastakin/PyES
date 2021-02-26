@@ -185,7 +185,11 @@ class ComponentsModel(QAbstractTableModel):
 
         for row in range(rows):
             empty_row = pd.DataFrame(
-                [["C" + str(position + row + 1), 0]], columns=["Name", "Charge"]
+                [["COMP" + str(position + row + 1)] + [0]],
+                columns=[
+                    "Name",
+                    "Charge",
+                ],
             )
             self._data = self._data.append(empty_row, ignore_index=True)
 
@@ -220,10 +224,7 @@ class SpeciesModel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
-            if index.column() != 0:
-                return QVariant("{0}".format(value))
-            else:
-                return QVariant(value)
+            return str(value)
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -234,25 +235,23 @@ class SpeciesModel(QAbstractTableModel):
                 return str(self._data.index[section])
 
     def updateHeader(self, new_header):
-        self._data.columns = ["Refine", "LogB"] + new_header
+        self._data.columns = [
+            "LogB",
+            "Sigma",
+            "Ref. Ionic Str.",
+            "CG",
+            "DG",
+            "EG",
+        ] + new_header
         self.layoutChanged.emit()
 
     def flags(self, index):
-        if index.column() == 0:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled
-        else:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
-            # The frist column holds refinement flag and can accept only bool
-            if index.column() == 0:
-                try:
-                    self._data.iloc[index.row(), index.column()] = value
-                except:
-                    return False
             # The frist column holds beta and can accept floats
-            elif index.column() == 1:
+            if index.column() < 7:
                 try:
                     self._data.iloc[index.row(), index.column()] = float(value)
                 except:
@@ -272,7 +271,10 @@ class SpeciesModel(QAbstractTableModel):
 
         for row in range(rows):
             empty_row = pd.DataFrame(
-                [[False, 0.0] + [0 for x in range(self.columnCount(index) - 2)]],
+                [
+                    [0.0 for x in range(6)]
+                    + [0 for x in range(self.columnCount(index) - 6)]
+                ],
                 columns=self._data.columns,
             )
             self._data = self._data.append(empty_row, ignore_index=True)
@@ -300,7 +302,120 @@ class SpeciesModel(QAbstractTableModel):
         self.beginInsertColumns(index, position, position + columns - 1)
 
         for column in range(columns):
-            self._data.insert(position + column, "C" + str(position + column), 0)
+            self._data.insert(position + column, "COMP" + str(position + column), 0)
+
+        self.endInsertColumns()
+        self.layoutChanged.emit()
+
+        return True
+
+    def removeColumns(self, position, columns=1, index=QModelIndex()):
+        """ Remove columns from the model. """
+        self.beginRemoveColumns(index, position, position + columns - 1)
+
+        self._data = self._data.drop(
+            self._data.columns[position - columns : position], axis=1
+        )
+
+        self.endRemoveColumns()
+        self.layoutChanged.emit()
+
+        return True
+
+    def rowCount(self, index=QModelIndex()):
+        return self._data.shape[0]
+
+    def columnCount(self, index=QModelIndex()):
+        return self._data.shape[1]
+
+
+class SolidSpeciesModel(QAbstractTableModel):
+    def __init__(self, data):
+        super().__init__()
+        self._data = data
+
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            value = self._data.iloc[index.row(), index.column()]
+            return str(value)
+
+    def headerData(self, section, orientation, role):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Vertical:
+                return str(self._data.index[section])
+
+    def updateHeader(self, new_header):
+        self._data.columns = [
+            "LogKs",
+            "Sigma",
+            "Ref. Ionic Str.",
+            "CGF",
+            "DGF",
+            "EGF",
+        ] + new_header
+        self.layoutChanged.emit()
+
+    def flags(self, index):
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+    def setData(self, index, value, role):
+        if role == Qt.EditRole:
+            # The frist column holds beta and can accept floats
+            if index.column() < 7:
+                try:
+                    self._data.iloc[index.row(), index.column()] = float(value)
+                except:
+                    return False
+            # All the other columns hold stechiometric coeff. as int
+            else:
+                try:
+                    self._data.iloc[index.row(), index.column()] = int(value)
+                except:
+                    return False
+            self.dataChanged.emit(index, index)
+        return True
+
+    def insertRows(self, position, rows=1, index=QModelIndex()):
+        """ Insert a row into the model. """
+        self.beginInsertRows(index, position, position + rows - 1)
+
+        for row in range(rows):
+            empty_row = pd.DataFrame(
+                [
+                    [0.0 for x in range(6)]
+                    + [0 for x in range(self.columnCount(index) - 6)]
+                ],
+                columns=self._data.columns,
+            )
+            self._data = self._data.append(empty_row, ignore_index=True)
+
+        self.endInsertRows()
+        self.layoutChanged.emit()
+
+        return True
+
+    def removeRows(self, position, rows=1, index=QModelIndex()):
+        """ Remove rows from the model. """
+        self.beginRemoveRows(index, position, position + rows - 1)
+
+        self._data = self._data.drop(
+            self._data.index[position - rows : position], axis=0
+        )
+
+        self.endRemoveRows()
+        self.layoutChanged.emit()
+
+        return True
+
+    def insertColumns(self, position, columns=1, index=QModelIndex()):
+        """ Add columns to the model """
+        self.beginInsertColumns(index, position, position + columns - 1)
+
+        for column in range(columns):
+            self._data.insert(position + column, "COMP" + str(position + column), 0)
 
         self.endInsertColumns()
         self.layoutChanged.emit()

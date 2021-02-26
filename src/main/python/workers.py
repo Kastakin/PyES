@@ -64,3 +64,7 @@ class optimizeWorker(QRunnable):
 
         self.signals.log.emit("### FINISHED ###")
         self.signals.finished.emit()
+
+# TODO: worker for exporting calculated data
+
+# TODO: worker for exporting plot

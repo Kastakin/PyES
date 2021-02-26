@@ -3,19 +3,20 @@ import json
 import pandas as pd
 from PyQt5.QtCore import QThreadPool, QUrl
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QHeaderView
+from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 
-from dialogs import newDialog, wrongFileDialog, aboutDialog, loadCurveDialog
+from dialogs import aboutDialog, loadCurveDialog, newDialog, wrongFileDialog
+from model_proxy import ProxyModel
 from models import (
     ComponentsModel,
     SpeciesModel,
-    TritationModel,
+    SolidSpeciesModel,
     TritationComponentsModel,
+    TritationModel,
 )
-from ui.pystac_main import Ui_MainWindow
-from utils_func import returnDataDict, potCompUpdater
+from ui.sssc_main import Ui_MainWindow
+from utils_func import cleanData, potCompUpdater, returnDataDict
 from workers import optimizeWorker
-from delegate import CheckBoxDelegate
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -25,8 +26,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.threadpool = QThreadPool()
 
-        # Interface is populated with empty basic data
-        self.resetFields()
+        (
+            self.trit_csv,
+            self.tritconc_data,
+            self.comp_data,
+            self.species_data,
+            self.solid_species_data,
+        ) = cleanData()
 
         # Conncect slots for actions
         self.actionNew.triggered.connect(self.file_new)
@@ -45,27 +51,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Sets the modelview for the components in tritation
         self.tritCompModel = TritationComponentsModel(self.tritconc_data)
         self.tritCompView.setModel(self.tritCompModel)
-        self.tritCompView.setItemDelegateForColumn(
-            0, CheckBoxDelegate(self.tritCompView)
-        )
         tritCompHeader = self.tritCompView.horizontalHeader()
         tritCompHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        # Sets the modelview for the components info
+        # Sets the modelview for the components
         self.compModel = ComponentsModel(self.comp_data)
-        self.compView.setModel(self.compModel)
+        self.compProxy = ProxyModel(self)
+        self.compProxy.setSourceModel(self.compModel)
+        self.compView.setModel(self.compProxy)
         compHeader = self.compView.horizontalHeader()
-        compHeader.setSectionResizeMode(1, QHeaderView.ResizeToContents)
+        compHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
         # Connect the dataChanged signal to the corresponding slot
         # used to update header of species with components names
         self.compModel.dataChanged.connect(self.updateCompName)
 
-        # Sets the modelview for the species info
+        # Sets the modelview for the species
         self.speciesModel = SpeciesModel(self.species_data)
-        self.speciesView.setModel(self.speciesModel)
-        self.speciesView.setItemDelegateForColumn(0, CheckBoxDelegate(self.speciesView))
+        self.speciesProxy = ProxyModel(self)
+        self.speciesProxy.setSourceModel(self.speciesModel)
+        self.speciesView.setModel(self.speciesProxy)
         speciesHeader = self.speciesView.horizontalHeader()
         speciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
+
+        # Sets the modelview for the solid species
+        self.solidSpeciesModel = SolidSpeciesModel(self.solid_species_data)
+        self.solidSpeciesProxy = ProxyModel(self)
+        self.solidSpeciesProxy.setSourceModel(self.solidSpeciesModel)
+        self.solidSpeciesView.setModel(self.solidSpeciesProxy)
+        solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
+        solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
+
+        # Interface is populated with empty basic data
+        self.resetFields()
 
         # Sets the components names in the QComboBox
         potCompUpdater(self)
@@ -211,6 +228,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.tritModel.layoutChanged.emit()
             self.tritCompModel.layoutChanged.emit()
 
+            # Clear logger output
+            self.consoleOutput.clear()
+
     def help_website(self):
         """
         Opens the project website in the web
@@ -232,6 +252,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Initializes the input fields as new "empty" values
         """
+        (
+            self.trit_csv,
+            self.tritconc_data,
+            self.comp_data,
+            self.species_data,
+            self.solid_species_data,
+        ) = cleanData()
+
         self.numComp.setValue(1)
         self.numSpecies.setValue(1)
         self.vesselVolume.setValue(0)
@@ -240,22 +268,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.finalph.setValue(14)
         self.electrodeSP.setValue(0)
         self.sd_e.setValue(0)
-        self.trit_csv = pd.DataFrame([[0.0, 0.0]], columns=["Volume", "Potential"])
-        self.tritconc_data = pd.DataFrame(
-            [[False, 0.0, 0.0]],
-            columns=["Refine", "Analytical C.", "Titrant C."],
-            index=["C1"],
-        )
-        self.comp_data = pd.DataFrame([["C1", 0]], columns=["Name", "Charge"])
-        self.species_data = pd.DataFrame(
-            [[False, 0.0, 0]], columns=["Refine", "LogB", "C1"]
-        )
+
+        self.imode.setCurrentIndex(0)
+        self.refIonicStr.setValue(0)
+        self.A.setValue(0)
+        self.B.setValue(0)
+        self.c0.setValue(0)
+        self.c1.setValue(0)
+        self.d0.setValue(0)
+        self.d1.setValue(0)
+        self.e0.setValue(0)
+        self.e1.setValue(0)
+        self.imodeUpdater()
 
         self.SpeciesDistPlot.canvas.axes.cla()
         self.SpeciesDistPlot.canvas.draw()
         self.TitrationPlot.canvas.axes.cla()
         self.TitrationPlot.canvas.draw()
 
+        # No results should be aviable so
+        # grayout export and plot buttons
+        self.plotDistButton.setEnabled(True)
+        self.exportButton.setEnabled(True)
         # Clear logger output
         self.consoleOutput.clear()
 
@@ -283,7 +317,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             added_rows = s - self.compModel.rowCount()
             self.compModel.insertRows(self.compModel.rowCount(), added_rows)
             self.speciesModel.insertColumns(self.speciesModel.columnCount(), added_rows)
+            self.solidSpeciesModel.insertColumns(
+                self.solidSpeciesModel.columnCount(), added_rows
+            )
             self.tritCompModel.insertRows(self.tritCompModel.rowCount(), added_rows)
+            self.updateCompName()
             potCompUpdater(self)
         elif self.compModel.rowCount() > s:
             removed_rows = self.compModel.rowCount() - s
@@ -291,14 +329,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.speciesModel.removeColumns(
                 self.speciesModel.columnCount(), removed_rows
             )
+            self.solidSpeciesModel.removeColumns(
+                self.solidSpeciesModel.columnCount(), removed_rows
+            )
             self.tritCompModel.removeRows(self.tritCompModel.rowCount(), removed_rows)
+            self.updateCompName()
             potCompUpdater(self)
         else:
             pass
 
     def updateSpecies(self, s):
         """
-        Handles the updating to species models due to changes in the species present
+        Handles the updating species model due to changes in the number of species present.
         """
         if self.speciesModel.rowCount() < s:
             added_rows = s - self.speciesModel.rowCount()
@@ -309,12 +351,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
+    def updatePhase(self, s):
+        """
+        Handles the updating solid species model due to changes in the number of solid phases present.
+        """
+        if self.solidSpeciesModel.rowCount() < s:
+            added_rows = s - self.solidSpeciesModel.rowCount()
+            self.solidSpeciesModel.insertRows(
+                self.solidSpeciesModel.rowCount(), added_rows
+            )
+        elif self.solidSpeciesModel.rowCount() > s:
+            removed_rows = self.solidSpeciesModel.rowCount() - s
+            self.solidSpeciesModel.removeRows(
+                self.solidSpeciesModel.rowCount(), removed_rows
+            )
+        else:
+            pass
+
     def updateCompName(self):
         """
         Handles the displayed names in the species table when edited in the components one
         """
         updated_comp = self.compModel._data["Name"].tolist()
         self.speciesModel.updateHeader(updated_comp)
+        self.solidSpeciesModel.updateHeader(updated_comp)
         self.tritCompModel.updateIndex(updated_comp)
         potCompUpdater(self)
 
@@ -351,6 +411,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def worker_complete(self):
         self.calcButton.setEnabled(True)
+        self.plotDistButton.setEnabled(True)
+        self.exportButton.setEnabled(True)
 
     def aborted(self, error):
         self.consoleOutput.append("### ERROR ###")
@@ -361,6 +423,83 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def logger(self, log):
         self.consoleOutput.append(log)
+
+    def imodeUpdater(self):
+        """
+        Enables and disables Debye-Huckle parameters fields
+        while making it clear grayingout also the corresponding
+        fields in the modelviews
+        """
+        if self.imode.currentIndex() == 1:
+            self.refIonicStr.setEnabled(True)
+            self.refIonicStr_label.setEnabled(True)
+            self.A.setEnabled(True)
+            self.A_label.setEnabled(True)
+            self.B.setEnabled(True)
+            self.B_label.setEnabled(True)
+            self.c0.setEnabled(True)
+            self.c0_label.setEnabled(True)
+            self.c1.setEnabled(True)
+            self.c1_label.setEnabled(True)
+            self.d0.setEnabled(True)
+            self.d0_label.setEnabled(True)
+            self.d1.setEnabled(True)
+            self.d1_label.setEnabled(True)
+            self.e0.setEnabled(True)
+            self.e0_label.setEnabled(True)
+            self.e1.setEnabled(True)
+            self.e1_label.setEnabled(True)
+
+            self.speciesView.model().setColumnReadOnly(range(2, 6), False)
+            self.solidSpeciesView.model().setColumnReadOnly(range(2, 6), False)
+
+        else:
+            self.refIonicStr.setEnabled(False)
+            self.refIonicStr_label.setEnabled(False)
+            self.A.setEnabled(False)
+            self.A_label.setEnabled(False)
+            self.B.setEnabled(False)
+            self.B_label.setEnabled(False)
+            self.c0.setEnabled(False)
+            self.c0_label.setEnabled(False)
+            self.c1.setEnabled(False)
+            self.c1_label.setEnabled(False)
+            self.d0.setEnabled(False)
+            self.d0_label.setEnabled(False)
+            self.d1.setEnabled(False)
+            self.d1_label.setEnabled(False)
+            self.e0.setEnabled(False)
+            self.e0_label.setEnabled(False)
+            self.e1.setEnabled(False)
+            self.e1_label.setEnabled(False)
+
+            self.speciesView.model().setColumnReadOnly(range(2, 6), True)
+            self.solidSpeciesView.model().setColumnReadOnly(range(2, 6), True)
+
+    def displayCurve(self):
+        """
+        Display the titration Curve
+        """
+        # TODO: move this feature from the dedicated tab to a dialog
+        # Maybe do this in a separated thread?
+        pass
+
+    def exportDist(self):
+        """
+        Export calculated distribution in csv/excel format
+        """
+        # TODO: implement this feature
+        # Maybe do this in a separated thread?
+        pass
+
+    # FIXME: DUPLICATE
+    def plotDist(self):
+        """
+        Display a form to graph the calculated distribution
+        """
+        # TODO: implement this feature
+        # Maybe do this in a separated thread?
+        pass
 
     def plotDist(self, data):
         """

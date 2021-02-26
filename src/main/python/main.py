@@ -7,7 +7,7 @@ from MainWindow import MainWindow
 
 class AppContext(ApplicationContext):
     def run(self):
-        self.main_window.show()
+        self.main_window.showMaximized()
         return self.app.exec_()
 
     @cached_property

@@ -6,9 +6,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
 from models import PreviewModel
-from ui.pystac_about import Ui_dialogAbout
-from ui.pystac_load import Ui_loadCurve
-from ui.pystac_newDialog import Ui_dialogNew
+from ui.sssc_about import Ui_dialogAbout
+from ui.sssc_load import Ui_loadCurve
+from ui.sssc_newDialog import Ui_dialogNew
 
 
 class newDialog(QDialog):
