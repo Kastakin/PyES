@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>application-import.png</file>
+    <file>folder-open-document.png</file>
+    <file>document.png</file>
+    <file>disk.png</file>
+  </qresource>
+  <qresource prefix="img">
+    <file>chemistry.png</file>
+  </qresource>
+</RCC>
