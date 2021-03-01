@@ -5,6 +5,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from MainWindow import MainWindow
 
+
 class AppContext(ApplicationContext):
     def run(self):
         self.main_window.showMaximized()

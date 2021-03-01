@@ -43,8 +43,8 @@ class Optimizer:
         self.comp_name = data["compModel"]["Name"]
         comp_charge = data["compModel"]["Charge"]  # Charge values of comp
         species_data = data["speciesModel"]  # Data relative to the species
-        titration_data = data["tritModel"]  # Data relative to titration
-        comp_tritation_data = data["tritCompModel"]  # Data relative to
+        titration_data = data["titrModel"]  # Data relative to titration
+        comp_titration_data = data["titrCompModel"]  # Data relative to
 
         # Check that charge of electroactive component isn't zero.
         if comp_charge[self.comp_pot] == 0:
@@ -71,11 +71,11 @@ class Optimizer:
             )
 
         # Concentration in the titrant for each component
-        self.c_added = comp_tritation_data.iloc[:, 2].to_numpy(dtype="float")
+        self.c_added = comp_titration_data.iloc[:, 2].to_numpy(dtype="double")
 
         # Analytical concentration of each components
         # THE VALUE ARE COPIED SINCE THESE WILL BE MODIFIED
-        self.c_tot = comp_tritation_data.iloc[:, 1].copy().to_numpy(dtype="float")
+        self.c_tot = comp_titration_data.iloc[:, 1].copy().to_numpy(dtype="double")
 
         # Initial volume and total volume at each point
         self.v0 = data["v0"]
@@ -91,13 +91,13 @@ class Optimizer:
         self.model = np.concatenate((aux_model, base_model), axis=1)
 
         # Stores log_betas
-        base_log_beta = species_data.iloc[:, 1].to_numpy(dtype="float")
+        base_log_beta = species_data.iloc[:, 1].to_numpy(dtype="double")
         self.log_beta = np.concatenate(
             (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
         )
 
         # Compose species names from the model
-        self.species_names = self._speciesNames(self.model, comp_tritation_data.index)
+        self.species_names = self._speciesNames(self.model, comp_titration_data.index)
 
     def predict(self):
         """

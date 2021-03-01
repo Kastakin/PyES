@@ -33,7 +33,7 @@ class PreviewModel(QAbstractTableModel):
         return self._data.shape[1]
 
 
-class TritationModel(QAbstractTableModel):
+class TitrationComponentsModel(QAbstractTableModel):
     def __init__(self, data):
         super().__init__()
         self._data = data
@@ -51,58 +51,19 @@ class TritationModel(QAbstractTableModel):
             if orientation == Qt.Vertical:
                 return str(self._data.index[section])
 
-    def rowCount(self, index=QModelIndex()):
-        return self._data.shape[0]
-
-    def columnCount(self, index=QModelIndex()):
-        return self._data.shape[1]
-
-
-class TritationComponentsModel(QAbstractTableModel):
-    def __init__(self, data):
-        super().__init__()
-        self._data = data
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            value = self._data.iloc[index.row(), index.column()]
-            if index.column() != 0:
-                return QVariant("{0}".format(value))
-            else:
-                return QVariant(value)
-
-    def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Vertical:
-                return str(self._data.index[section])
-
     def updateIndex(self, new_index):
         self._data.index = new_index
         self.layoutChanged.emit()
 
     def flags(self, index):
-        if index.column() == 0:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled
-        else:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
-            # The frist column holds refinement flag and can accept only bool
-            if index.column() == 0:
-                try:
-                    self._data.iloc[index.row(), index.column()] = value
-                except:
-                    return False
-            # all the other columns can hold any valid float
-            else:
-                try:
-                    self._data.iloc[index.row(), index.column()] = float(value)
-                except:
-                    return False
+            try:
+                self._data.iloc[index.row(), index.column()] = float(value)
+            except:
+                return False
             self.dataChanged.emit(index, index)
         return True
 
@@ -112,9 +73,9 @@ class TritationComponentsModel(QAbstractTableModel):
 
         for row in range(rows):
             empty_row = pd.DataFrame(
-                [[False, 0.0, 0.0]],
-                columns=["Refine", "Analytical C.", "Titrant C."],
-                index=["C" + str(position + row + 1)],
+                [[0.0 for x in range(4)]],
+                columns=["C0", "CT", "Sigma C0", "Sigma CT"],
+                index=["COMP" + str(position + row + 1)],
             )
             self._data = self._data.append(empty_row, ignore_index=False)
 

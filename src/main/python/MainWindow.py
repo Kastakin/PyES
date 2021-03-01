@@ -1,9 +1,9 @@
 import json
 
 import pandas as pd
-from PyQt5.QtCore import QThreadPool, QUrl
+from PyQt5.QtCore import QThreadPool, QUrl, QRect
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow
+from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QSizePolicy
 
 from dialogs import aboutDialog, loadCurveDialog, newDialog, wrongFileDialog
 from model_proxy import ProxyModel
@@ -11,11 +11,10 @@ from models import (
     ComponentsModel,
     SpeciesModel,
     SolidSpeciesModel,
-    TritationComponentsModel,
-    TritationModel,
+    TitrationComponentsModel,
 )
 from ui.sssc_main import Ui_MainWindow
-from utils_func import cleanData, potCompUpdater, returnDataDict
+from utils_func import cleanData, indCompUpdater, returnDataDict
 from workers import optimizeWorker
 
 
@@ -27,8 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.threadpool = QThreadPool()
 
         (
-            self.trit_csv,
-            self.tritconc_data,
+            self.conc_data,
             self.comp_data,
             self.species_data,
             self.solid_species_data,
@@ -42,19 +40,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAbout.triggered.connect(self.help_about)
         self.actionWebsite.triggered.connect(self.help_website)
 
-        # Sets the modelview for the tritation curve data
-        self.tritModel = TritationModel(self.trit_csv)
-        self.tritView.setModel(self.tritModel)
-        # Connect the layoutChanged signal to the slot used to plot that data
-        self.tritModel.layoutChanged.connect(self.plot_trit)
+        # Sets the tabelview for the component concentrations in titration
+        # FIXME: we are using two views for the same model, we could probably do with a single view
+        self.concModel = TitrationComponentsModel(self.conc_data)
+        self.dmode0_concProxy = ProxyModel(self)
+        self.dmode0_concProxy.setSourceModel(self.concModel)
+        self.dmode1_concProxy = ProxyModel(self)
+        self.dmode1_concProxy.setSourceModel(self.concModel)
 
-        # Sets the modelview for the components in tritation
-        self.tritCompModel = TritationComponentsModel(self.tritconc_data)
-        self.tritCompView.setModel(self.tritCompModel)
-        tritCompHeader = self.tritCompView.horizontalHeader()
-        tritCompHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.dmode0_concView.setModel(self.dmode0_concProxy)
+        d0header = self.dmode0_concView.horizontalHeader()
+        d0header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        # Sets the modelview for the components
+        self.dmode1_concView.setModel(self.dmode1_concProxy)
+        d1header = self.dmode1_concView.horizontalHeader()
+        d1header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.dmode1_concView.setColumnHidden(1, True)
+        self.dmode1_concView.setColumnHidden(3, True)
+
+        # Sets the tableview for the components
         self.compModel = ComponentsModel(self.comp_data)
         self.compProxy = ProxyModel(self)
         self.compProxy.setSourceModel(self.compModel)
@@ -65,7 +69,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # used to update header of species with components names
         self.compModel.dataChanged.connect(self.updateCompName)
 
-        # Sets the modelview for the species
+        # Sets the tableview for the species
         self.speciesModel = SpeciesModel(self.species_data)
         self.speciesProxy = ProxyModel(self)
         self.speciesProxy.setSourceModel(self.speciesModel)
@@ -73,7 +77,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         speciesHeader = self.speciesView.horizontalHeader()
         speciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        # Sets the modelview for the solid species
+        # Sets the tableview for the solid species
         self.solidSpeciesModel = SolidSpeciesModel(self.solid_species_data)
         self.solidSpeciesProxy = ProxyModel(self)
         self.solidSpeciesProxy.setSourceModel(self.solidSpeciesModel)
@@ -85,7 +89,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.resetFields()
 
         # Sets the components names in the QComboBox
-        potCompUpdater(self)
+        indCompUpdater(self)
 
         # declare the checkline used to validate project files
         self.check_line = {"check": "SSSC project file --- DO NOT MODIFY THIS LINE!"}
@@ -107,6 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog = aboutDialog(self)
         dialog.exec_()
 
+    # TODO: both open and save have to be reworked
     def file_save(self):
         """
         Saves current project as json file that can be later reopened
@@ -158,75 +163,151 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.numSpecies.setValue(1)
 
             try:
-                self.vesselVolume.setValue(jsdata["v0"])
+                self.numPhases.setValue(jsdata["np"])
             except:
-                self.vesselVolume.setValue(0)
+                self.numPhases.setValue(0)
 
             try:
-                self.sd_v.setValue(jsdata["sv"])
+                self.relErrorMode.setCurrentIndex(jsdata["emode"])
             except:
-                self.sd_v.setValue(0)
+                self.relErrorMode.setCurrentIndex(0)
 
             try:
-                self.finalph.setValue(jsdata["ph_range"][0])
+                self.imode.setCurrentIndex(jsdata["imode"])
             except:
-                self.finalph.setValue(1)
+                self.imode.setCurrentIndex(0)
 
             try:
-                self.finalph.setValue(jsdata["ph_range"][1])
+                self.refIonicStr.setValue(jsdata["ris"])
             except:
-                self.finalph.setValue(14)
+                self.refIonicStr.setValue(0)
 
             try:
-                self.electrodeSP.setValue(jsdata["std_pot"])
+                self.A.setValue(jsdata["a"])
             except:
-                self.electrodeSP.setValue(0)
+                self.A.setValue(0)
 
             try:
-                self.sd_e.setValue(jsdata["se"])
+                self.B.setValue(jsdata["b"])
             except:
-                self.sd_e.setValue(0)
+                self.B.setValue(0)
+
+            try:
+                self.c0.setValue(jsdata["c0"])
+            except:
+                self.c0.setValue(0)
+
+            try:
+                self.c1.setValue(jsdata["c1"])
+            except:
+                self.c1.setValue(0)
+
+            try:
+                self.d0.setValue(jsdata["d0"])
+            except:
+                self.d0.setValue(0)
+
+            try:
+                self.d1.setValue(jsdata["d1"])
+            except:
+                self.d1.setValue(0)
+
+            try:
+                self.e0.setValue(jsdata["e0"])
+            except:
+                self.e0.setValue(0)
+
+            try:
+                self.dmode.setCurrentIndex(jsdata["dmode"])
+            except:
+                self.dmode.setCurrentIndex(0)
+
+            try:
+                self.v0.setValue(jsdata["v0"])
+            except:
+                self.v0.setValue(0)
+
+            try:
+                self.initv.setValue(jsdata["initv"])
+            except:
+                self.initv.setValue(0)
+
+            try:
+                self.finalv.setValue(jsdata["finalv"])
+            except:
+                self.finalv.setValue(0)
+
+            try:
+                self.nop.setValue(jsdata["nop"])
+            except:
+                self.nop.setValue(1)
+
+            try:
+                self.c0back.setValue(jsdata["c0back"])
+            except:
+                self.c0back.setValue(0)
+
+            try:
+                self.ctback.setValue(jsdata["ctback"])
+            except:
+                self.ctback.setValue(0)
+
+            try:
+                self.initialLog.setValue(jsdata["initialLog"])
+            except:
+                self.initialLog.setValue(0)
+
+            try:
+                self.finalLog.setValue(jsdata["finalLog"])
+            except:
+                self.finalLog.setValue(0)
+
+            try:
+                self.logInc.setValue(jsdata["logInc"])
+            except:
+                self.logInc.setValue(0)
+
+            try:
+                self.cback.setValue(jsdata["cback"])
+            except:
+                self.cback.setValue(0)       
+
 
             # TODO: Find a way to handle missing model data
             try:
                 self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
             except:
-                pass
+                self.compModel._data = self.comp_data
 
             try:
                 self.speciesModel._data = pd.DataFrame.from_dict(jsdata["speciesModel"])
             except:
-                pass
+                self.speciesModel._data = self.species_data
 
             try:
-                self.tritModel._data = pd.DataFrame.from_dict(jsdata["tritModel"])
+                self.solidSpeciesModel._data = pd.DataFrame.from_dict(jsdata["solidSpeciesModel"])
             except:
-                pass
+                self.solidSpeciesModel._data = self.solid_species_data
 
             try:
-                self.tritCompModel._data = pd.DataFrame.from_dict(
-                    jsdata["tritCompModel"]
+                self.concModel._data = pd.DataFrame.from_dict(
+                    jsdata["concModel"]
                 )
             except:
-                pass
+                self.concModel._data = self.conc_data
 
             try:
-                comp_pot = jsdata["comp_pot"]
+                ind_comp = jsdata["ind_comp"]
             except:
-                comp_pot = 0
-            potCompUpdater(self)
-            self.potComp.setCurrentIndex(comp_pot)
-
-            try:
-                self.wmode.setCurrentIndex(jsdata["wmode"])
-            except:
-                self.wmode.setCurrentIndex(0)
+                ind_comp = 0
+            indCompUpdater(self)
+            self.indComp.setCurrentIndex(ind_comp)
 
             # The model layout changed so it has to be updated
             self.compModel.layoutChanged.emit()
             self.speciesModel.layoutChanged.emit()
-            self.tritModel.layoutChanged.emit()
-            self.tritCompModel.layoutChanged.emit()
+            self.solidSpeciesModel.layoutChanged.emit()
+            self.concModel.layoutChanged.emit()
 
             # Clear logger output
             self.consoleOutput.clear()
@@ -243,33 +324,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if dialog.exec_():
             vcol = dialog.settings["vcol"]
             ecol = dialog.settings["ecol"]
-            trit_curve = dialog.previewModel._data[[vcol, ecol]]
-            trit_curve.columns = ["Volume", "Potential"]
-            self.tritModel._data = trit_curve
-            self.tritModel.layoutChanged.emit()
+            titr_curve = dialog.previewModel._data[[vcol, ecol]]
+            titr_curve.columns = ["Volume", "Potential"]
+            self.titrModel._data = titr_curve
+            self.titrModel.layoutChanged.emit()
 
     def resetFields(self):
         """
         Initializes the input fields as new "empty" values
         """
         (
-            self.trit_csv,
-            self.tritconc_data,
+            self.conc_data,
             self.comp_data,
             self.species_data,
             self.solid_species_data,
         ) = cleanData()
 
+        # Reset number of comp/species/phases
         self.numComp.setValue(1)
         self.numSpecies.setValue(1)
         self.numPhases.setValue(0)
-        self.vesselVolume.setValue(0)
-        self.sd_v.setValue(0)
-        self.initialph.setValue(1)
-        self.finalph.setValue(14)
-        self.electrodeSP.setValue(0)
-        self.sd_e.setValue(0)
 
+        # at init phases are 0 so disable the modelview
+        self.solidSpeciesView.setEnabled(False)
+
+        # Reset rel. error settings
+        self.relErrorMode.setCurrentIndex(0)
+        self.relErrorsUpdater(0)
+
+        # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)
         self.refIonicStr.setValue(0)
         self.A.setValue(0)
@@ -280,15 +363,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.d1.setValue(0)
         self.e0.setValue(0)
         self.e1.setValue(0)
-        self.imodeUpdater()
+        self.imodeUpdater(0)
 
-        self.SpeciesDistPlot.canvas.axes.cla()
-        self.SpeciesDistPlot.canvas.draw()
-        self.TitrationPlot.canvas.axes.cla()
-        self.TitrationPlot.canvas.draw()
+        # Set dmode as 0 (titration)
+        # and display the correct associated widget
+        self.dmode.setCurrentIndex(0)
+        self.dmodeUpdater(0)
 
-        # at init phases are 0 so disable the modelview
-        self.solidSpeciesView.setEnabled(False)
+        # Resets fields for both dmodes
+        self.v0.setValue(0)
+        self.initv.setValue(0)
+        self.finalv.setValue(0)
+        self.nop.setValue(1)
+        self.c0back.setValue(0)
+        self.ctback.setValue(0)
+        self.initialLog.setValue(0)
+        self.finalLog.setValue(0)
+        self.logInc.setValue(0)
+        self.cback.setValue(0)
 
         # No results should be aviable so
         # grayout export and plot buttons
@@ -297,38 +389,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Clear logger output
         self.consoleOutput.clear()
 
-        # if the function is called after first initialization when models are already
+        # Clear axes in plots tabs
+        self.SpeciesDistPlot.canvas.axes.cla()
+        self.SpeciesDistPlot.canvas.draw()
+        self.TitrationPlot.canvas.axes.cla()
+        self.TitrationPlot.canvas.draw()
+
+        # if the function is called after
+        # first initialization when models are already
         # declared update them to the empty values
         try:
-            self.tritModel._data = self.trit_csv
-            self.tritCompModel._data = self.tritconc_data
+            self.concModel._data = self.conc_data
             self.compModel._data = self.comp_data
             self.speciesModel._data = self.species_data
-            self.tritModel.layoutChanged.emit()
-            self.tritCompModel.layoutChanged.emit()
+            self.solidSpeciesModel._data = self.solid_species_data
+            self.concModel.layoutChanged.emit()
             self.compModel.layoutChanged.emit()
             self.speciesModel.layoutChanged.emit()
-            potCompUpdater(self)
+            self.solidSpeciesModel.layoutChanged.emit()
+            indCompUpdater(self)
         except:
             pass
 
-    def updateComp(self, s):
+    def updateComp(self, rows):
         """
         Handles the updating to species and components models
         due to changes in the components present
         """
-        if self.compModel.rowCount() < s:
-            added_rows = s - self.compModel.rowCount()
+        if self.compModel.rowCount() < rows:
+            added_rows = rows - self.compModel.rowCount()
             self.compModel.insertRows(self.compModel.rowCount(), added_rows)
             self.speciesModel.insertColumns(self.speciesModel.columnCount(), added_rows)
             self.solidSpeciesModel.insertColumns(
                 self.solidSpeciesModel.columnCount(), added_rows
             )
-            self.tritCompModel.insertRows(self.tritCompModel.rowCount(), added_rows)
+            self.concModel.insertRows(self.concModel.rowCount(), added_rows)
             self.updateCompName()
-            potCompUpdater(self)
-        elif self.compModel.rowCount() > s:
-            removed_rows = self.compModel.rowCount() - s
+            indCompUpdater(self)
+        elif self.compModel.rowCount() > rows:
+            removed_rows = self.compModel.rowCount() - rows
             self.compModel.removeRows(self.compModel.rowCount(), removed_rows)
             self.speciesModel.removeColumns(
                 self.speciesModel.columnCount(), removed_rows
@@ -336,9 +435,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.solidSpeciesModel.removeColumns(
                 self.solidSpeciesModel.columnCount(), removed_rows
             )
-            self.tritCompModel.removeRows(self.tritCompModel.rowCount(), removed_rows)
+            self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
             self.updateCompName()
-            potCompUpdater(self)
+            indCompUpdater(self)
         else:
             pass
 
@@ -383,16 +482,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         updated_comp = self.compModel._data["Name"].tolist()
         self.speciesModel.updateHeader(updated_comp)
         self.solidSpeciesModel.updateHeader(updated_comp)
-        self.tritCompModel.updateIndex(updated_comp)
-        potCompUpdater(self)
+        self.concModel.updateIndex(updated_comp)
+        indCompUpdater(self)
 
-    def plot_trit(self):
+    def plot_titr(self):
         """
-        Plot imported tritation data
+        Plot imported titration data
         """
         self.TitrationPlot.plot(
-            [self.tritModel._data.iloc[:, 0]],
-            [self.tritModel._data.iloc[:, 1]],
+            [self.titrModel._data.iloc[:, 0]],
+            [self.titrModel._data.iloc[:, 1]],
             ["Original Curve"],
             "Titrant Volume [ml]",
             "Potential",
@@ -432,13 +531,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def logger(self, log):
         self.consoleOutput.append(log)
 
-    def imodeUpdater(self):
+    def imodeUpdater(self, imode):
         """
         Enables and disables Debye-Huckle parameters fields
         while making it clear grayingout also the corresponding
         fields in the modelviews
         """
-        if self.imode.currentIndex() == 1:
+        if imode == 1:
             self.refIonicStr.setEnabled(True)
             self.refIonicStr_label.setEnabled(True)
             self.A.setEnabled(True)
@@ -457,6 +556,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.e0_label.setEnabled(True)
             self.e1.setEnabled(True)
             self.e1_label.setEnabled(True)
+
+            self.c0back.setEnabled(True)
+            self.c0back_label.setEnabled(True)
+            self.ctback.setEnabled(True)
+            self.ctback_label.setEnabled(True)
+            self.cback.setEnabled(True)
+            self.cback_label.setEnabled(True)
 
             self.speciesView.model().setColumnReadOnly(range(2, 6), False)
             self.solidSpeciesView.model().setColumnReadOnly(range(2, 6), False)
@@ -480,6 +586,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.e0_label.setEnabled(False)
             self.e1.setEnabled(False)
             self.e1_label.setEnabled(False)
+
+            self.c0back.setEnabled(False)
+            self.c0back_label.setEnabled(False)
+            self.ctback.setEnabled(False)
+            self.ctback_label.setEnabled(False)
+            self.cback.setEnabled(False)
+            self.cback_label.setEnabled(False)
 
             self.speciesView.model().setColumnReadOnly(range(2, 6), True)
             self.solidSpeciesView.model().setColumnReadOnly(range(2, 6), True)
@@ -514,7 +627,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Plot the distribution of species obtained from the optimization
         """
         self.SpeciesDistPlot.plot(
-            [data.index for i in range(data.shape[0])],
+            [data.index for i in range(data.shape[1])],
             [data[i] for i in data.columns],
             data.columns,
             "Titrant Volume [ml]",
@@ -522,3 +635,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "Distribution Curve",
             new=True,
         )
+
+    def dmodeUpdater(self, mode):
+        """
+        Conditionally show one settings input or another
+        if we want to work in distribution or titration mode.
+        """
+        if mode == 0:
+            self.dmode0Input.show()
+            self.dmode1Input.hide()
+        else:
+            self.dmode0Input.hide()
+            self.dmode1Input.show()
+
+    def indipendentUpdater(self, comp):
+        """
+        If working in "distribution mode"
+        gray out indipendent component.
+        """
+        try:
+            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], False)
+        except:
+            pass
+        self.previousIndComp = self.indComp.currentIndex()
+        self.dmode1_concView.model().setRowReadOnly([comp], True)
+
+    def relErrorsUpdater(self, mode):
+        """
+        If relative errors aren't requested
+        gray out the corresponding columns in tableviews.
+        """
+        if mode == 0:
+            self.speciesView.model().setColumnReadOnly([1], False)
+            self.solidSpeciesView.model().setColumnReadOnly([1], False)
+            self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
+            self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
+        else:
+            self.speciesView.model().setColumnReadOnly([1], True)
+            self.solidSpeciesView.model().setColumnReadOnly([1], True)
+            self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
+            self.dmode0_concView.model().setColumnReadOnly([2, 3], True)
