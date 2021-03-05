@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>954</width>
-    <height>765</height>
+    <height>608</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -902,14 +902,14 @@
                   </widget>
                  </item>
                  <item row="3" column="0">
-                  <widget class="QLabel" name="finalv_label">
+                  <widget class="QLabel" name="vinc_label">
                    <property name="text">
-                    <string>Final Point Volume:</string>
+                    <string>Volume Increments:</string>
                    </property>
                   </widget>
                  </item>
                  <item row="3" column="1">
-                  <widget class="QDoubleSpinBox" name="finalv">
+                  <widget class="QDoubleSpinBox" name="vinc">
                    <property name="suffix">
                     <string> ml</string>
                    </property>
@@ -1139,7 +1139,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>280</width>
+                  <width>284</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -1317,6 +1317,13 @@
         <property name="bottomMargin">
          <number>5</number>
         </property>
+        <item>
+         <widget class="QCheckBox" name="debug">
+          <property name="text">
+           <string>Debug to file</string>
+          </property>
+         </widget>
+        </item>
         <item>
          <widget class="QTextEdit" name="consoleOutput">
           <property name="font">
@@ -1532,6 +1539,9 @@
    <addaction name="separator"/>
   </widget>
   <action name="actionNew">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../../resources/base/resources.qrc">
      <normaloff>:/icons/document.png</normaloff>:/icons/document.png</iconset>
@@ -1638,8 +1648,8 @@
    <slot>calculate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>411</x>
-     <y>683</y>
+     <x>415</x>
+     <y>811</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -1654,8 +1664,8 @@
    <slot>exportDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>211</x>
-     <y>707</y>
+     <x>215</x>
+     <y>844</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -1670,8 +1680,8 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>660</x>
-     <y>717</y>
+     <x>944</x>
+     <y>844</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
@@ -1750,8 +1760,8 @@
    <slot>indipendentUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>450</x>
-     <y>514</y>
+     <x>544</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>

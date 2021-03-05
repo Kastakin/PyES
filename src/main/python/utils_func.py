@@ -27,7 +27,7 @@ def returnDataDict(self, saving=True):
         "dmode": self.dmode.currentIndex(),
         "v0": self.v0.value(),
         "initv": self.initv.value(),
-        "finalv": self.finalv.value(),
+        "vinc": self.vinc.value(),
         "nop": self.nop.value(),
         "c0back": self.c0back.value(),
         "ctback": self.ctback.value(),
@@ -54,7 +54,7 @@ def returnDataDict(self, saving=True):
         }
 
     data_list = {**data_list, **data_models}
-    
+
     return data_list
 
 

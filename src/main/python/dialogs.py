@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
 from models import PreviewModel
 from ui.sssc_about import Ui_dialogAbout
-from ui.sssc_load import Ui_loadCurve
 from ui.sssc_newDialog import Ui_dialogNew
 
 
@@ -40,74 +39,3 @@ class wrongFileDialog(QMessageBox):
         self.setWindowTitle("Error")
         self.setText("The file you tried to open is not a valid PyBSTAC project file")
         self.setIcon(QMessageBox.Warning)
-
-
-class loadCurveDialog(QDialog):
-    def __init__(self, parent=None):
-        """
-        Frontend for the Pandas load_csv function.
-        """
-        super().__init__(parent)
-        self.ui = Ui_loadCurve()
-        self.ui.setupUi(self)
-
-        # Generate a preview view/model
-        self.previewModel = PreviewModel()
-        self.ui.preview.setModel(self.previewModel)
-
-        # No file is being opened yet
-        self.fileName = None
-
-        # Get initial settings
-        self.updateSettings()
-
-    def updateSettings(self):
-        self.settings = {
-            "sep": self.ui.separator.currentText(),
-            "dec": self.ui.decimal.currentText(),
-            "head": self.ui.head.value(),
-            "footer": self.ui.footer.value(),
-            "vcol": self.ui.vCol.value(),
-            "ecol": self.ui.eCol.value(),
-        }
-
-        if self.ui.separator.isEnabled() == False:
-            self.settings["sep"] = None
-
-        if self.ui.decimal.isEnabled() == False:
-            self.settings["dec"] = None
-
-        self._updateModel()
-
-    def autodetectSep(self, s):
-        if s == Qt.Checked:
-            self.ui.separator.setEnabled(False)
-        else:
-            self.ui.separator.setEnabled(True)
-        self.updateSettings()
-
-    def autodetectDec(self, s):
-        if s == Qt.Checked:
-            self.ui.decimal.setEnabled(False)
-        else:
-            self.ui.decimal.setEnabled(True)
-        self.updateSettings()
-
-    def loadFile(self):
-        self.fileName, _ = QFileDialog.getOpenFileName(
-            self, "Open CSV", "~", "CSV (*.csv)"
-        )
-        self._updateModel()
-
-    def _updateModel(self):
-        if self.fileName:
-            self.ui.filePath.setText(self.fileName)
-            self.previewModel._data = pd.read_csv(
-                self.fileName,
-                sep=self.settings["sep"],
-                decimal=self.settings["dec"],
-                skiprows=self.settings["head"],
-                skipfooter=self.settings["footer"],
-                header=None,
-            )
-            self.previewModel.layoutChanged.emit()

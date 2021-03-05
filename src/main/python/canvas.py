@@ -5,7 +5,7 @@ import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PyQt5.QtWidgets import QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QSizePolicy
 
 matplotlib.use("Qt5Agg")
 
@@ -25,6 +25,28 @@ class WidgetPlot(QWidget):
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.layout().addWidget(self.toolbar)
         self.layout().addWidget(self.canvas)
+
+        # Code to keep the graph aspect ratio square
+        self.ratio = 1
+        self.adjusted_to_size = (-1, -1)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored))
+
+    def resizeEvent(self, event):
+        size = event.size()
+        if size == self.adjusted_to_size:
+            # Avoid infinite recursion.
+            return
+        self.adjusted_to_size = size
+
+        full_width = size.width()
+        full_height = size.height()
+        width = min(full_width, full_height * self.ratio)
+        height = min(full_height, full_width / self.ratio)
+
+        h_margin = round((full_width - width) / 2)
+        v_margin = round((full_height - height) / 2)
+
+        self.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
 
     def plot(
         self,

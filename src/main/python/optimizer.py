@@ -1,8 +1,10 @@
 import math
+import logging
 from pprint import pprint
 
 import numpy as np
 import pandas as pd
+from scipy.special import logsumexp
 
 
 class Optimizer:
@@ -12,7 +14,7 @@ class Optimizer:
     """
 
     def __init__(self):
-        pass
+        self.epsl = 200
 
     def fit(self, data):
         """
@@ -20,84 +22,80 @@ class Optimizer:
 
         :param data: data as given from the GUI.
         """
-        # Import number of comp/species
+        logging.info("--- START DATA LOADING ---")
+        # Import number of comp/species/phases
         self.nc = data["nc"]
         self.ns = data["ns"]
+        self.nf = data["np"]
 
         # Number of components and number of species has to be > 0
-        if self.nc <= 0 | self.ns <= 0:
+        if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
             raise Exception(
                 "Number of components and number of species have to be > 0."
             )
 
-        # Imports electrode std potential
-        self.std_pot = data["std_pot"]
-
-        # SD on potential
-        self.sd_e = data["se"]
-
-        # Electroactive species
-        self.comp_pot = data["comp_pot"]
-        ph_range = data["ph_range"]  # initial and final pH range
-
         self.comp_name = data["compModel"]["Name"]
-        comp_charge = data["compModel"]["Charge"]  # Charge values of comp
-        species_data = data["speciesModel"]  # Data relative to the species
-        titration_data = data["titrModel"]  # Data relative to titration
-        comp_titration_data = data["titrCompModel"]  # Data relative to
+        # Charge values of comps
+        self.comp_charge = data["compModel"]["Charge"]
+        # Data relative to the species and solis species
+        self.species_data = data["speciesModel"]
+        self.solid_species_data = data["solidSpeciesModel"]
+        # Data relative to comp concentrations
+        self.conc_data = data["concModel"]
 
-        # Check that charge of electroactive component isn't zero.
-        if comp_charge[self.comp_pot] == 0:
-            raise Exception("Charge of the electroactive component can't be Zero.")
-
-        # Convert ph range to potential range
-        pot_range = np.array(
-            [
-                self.std_pot
-                + (59.16 / comp_charge[self.comp_pot]) * math.log10(10 ** -ph_range[i])
-                for i in range(2)
-            ]
-        )
-
-        # Subset the data only taking in account points in the pot_range
-        self.v_added, self.potential = self._subsetData(pot_range, titration_data)
-
-        self.nop = len(self.v_added)  # Number of effective points to be used
-
-        # Check if the number of points in the range of pH is greater then 0
-        if self.nop == 0:
-            raise Exception(
-                "Number of titration points in the selected pH range is 0, please pick a wider range."
-            )
+        # Analytical concentration of each component
+        self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
 
         # Concentration in the titrant for each component
-        self.c_added = comp_titration_data.iloc[:, 2].to_numpy(dtype="double")
+        self.c_added = self.conc_data.iloc[:, 1].to_numpy(dtype="float")
 
-        # Analytical concentration of each components
-        # THE VALUE ARE COPIED SINCE THESE WILL BE MODIFIED
-        self.c_tot = comp_titration_data.iloc[:, 1].copy().to_numpy(dtype="double")
-
-        # Initial volume and total volume at each point
+        # Initial volume
         self.v0 = data["v0"]
+        # First titration point volume
+        self.initv = data["initv"]
+        # Volume increment at each point
+        self.vinc = data["vinc"]
+        # number of points
+        self.nop = int(data["nop"])
+
+        # Initial volume should be higher then v0
+        if self.v0 > self.initv:
+            raise Exception(
+                "Initial titration volume should be higer or equal to initial volume."
+            )
+        # Check if the number of points in the range of pH is greater then 0
+        if self.nop == 0:
+            raise Exception("Number of points in the titration is 0.print")
+
+        self.v_added = []
+        for x in range(self.nop):
+            self.v_added.append(self.vinc * x)
+        self.v_added = np.array(self.v_added)
+        v1_diff = self.initv - self.v0
+        self.v_added += v1_diff
         self.v_tot = self.v0 + self.v_added
 
-        # SD on volume
-        self.sd_v = data["sv"]
+        # Total concentration corrected for v_tot
+        self.c_tot_adj = (
+            np.tile(self.c_tot, [self.nop, 1]) * self.v0
+            + np.tile(self.v_added, [self.nc, 1]).T * self.c_added
+        ) / np.tile(self.v_tot, [self.nc, 1]).T
 
         # Define the stechiometric coefficients for the various species
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
-        base_model = species_data.iloc[:, 2:].to_numpy(dtype="int").T
+        base_model = self.species_data.iloc[:, 6:].to_numpy(dtype="int").T
         self.model = np.concatenate((aux_model, base_model), axis=1)
 
         # Stores log_betas
-        base_log_beta = species_data.iloc[:, 1].to_numpy(dtype="double")
+        base_log_beta = self.species_data.iloc[:, 0].to_numpy(dtype="float")
         self.log_beta = np.concatenate(
             (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
         )
 
         # Compose species names from the model
-        self.species_names = self._speciesNames(self.model, comp_titration_data.index)
+        self.species_names = self._speciesNames(self.model, self.conc_data.index)
+        logging.info("--- DATA LOADED ---")
 
     def predict(self):
         """
@@ -105,13 +103,14 @@ class Optimizer:
         """
         # Calculate species distribution
         # Return formatted species distribution as a nice table
+        logging.info("--- START CALCULATION --- ")
         final_result = self._residuals()
         self.species_distribution = pd.DataFrame(
-            final_result[0],
+            final_result,
             index=self.v_added,
             columns=self.species_names,
         ).rename_axis(index="V. Added [ml]", columns="Species Con. [ml/L]")
-        self.pot_calc = final_result[1]
+        logging.info("--- CALCULATION TERMINATED ---")
 
         return True
 
@@ -125,23 +124,13 @@ class Optimizer:
         """
         Calculate species distribution.
         """
-
-        # Calculate betas from LogBetas
-        betas = 10 ** self.log_beta
         # Initialize array to contain the species concentration
         # obtained from the calculations
         results_species_conc = []
 
-        results_der = []
-
-        # Total concentration corrected for v_tot
-        c_tot_adj = (
-            np.tile(self.c_tot, [self.nop, 1]) * self.v0
-            + np.tile(self.v_added, [self.nc, 1]).T * self.c_added
-        ) / np.tile(self.v_tot, [self.nc, 1]).T
-
         # Cycle over each point of titration
         for point in range(self.nop):
+            logging.debug("Optimization on point: {}".format(point))
 
             # Calculate species concentration given initial betas
             # Initial guess of free concentration (c) is considered as follows:
@@ -164,16 +153,18 @@ class Optimizer:
             elif point > 0:
                 c = results_species_conc[(point - 1)][: self.nc]
             elif point == 0:
-                c = np.multiply(c_tot_adj[0], 0.001)
-                c[self.comp_pot] = 10 ** ((self.potential[0] - self.std_pot) / 59.16)
-
-            # If initial guess for concentration is lower then 1e-15
-            # make it 1e-15
-            # c = np.where(c > 1e-15, c, 1e-15)
+                c = np.multiply(self.c_tot_adj[0], 0.001)
 
             # Calculate species concnetration or each curve point
             species_conc_calc = self._newtonRaphson(
-                c, self.model, betas, c_tot_adj[point], self.nc, self.ns
+                point,
+                c,
+                self.model,
+                self.log_beta,
+                self.c_tot_adj[point],
+                self.nc,
+                self.ns,
+                self.nf,
             )
 
             # Store calculated species concentration into a vector
@@ -182,65 +173,40 @@ class Optimizer:
         # Stack calculated species concentration in tabular fashion (points x species)
         results_species_conc = np.stack(results_species_conc)
 
-        # Get the concentration for each point of the electroactive component
-        electroactive_conc = results_species_conc[:, self.comp_pot]
-
-        # Calculate predicted potential
-        pot_calc = np.array(
-            [
-                self.std_pot + 59.16 * math.log10(electroactive_conc[i])
-                for i in range(self.nop)
-            ]
-        )
-
         # Return distribution
-        return [results_species_conc, pot_calc]
+        return results_species_conc
 
-    def _newtonRaphson(self, c, model, betas, c_tot, nc, ns):
+    def _newtonRaphson(self, point, c, model, log_beta, c_tot, nc, ns, nf):
         # FIXME: FOR DEBUGGING PURPOSES
-        np.seterr("raise")
+        np.seterr("print")
 
         # Initiate the matrix for jacobian
         J = np.zeros(shape=(nc, nc))
 
-        for iteration in range(100):
+        c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
+
+        c = self._damping(point, c, log_beta, c_tot_calc, c_tot, model, nc, ns, nf)
+
+        for iteration in range(200):
+            logging.debug("Iteration {} for point {}".format(iteration,point))
             # Calculate total concentration given the species concentration
-            c_tot_calc, c_spec = self._speciesConcentration(c, model, betas, nc, ns)
-
-            # TODO: Dampening of free concentration
-            R = np.divide(c_tot, c_tot_calc)
-            damp_iteration = 0
-            while all((R > 1 / 10) & (R < 10)) != True:
-                if damp_iteration > 100:
-                    raise Exception(
-                        "Dampening routine got in a infinite loop: %s" % str(c)
-                    )
-                R = np.ma.array(R, mask=False)
-                R.mask[(R > 1 / 10) & (R < 10)] = True
-                lnR = np.log(np.abs(R))
-
-                to_damp = np.argmax(lnR)
-                exp = np.max(np.abs(model[to_damp])) ** (-1 / 1)
-
-                c[to_damp] = c[to_damp] * (R[to_damp] ** exp)
-                c_tot_calc, c_spec = self._speciesConcentration(c, model, betas, nc, ns)
-
-                R = np.divide(c_tot, c_tot_calc)
-                damp_iteration = damp_iteration + 1
+            c_tot_calc, c_spec = self._speciesConcentration(
+                c, model, log_beta, nc, ns, nf
+            )
 
             # Compute difference between total concentrations
             delta = c_tot - c_tot_calc
 
             # TODO: convergence criteria
             conv_criteria = sum(np.divide(delta, c_tot) ** 2)
-            if conv_criteria < 1e-15:
+            if conv_criteria < 1e-10:
                 return c_spec
             # if all(abs(i) < 1e-15 for i in delta):
-            #     return c_spec, J
+            #     return c_spec
 
             for j in range(nc):
                 for k in range(j, nc):
-                    J[j, k] = sum(model[j] * model[k] * c_spec)
+                    J[j, k] = np.sum(model[j] * model[k] * c_spec)
                     J[k, j] = J[j, k]
 
             # Calculate and apply shift to free concentration
@@ -255,31 +221,65 @@ class Optimizer:
                 if all(abs(i) < 1e-15 for i in delta_c):
                     break
 
+            c = self._damping(point, c, log_beta, c_tot_calc, c_tot, model, nc, ns, nf)
+
         else:
             raise Exception(
-                "Calculation of species concentration aborted, no convergence found with conc %s"
-                % str(c_spec)
+                "Calculation of species concentration aborted, no convergence found with conc {} at point {}".format(str(c_spec), point)
             )
 
     # TODO: document added functions
-    def _speciesConcentration(self, c, model, betas, nc, ns):
+    def _speciesConcentration(self, c, model, log_beta, nc, ns, nf):
         # Calculate species concentration (c_spec[0->nc]=free conc/c_spec[nc+1->nc+ns]=species conc)
-        log_b = np.log10(betas)
         log_c = np.log10(c)
-        tiled_c = np.tile(log_c, [ns + nc, 1]).T
-        spec_mat = tiled_c * model
-        c_spec = np.sum(spec_mat, axis=0) + log_b
-        c_spec = 10 ** c_spec
-        # c_spec = np.exp(c_spec)
+        tiled_log_c = np.tile(log_c, [ns + nc, 1]).T
+        log_spec_mat = tiled_log_c * model
+        log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
+        log_c_spec = np.where(log_c_spec > self.epsl, self.epsl, log_c_spec)
+        c_spec = np.where(log_c_spec < -self.epsl, 0, 10 ** (log_c_spec))
+        logging.debug("cspec: {}".format(c_spec))
 
-        # c_spec = np.where(c_spec > 1e-15, c_spec, 1e-15)
         # Estimate total concentration given the species concentration
-        # print((np.abs(model) * np.tile(c_spec, [nc, 1])))
-        c_tot_calc = np.sum((np.abs(model) * np.tile(c_spec, [nc, 1])), axis=1)
-        # c_tot_calc = np.where(c_tot_calc > 1e-15, c_tot_calc, 1e-15)
+        c_tot_calc = np.sum(model * np.tile(c_spec, [nc, 1]), axis=1)
+        c_tot_calc = np.where(c_tot_calc < 0, 1e-15, c_tot_calc)
+        logging.debug("c_tot_calc: {}".format(c_tot_calc))
 
-        # print("result: ", c_tot_calc)
         return c_tot_calc, c_spec
+
+    def _damping(self, point, c, log_beta, c_tot_calc, c_tot, model, nc, ns, nf):
+        logging.debug("Entering damp routine")
+        # TODO: Dampening of free concentration
+        R = np.abs(np.divide(c_tot, c_tot_calc))
+        # R = np.abs(np.divide(c_tot_calc, c_tot))
+        damp_iteration = 0
+        while all((R > 1 / 10) & (R < 10)) != True:
+            if damp_iteration > 1000:
+                raise Exception(
+                    "Dampening routine got in a infinite loop: {} at point {}".format(
+                        str(c), point
+                    )
+                )
+            R = np.ma.array(R, mask=False)
+            logging.debug("R: {}".format(R))
+            R.mask[(R > 1 / 4) & (R < 4)] = True
+            lnR = np.log(R)
+            logging.debug("lnR: {}".format(lnR))
+
+            to_damp = np.argmax(lnR)
+
+            exp = np.max(model[to_damp]) ** (-1 / 1)
+            logging.debug("exp: {}".format(exp))
+
+            c[to_damp] = c[to_damp] * (np.abs(R[to_damp]) ** exp)
+            logging.debug("damped c: {}".format(c))
+
+            c_tot_calc, c_spec = self._speciesConcentration(
+                c, model, log_beta, nc, ns, nf
+            )
+            R = np.abs(np.divide(c_tot, c_tot_calc))
+            damp_iteration = damp_iteration + 1
+
+        return c
 
     def _speciesNames(self, model, comps):
         """
@@ -300,30 +300,3 @@ class Optimizer:
                     pass
 
         return names
-
-    def _subsetData(self, pot_range, titration_data):
-        """
-        Given the potential range and the titration data
-        subset the latter to the desired first range.
-        """
-        # Lower limit is the lowest value in potential
-        # Higher limit is the highest
-        ll = pot_range.min()
-        hl = pot_range.max()
-        # If either lowe/higher is lowe or higher then the lowest value present
-        # use that as ll/hl
-        if ll < titration_data["Potential"].min():
-            ll = titration_data["Potential"].min()
-        if hl > titration_data["Potential"].max():
-            hl = titration_data["Potential"].max()
-
-        # subset of Volume of titrant added, return numpy array
-        v_added = titration_data[
-            (titration_data["Potential"] >= ll) & (titration_data["Potential"] <= hl)
-        ]["Volume"].to_numpy()
-        # subset of Analytical potential values, return numpy array
-        potential = titration_data[
-            (titration_data["Potential"] >= ll) & (titration_data["Potential"] <= hl)
-        ]["Potential"].to_numpy()
-
-        return v_added, potential

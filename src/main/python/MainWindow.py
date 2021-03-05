@@ -5,7 +5,7 @@ from PyQt5.QtCore import QThreadPool, QUrl, QRect
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QSizePolicy
 
-from dialogs import aboutDialog, loadCurveDialog, newDialog, wrongFileDialog
+from dialogs import aboutDialog, newDialog, wrongFileDialog
 from model_proxy import ProxyModel
 from models import (
     ComponentsModel,
@@ -14,6 +14,7 @@ from models import (
     TitrationComponentsModel,
 )
 from ui.sssc_main import Ui_MainWindow
+from PlotWindow import PlotWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from workers import optimizeWorker
 
@@ -22,6 +23,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+        # Prepare for secondary windows
+        self.PlotWindow = None
 
         self.threadpool = QThreadPool()
 
@@ -233,9 +237,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.initv.setValue(0)
 
             try:
-                self.finalv.setValue(jsdata["finalv"])
+                self.vinc.setValue(jsdata["vinc"])
             except:
-                self.finalv.setValue(0)
+                self.vinc.setValue(0)
 
             try:
                 self.nop.setValue(jsdata["nop"])
@@ -270,8 +274,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             try:
                 self.cback.setValue(jsdata["cback"])
             except:
-                self.cback.setValue(0)       
-
+                self.cback.setValue(0)
 
             # TODO: Find a way to handle missing model data
             try:
@@ -285,14 +288,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.speciesModel._data = self.species_data
 
             try:
-                self.solidSpeciesModel._data = pd.DataFrame.from_dict(jsdata["solidSpeciesModel"])
+                self.solidSpeciesModel._data = pd.DataFrame.from_dict(
+                    jsdata["solidSpeciesModel"]
+                )
             except:
                 self.solidSpeciesModel._data = self.solid_species_data
 
             try:
-                self.concModel._data = pd.DataFrame.from_dict(
-                    jsdata["concModel"]
-                )
+                self.concModel._data = pd.DataFrame.from_dict(jsdata["concModel"])
             except:
                 self.concModel._data = self.conc_data
 
@@ -373,7 +376,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Resets fields for both dmodes
         self.v0.setValue(0)
         self.initv.setValue(0)
-        self.finalv.setValue(0)
+        self.vinc.setValue(0)
         self.nop.setValue(1)
         self.c0back.setValue(0)
         self.ctback.setValue(0)
@@ -505,14 +508,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Clear Logger
         self.consoleOutput.setText("")
         data_list = returnDataDict(self, saving=False)
-        worker = optimizeWorker(data_list)
+        debug = self.debug.isChecked()
+        worker = optimizeWorker(data_list, debug)
 
         # Conncect worker signals to slots
         worker.signals.finished.connect(self.worker_complete)
-        worker.signals.result.connect(self.plotDist)
+        worker.signals.result.connect(self.storeResults)
         worker.signals.log.connect(self.logger)
         worker.signals.aborted.connect(self.aborted)
 
+        print(worker.autoDelete())
         # Execute
         self.threadpool.start(worker)
 
@@ -613,28 +618,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Maybe do this in a separated thread?
         pass
 
-    # FIXME: DUPLICATE
-    def plotDist(self):
+    def storeResults(self, data):
         """
-        Display a form to graph the calculated distribution
+        Store result for exporting.
         """
-        # TODO: implement this feature
-        # Maybe do this in a separated thread?
-        pass
+        self.result = data
 
     def plotDist(self, data):
         """
         Plot the distribution of species obtained from the optimization
         """
-        self.SpeciesDistPlot.plot(
-            [data.index for i in range(data.shape[1])],
-            [data[i] for i in data.columns],
-            data.columns,
-            "Titrant Volume [ml]",
-            "Concentration [mol/L]",
-            "Distribution Curve",
-            new=True,
-        )
+        if self.PlotWindow is None:
+            self.PlotWindow = PlotWindow(self)
+        self.PlotWindow.show()
 
     def dmodeUpdater(self, mode):
         """
