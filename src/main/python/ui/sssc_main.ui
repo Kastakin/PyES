@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>954</width>
-    <height>608</height>
+    <width>963</width>
+    <height>795</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -51,7 +51,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -724,6 +724,9 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="statusTip">
+              <string>Select operation mode.</string>
+             </property>
              <item>
               <property name="text">
                <string>Titration</string>
@@ -864,6 +867,9 @@
                  </item>
                  <item row="1" column="1">
                   <widget class="QDoubleSpinBox" name="v0">
+                   <property name="statusTip">
+                    <string>Initial volume in the titration vessel.</string>
+                   </property>
                    <property name="suffix">
                     <string> ml</string>
                    </property>
@@ -887,6 +893,9 @@
                  </item>
                  <item row="2" column="1">
                   <widget class="QDoubleSpinBox" name="initv">
+                   <property name="statusTip">
+                    <string>Volume in the vessel at the first titration point.</string>
+                   </property>
                    <property name="suffix">
                     <string> ml</string>
                    </property>
@@ -910,6 +919,9 @@
                  </item>
                  <item row="3" column="1">
                   <widget class="QDoubleSpinBox" name="vinc">
+                   <property name="statusTip">
+                    <string>Increment in volume for each titration point.</string>
+                   </property>
                    <property name="suffix">
                     <string> ml</string>
                    </property>
@@ -933,6 +945,9 @@
                  </item>
                  <item row="4" column="1">
                   <widget class="QDoubleSpinBox" name="nop">
+                   <property name="statusTip">
+                    <string>Number of titration points.</string>
+                   </property>
                    <property name="suffix">
                     <string/>
                    </property>
@@ -989,6 +1004,9 @@
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
+                   <property name="statusTip">
+                    <string>Initial concentration of beckground ions in titration vessel.</string>
+                   </property>
                    <property name="suffix">
                     <string> mol/l</string>
                    </property>
@@ -1007,6 +1025,9 @@
                   <widget class="QDoubleSpinBox" name="ctback">
                    <property name="enabled">
                     <bool>false</bool>
+                   </property>
+                   <property name="statusTip">
+                    <string>Concentration of background ions in the titrant.</string>
                    </property>
                    <property name="suffix">
                     <string> mol/l</string>
@@ -1172,6 +1193,9 @@
                  </item>
                  <item row="2" column="1">
                   <widget class="QDoubleSpinBox" name="initialLog">
+                   <property name="statusTip">
+                    <string>Initial Log value of the indipendent component.</string>
+                   </property>
                    <property name="decimals">
                     <number>3</number>
                    </property>
@@ -1192,6 +1216,9 @@
                  </item>
                  <item row="3" column="1">
                   <widget class="QDoubleSpinBox" name="finalLog">
+                   <property name="statusTip">
+                    <string>Final Log value of the indipendent component.</string>
+                   </property>
                    <property name="decimals">
                     <number>3</number>
                    </property>
@@ -1212,6 +1239,9 @@
                  </item>
                  <item row="4" column="1">
                   <widget class="QDoubleSpinBox" name="logInc">
+                   <property name="statusTip">
+                    <string>Log increment of the indipendent component at each point.</string>
+                   </property>
                    <property name="decimals">
                     <number>3</number>
                    </property>
@@ -1252,6 +1282,9 @@
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
+                   <property name="statusTip">
+                    <string>Concentration of background ions.</string>
+                   </property>
                    <property name="suffix">
                     <string> mol/l</string>
                    </property>
@@ -1274,7 +1307,11 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QComboBox" name="indComp"/>
+                  <widget class="QComboBox" name="indComp">
+                   <property name="statusTip">
+                    <string>Component to be considered indipendent.</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -1319,6 +1356,9 @@
         </property>
         <item>
          <widget class="QCheckBox" name="debug">
+          <property name="statusTip">
+           <string>Create a Debug Log to file.</string>
+          </property>
           <property name="text">
            <string>Debug to file</string>
           </property>
@@ -1405,76 +1445,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="TitrationGraph">
-       <attribute name="title">
-        <string>Titration Graph</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="topMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
-         <number>5</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="TitrationPlot_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Titration Curve&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="WidgetPlot" name="TitrationPlot" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="SpeciesDistribution">
-       <attribute name="title">
-        <string>Species Distribution</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6">
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="topMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
-         <number>5</number>
-        </property>
-        <item>
-         <widget class="QLabel" name="SpeciesDistPlot_label">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Species Distribution&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="WidgetPlot" name="SpeciesDistPlot" native="true"/>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -1484,7 +1454,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>954</width>
+     <width>963</width>
      <height>24</height>
     </rect>
    </property>
@@ -1597,14 +1567,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>WidgetPlot</class>
-   <extends>QWidget</extends>
-   <header>canvas</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources>
   <include location="../../resources/base/resources.qrc"/>
  </resources>
@@ -1648,8 +1610,8 @@
    <slot>calculate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>415</x>
-     <y>811</y>
+     <x>419</x>
+     <y>728</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -1664,8 +1626,8 @@
    <slot>exportDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>215</x>
-     <y>844</y>
+     <x>219</x>
+     <y>761</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -1680,8 +1642,8 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>944</x>
-     <y>844</y>
+     <x>953</x>
+     <y>761</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
@@ -1761,11 +1723,27 @@
    <hints>
     <hint type="sourcelabel">
      <x>544</x>
-     <y>579</y>
+     <y>552</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
      <y>739</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>v0</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>v0Updater()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>467</x>
+     <y>224</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>804</x>
+     <y>769</y>
     </hint>
    </hints>
   </connection>
@@ -1785,5 +1763,6 @@
   <slot>relErrorsUpdater()</slot>
   <slot>dmodeUpdater()</slot>
   <slot>indipendentUpdater()</slot>
+  <slot>v0Updater()</slot>
  </slots>
 </ui>

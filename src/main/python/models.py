@@ -185,7 +185,10 @@ class SpeciesModel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
-            return str(value)
+            if index.column() != 0:
+                return QVariant("{0}".format(value))
+            else:
+                return QVariant(value)
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -197,6 +200,7 @@ class SpeciesModel(QAbstractTableModel):
 
     def updateHeader(self, new_header):
         self._data.columns = [
+            "Ignored",
             "LogB",
             "Sigma",
             "Ref. Ionic Str.",
@@ -207,12 +211,21 @@ class SpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def flags(self, index):
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if index.column() == 0:
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled
+        else:
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
-            # The frist column holds beta and can accept floats
-            if index.column() < 7:
+            # The frist column holds the ignore flag
+            if index.column() == 0:
+                try:
+                    self._data.iloc[index.row(), index.column()] = value
+                except:
+                    return False
+            # The following 6 columns are float values
+            elif index.column() < 7:
                 try:
                     self._data.iloc[index.row(), index.column()] = float(value)
                 except:
@@ -230,14 +243,16 @@ class SpeciesModel(QAbstractTableModel):
         """ Insert a row into the model. """
         self.beginInsertRows(index, position, position + rows - 1)
 
+        empty_row = pd.DataFrame(
+            [
+                [False]
+                + [0.0 for x in range(6)]
+                + [0 for x in range(self.columnCount(index) - 7)],
+            ],
+            columns=self._data.columns,
+        )
+
         for row in range(rows):
-            empty_row = pd.DataFrame(
-                [
-                    [0.0 for x in range(6)]
-                    + [0 for x in range(self.columnCount(index) - 6)]
-                ],
-                columns=self._data.columns,
-            )
             self._data = self._data.append(empty_row, ignore_index=True)
 
         self.endInsertRows()
@@ -298,7 +313,10 @@ class SolidSpeciesModel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
-            return str(value)
+            if index.column() != 0:
+                return QVariant("{0}".format(value))
+            else:
+                return QVariant(value)
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -310,6 +328,7 @@ class SolidSpeciesModel(QAbstractTableModel):
 
     def updateHeader(self, new_header):
         self._data.columns = [
+            "Ignored",
             "LogKs",
             "Sigma",
             "Ref. Ionic Str.",
@@ -320,12 +339,21 @@ class SolidSpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def flags(self, index):
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if index.column() == 0:
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled
+        else:
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
-            # The frist column holds beta and can accept floats
-            if index.column() < 7:
+            # The frist column holds the ignore flag
+            if index.column() == 0:
+                try:
+                    self._data.iloc[index.row(), index.column()] = value
+                except:
+                    return False
+            # The following 6 columns are float values
+            elif index.column() < 7:
                 try:
                     self._data.iloc[index.row(), index.column()] = float(value)
                 except:
@@ -343,14 +371,16 @@ class SolidSpeciesModel(QAbstractTableModel):
         """ Insert a row into the model. """
         self.beginInsertRows(index, position, position + rows - 1)
 
+        empty_row = pd.DataFrame(
+            [
+                [False]
+                + [0.0 for x in range(6)]
+                + [0 for x in range(self.columnCount(index) - 7)]
+            ],
+            columns=self._data.columns,
+        )
+
         for row in range(rows):
-            empty_row = pd.DataFrame(
-                [
-                    [0.0 for x in range(6)]
-                    + [0 for x in range(self.columnCount(index) - 6)]
-                ],
-                columns=self._data.columns,
-            )
             self._data = self._data.append(empty_row, ignore_index=True)
 
         self.endInsertRows()

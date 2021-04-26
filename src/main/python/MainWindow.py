@@ -1,20 +1,21 @@
 import json
 
 import pandas as pd
-from PyQt5.QtCore import QThreadPool, QUrl, QRect
+from PyQt5.QtCore import QRect, QThreadPool, QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QSizePolicy
 
+from delegate import CheckBoxDelegate
 from dialogs import aboutDialog, newDialog, wrongFileDialog
 from model_proxy import ProxyModel
 from models import (
     ComponentsModel,
-    SpeciesModel,
     SolidSpeciesModel,
+    SpeciesModel,
     TitrationComponentsModel,
 )
-from ui.sssc_main import Ui_MainWindow
 from PlotWindow import PlotWindow
+from ui.sssc_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from workers import optimizeWorker
 
@@ -78,6 +79,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.speciesProxy = ProxyModel(self)
         self.speciesProxy.setSourceModel(self.speciesModel)
         self.speciesView.setModel(self.speciesProxy)
+        self.speciesView.setItemDelegateForColumn(0, CheckBoxDelegate(self.speciesView))
         speciesHeader = self.speciesView.horizontalHeader()
         speciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -86,6 +88,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesProxy = ProxyModel(self)
         self.solidSpeciesProxy.setSourceModel(self.solidSpeciesModel)
         self.solidSpeciesView.setModel(self.solidSpeciesProxy)
+        self.solidSpeciesView.setItemDelegateForColumn(
+            0, CheckBoxDelegate(self.solidSpeciesView)
+        )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
         solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -392,12 +397,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Clear logger output
         self.consoleOutput.clear()
 
-        # Clear axes in plots tabs
-        self.SpeciesDistPlot.canvas.axes.cla()
-        self.SpeciesDistPlot.canvas.draw()
-        self.TitrationPlot.canvas.axes.cla()
-        self.TitrationPlot.canvas.draw()
-
         # if the function is called after
         # first initialization when models are already
         # declared update them to the empty values
@@ -487,20 +486,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesModel.updateHeader(updated_comp)
         self.concModel.updateIndex(updated_comp)
         indCompUpdater(self)
-
-    def plot_titr(self):
-        """
-        Plot imported titration data
-        """
-        self.TitrationPlot.plot(
-            [self.titrModel._data.iloc[:, 0]],
-            [self.titrModel._data.iloc[:, 1]],
-            ["Original Curve"],
-            "Titrant Volume [ml]",
-            "Potential",
-            "Titration Curve",
-            new=True,
-        )
 
     def calculate(self):
         # Disable the button, one omptimization calculation at the time
@@ -679,3 +664,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.solidSpeciesView.model().setColumnReadOnly([1], True)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], True)
+
+    def v0Updater(self, value):
+        self.initv.setMinimum(value)

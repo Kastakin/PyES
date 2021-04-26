@@ -10,8 +10,7 @@ from scipy.optimize import root
 
 class Optimizer:
     """
-    Optimizazion of parameters using Newton-Gauss-Levenberg/Marquardt method
-    and Newton-Raphson method to solve mass balance equations.
+    ewton-Raphson method to solve iterativly mass balance equations.
     """
 
     def __init__(self):
@@ -118,8 +117,9 @@ class Optimizer:
     def distribution(self):
         return self.species_distribution
 
-    def potential(self):
-        return self.pot_calc
+    # FIXME: not used for the time being
+    # def potential(self):
+    #     return self.pot_calc
 
     def _residuals(self):
         """
