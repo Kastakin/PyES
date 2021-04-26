@@ -23,21 +23,14 @@ class Optimizer:
         :param data: data as given from the GUI.
         """
         logging.info("--- START DATA LOADING ---")
-        # Import number of comp/species/phases
+        # Get number of components
         self.nc = data["nc"]
-        self.ns = data["ns"]
-        self.nf = data["np"]
 
-        # Number of components and number of species has to be > 0
-        if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
-            raise Exception(
-                "Number of components and number of species have to be > 0."
-            )
-
+        # Comp names
         self.comp_name = data["compModel"]["Name"]
         # Charge values of comps
         self.comp_charge = data["compModel"]["Charge"]
-        # Data relative to the species and solis species
+        # Data relative to the species and solid species
         self.species_data = data["speciesModel"]
         self.solid_species_data = data["solidSpeciesModel"]
         # Data relative to comp concentrations
@@ -81,14 +74,25 @@ class Optimizer:
             + np.tile(self.v_added, [self.nc, 1]).T * self.c_added
         ) / np.tile(self.v_tot, [self.nc, 1]).T
 
+        # Get the number of not-ignored species
+        self.ns = len(self.species_data) - self.species_data.Ignored.sum()
+        self.nf = len(self.solid_species_data) - self.solid_species_data.Ignored.sum()
+
+        # Number of components and number of species has to be > 0
+        if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
+            raise Exception(
+                "Number of components and number of species have to be > 0."
+            )
+
         # Define the stechiometric coefficients for the various species
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
-        base_model = self.species_data.iloc[:, 6:].to_numpy(dtype="int").T
+        base_model = self.species_data.loc[self.species_data["Ignored"] == True]
+        base_model = base_model.iloc[:, 7:].to_numpy(dtype="int").T
         self.model = np.concatenate((aux_model, base_model), axis=1)
 
         # Stores log_betas
-        base_log_beta = self.species_data.iloc[:, 0].to_numpy(dtype="float")
+        base_log_beta = self.species_data.iloc[:, 1].to_numpy(dtype="float")
         self.log_beta = np.concatenate(
             (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
         )
