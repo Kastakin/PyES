@@ -5,6 +5,7 @@ from pprint import pprint
 import numpy as np
 import pandas as pd
 from scipy.special import logsumexp
+from scipy.optimize import root
 
 
 class Optimizer:
@@ -130,7 +131,7 @@ class Optimizer:
 
         # Cycle over each point of titration
         for point in range(self.nop):
-            logging.debug("Optimization on point: {}".format(point))
+            logging.debug("--> OPTIMIZATION POINT: {}".format(point))
 
             # Calculate species concentration given initial betas
             # Initial guess of free concentration (c) is considered as follows:
@@ -150,10 +151,16 @@ class Optimizer:
                     (v2 - v3) / (lp2 - lp3)
                 ) * (v - v1)
                 c = 10 ** (-c)
+                logging.debug("ESTIMATED C WITH INTERPOLATION")
             elif point > 0:
                 c = results_species_conc[(point - 1)][: self.nc]
+                logging.debug("ESTIMATED C FROM PREVIOUS POINT")
             elif point == 0:
                 c = np.multiply(self.c_tot_adj[0], 0.001)
+                logging.debug("ESTIMATED C AS FRACTION TOTAL C")
+
+            logging.debug("INITIAL ESTIMATED FREE C: {}".format(c))
+            logging.debug("TOTAL C: {}".format(self.c_tot_adj[point]))
 
             # Calculate species concnetration or each curve point
             species_conc_calc = self._newtonRaphson(
@@ -183,12 +190,8 @@ class Optimizer:
         # Initiate the matrix for jacobian
         J = np.zeros(shape=(nc, nc))
 
-        c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
-
-        c = self._damping(point, c, log_beta, c_tot_calc, c_tot, model, nc, ns, nf)
-
         for iteration in range(200):
-            logging.debug("Iteration {} for point {}".format(iteration,point))
+            logging.debug("-> Iteration {} for point {}".format(iteration, point))
             # Calculate total concentration given the species concentration
             c_tot_calc, c_spec = self._speciesConcentration(
                 c, model, log_beta, nc, ns, nf
@@ -198,11 +201,14 @@ class Optimizer:
             delta = c_tot - c_tot_calc
 
             # TODO: convergence criteria
-            conv_criteria = sum(np.divide(delta, c_tot) ** 2)
+            conv_criteria = np.sum(np.divide(delta, c_tot) ** 2)
+            logging.debug(
+                "ConvergenceC. at Point {} iteration {}: {}".format(
+                    point, iteration, conv_criteria
+                )
+            )
             if conv_criteria < 1e-10:
                 return c_spec
-            # if all(abs(i) < 1e-15 for i in delta):
-            #     return c_spec
 
             for j in range(nc):
                 for k in range(j, nc):
@@ -211,21 +217,29 @@ class Optimizer:
 
             # Calculate and apply shift to free concentration
             delta_c = np.linalg.solve(J, delta) * c
+
+            # Positive constrain on freeC as present in STACO
+            for i, shift in enumerate(delta_c):
+                if shift <= -c[i]:
+                    logging.debug("positivizing on comp: {}".format(i))
+                    factor = -0.99 * c[i] / shift
+                    delta_c = factor * delta_c
+
             c = c + delta_c
+            logging.debug("N-R updated freeC: {}".format(c))
 
-            # If any concentration is negative go back half a shift
-            # Break out of the loop if all shifts are approx. zero
-            while any(c <= 0):
-                delta_c = 0.5 * delta_c
-                c = c - delta_c
-                if all(abs(i) < 1e-15 for i in delta_c):
-                    break
-
-            c = self._damping(point, c, log_beta, c_tot_calc, c_tot, model, nc, ns, nf)
+            c = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
 
         else:
+            logging.error(
+                "Calculation terminated early, no convergence found at point {}".format(
+                    point
+                )
+            )
             raise Exception(
-                "Calculation of species concentration aborted, no convergence found with conc {} at point {}".format(str(c_spec), point)
+                "Calculation of species concentration aborted, no convergence found with conc {} at point {}".format(
+                    str(c_spec), point
+                )
             )
 
     # TODO: document added functions
@@ -236,23 +250,24 @@ class Optimizer:
         log_spec_mat = tiled_log_c * model
         log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
         log_c_spec = np.where(log_c_spec > self.epsl, self.epsl, log_c_spec)
-        c_spec = np.where(log_c_spec < -self.epsl, 0, 10 ** (log_c_spec))
+        log_c_spec = np.where(log_c_spec < -self.epsl, -self.epsl, log_c_spec)
+        c_spec = 10 ** log_c_spec
         logging.debug("cspec: {}".format(c_spec))
 
         # Estimate total concentration given the species concentration
         c_tot_calc = np.sum(model * np.tile(c_spec, [nc, 1]), axis=1)
-        c_tot_calc = np.where(c_tot_calc < 0, 1e-15, c_tot_calc)
         logging.debug("c_tot_calc: {}".format(c_tot_calc))
 
         return c_tot_calc, c_spec
 
-    def _damping(self, point, c, log_beta, c_tot_calc, c_tot, model, nc, ns, nf):
+    def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
         logging.debug("Entering damp routine")
         # TODO: Dampening of free concentration
+
+        c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
         R = np.abs(np.divide(c_tot, c_tot_calc))
-        # R = np.abs(np.divide(c_tot_calc, c_tot))
         damp_iteration = 0
-        while all((R > 1 / 10) & (R < 10)) != True:
+        while all((R > 1 / 4) & (R < 4)) != True:
             if damp_iteration > 1000:
                 raise Exception(
                     "Dampening routine got in a infinite loop: {} at point {}".format(
@@ -262,15 +277,17 @@ class Optimizer:
             R = np.ma.array(R, mask=False)
             logging.debug("R: {}".format(R))
             R.mask[(R > 1 / 4) & (R < 4)] = True
-            lnR = np.log(R)
-            logging.debug("lnR: {}".format(lnR))
 
-            to_damp = np.argmax(lnR)
+            if any(R < 1):
+                to_damp = np.argmin(R)
+            else:
+                to_damp = np.argmax(R)
 
             exp = np.max(model[to_damp]) ** (-1 / 1)
             logging.debug("exp: {}".format(exp))
 
-            c[to_damp] = c[to_damp] * (np.abs(R[to_damp]) ** exp)
+            c[to_damp] = c[to_damp] * (R[to_damp] ** exp)
+
             logging.debug("damped c: {}".format(c))
 
             c_tot_calc, c_spec = self._speciesConcentration(

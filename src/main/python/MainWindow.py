@@ -505,6 +505,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def calculate(self):
         # Disable the button, one omptimization calculation at the time
         self.calcButton.setEnabled(False)
+        self.plotDistButton.setEnabled(False)
+        self.exportButton.setEnabled(False)
+
+        # Clear old results and graphs
+        self.result = None
+        if self.PlotWindow:
+            self.PlotWindow.close()
+            self.PlotWindow = None
+
         # Clear Logger
         self.consoleOutput.setText("")
         data_list = returnDataDict(self, saving=False)
@@ -517,7 +526,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         worker.signals.log.connect(self.logger)
         worker.signals.aborted.connect(self.aborted)
 
-        print(worker.autoDelete())
         # Execute
         self.threadpool.start(worker)
 

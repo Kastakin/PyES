@@ -23,6 +23,3 @@ class PlotWindow(QWidget, Ui_plotWindow):
 
     def exportPlot(self):
         self.plot.canvas.figure.savefig("/home/lorenzo/test.png", dpi=300)
-
-    def closeEvent(self, event):
-        pass
