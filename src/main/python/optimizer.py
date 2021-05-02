@@ -79,20 +79,19 @@ class Optimizer:
         self.nf = len(self.solid_species_data) - self.solid_species_data.Ignored.sum()
 
         # Number of components and number of species has to be > 0
-        if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
-            raise Exception(
-                "Number of components and number of species have to be > 0."
-            )
+        # if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
+        #     raise Exception(
+        #         "Number of components and number of species have to be > 0."
+        #     )
 
         # Define the stechiometric coefficients for the various species
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
-        base_model = self.species_data.loc[self.species_data["Ignored"] == False]
-        base_model = base_model.iloc[:, 7:].to_numpy(dtype="int").T
+        species_not_ignored = self.species_data.loc[self.species_data["Ignored"] == False]
+        base_model = species_not_ignored.iloc[:, 7:].to_numpy(dtype="int").T
         self.model = np.concatenate((aux_model, base_model), axis=1)
-
         # Stores log_betas
-        base_log_beta = self.species_data.iloc[:, 1].to_numpy(dtype="float")
+        base_log_beta = species_not_ignored.iloc[:, 1].to_numpy(dtype="float")
         self.log_beta = np.concatenate(
             (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
         )
