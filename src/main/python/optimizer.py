@@ -10,7 +10,7 @@ from scipy.optimize import root
 
 class Optimizer:
     """
-    ewton-Raphson method to solve iterativly mass balance equations.
+    Newton-Raphson method to solve iterativly mass balance equations.
     """
 
     def __init__(self):
@@ -87,7 +87,7 @@ class Optimizer:
         # Define the stechiometric coefficients for the various species
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
-        base_model = self.species_data.loc[self.species_data["Ignored"] == True]
+        base_model = self.species_data.loc[self.species_data["Ignored"] == False]
         base_model = base_model.iloc[:, 7:].to_numpy(dtype="int").T
         self.model = np.concatenate((aux_model, base_model), axis=1)
 
