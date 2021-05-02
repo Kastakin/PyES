@@ -562,8 +562,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback.setEnabled(True)
             self.cback_label.setEnabled(True)
 
-            self.speciesView.model().setColumnReadOnly(range(2, 6), False)
-            self.solidSpeciesView.model().setColumnReadOnly(range(2, 6), False)
+            self.speciesView.model().setColumnReadOnly(range(3, 7), False)
+            self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), False)
 
         else:
             self.refIonicStr.setEnabled(False)
@@ -592,8 +592,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback.setEnabled(False)
             self.cback_label.setEnabled(False)
 
-            self.speciesView.model().setColumnReadOnly(range(2, 6), True)
-            self.solidSpeciesView.model().setColumnReadOnly(range(2, 6), True)
+            self.speciesView.model().setColumnReadOnly(range(3, 7), True)
+            self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), True)
 
     def displayCurve(self):
         """
@@ -655,13 +655,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         gray out the corresponding columns in tableviews.
         """
         if mode == 0:
-            self.speciesView.model().setColumnReadOnly([1], False)
-            self.solidSpeciesView.model().setColumnReadOnly([1], False)
+            self.speciesView.model().setColumnReadOnly([2], False)
+            self.solidSpeciesView.model().setColumnReadOnly([2], False)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
         else:
-            self.speciesView.model().setColumnReadOnly([1], True)
-            self.solidSpeciesView.model().setColumnReadOnly([1], True)
+            self.speciesView.model().setColumnReadOnly([2], True)
+            self.solidSpeciesView.model().setColumnReadOnly([2], True)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], True)
 
