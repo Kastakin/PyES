@@ -214,7 +214,11 @@ class SpeciesModel(QAbstractTableModel):
         if index.column() == 0:
             return Qt.ItemIsEditable | Qt.ItemIsEnabled
         else:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            value = self._data.iloc[index.row(), 0]
+            if value == False:
+                return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            else:
+                return Qt.NoItemFlags
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
@@ -222,6 +226,7 @@ class SpeciesModel(QAbstractTableModel):
             if index.column() == 0:
                 try:
                     self._data.iloc[index.row(), index.column()] = value
+                    self.layoutChanged.emit()
                 except:
                     return False
             # The following 6 columns are float values
@@ -342,14 +347,18 @@ class SolidSpeciesModel(QAbstractTableModel):
         if index.column() == 0:
             return Qt.ItemIsEditable | Qt.ItemIsEnabled
         else:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
+            value = self._data.iloc[index.row(), 0]
+            if value == False:
+                return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            else:
+                return Qt.NoItemFlags
     def setData(self, index, value, role):
         if role == Qt.EditRole:
             # The frist column holds the ignore flag
             if index.column() == 0:
                 try:
                     self._data.iloc[index.row(), index.column()] = value
+                    self.layoutChanged.emit()
                 except:
                     return False
             # The following 6 columns are float values
