@@ -606,6 +606,7 @@ class Ui_MainWindow(object):
         font.setPointSize(11)
         self.consoleOutput.setFont(font)
         self.consoleOutput.setUndoRedoEnabled(False)
+        self.consoleOutput.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.consoleOutput.setReadOnly(True)
         self.consoleOutput.setObjectName("consoleOutput")
         self.verticalLayout_2.addWidget(self.consoleOutput)
