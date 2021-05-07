@@ -1,11 +1,9 @@
 import math
 import logging
-from pprint import pprint
+import math
 
 import numpy as np
 import pandas as pd
-from scipy.special import logsumexp
-from scipy.optimize import root
 
 
 class Optimizer:
