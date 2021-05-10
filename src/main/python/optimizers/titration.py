@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-class Optimizer:
+class Titration:
     """
     Newton-Raphson method to solve iterativly mass balance equations.
     """
@@ -203,22 +203,19 @@ class Optimizer:
             # Compute difference between total concentrations
             delta = c_tot - c_tot_calc
 
-            # TODO: convergence criteria
+            # TODO: convergence criteria is sloppy as best
             # conv_criteria = np.sum(np.divide(delta, c_tot) ** 2)
             # logging.debug(
-            #     "Convergence at Point {} iteration {}: {}".format(
-            #         point, iteration, conv_criteria
-            #     )
-            # )
 
-            deltassq = np.sum(delta) ** 2
+            conv_criteria = np.sum(delta) ** 2
+
             logging.debug(
                 "Convergence at Point {} iteration {}: {}".format(
-                    point, iteration, deltassq
+                    point, iteration, conv_criteria
                 )
             )
 
-            if deltassq < 1e-15:
+            if conv_criteria < 1e-15:
                 return c_spec
 
             for j in range(nc):
@@ -226,7 +223,7 @@ class Optimizer:
                     J[j, k] = np.sum(model[j] * model[k] * c_spec)
                     J[k, j] = J[j, k]
 
-            # Calculate and apply shift to free concentration
+            # Calculate shift to free concentration
             delta_c = np.linalg.solve(J, delta) * c
 
             # Positive constrain on freeC as present in STACO
@@ -238,6 +235,7 @@ class Optimizer:
                     factor = -0.99 * c[i] / shift
                     delta_c = factor * delta_c
 
+            # Apply shift to free concentrations
             c = c + delta_c
             logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
 
@@ -254,7 +252,7 @@ class Optimizer:
                 )
             )
             # FIXME: for debug purposes this is disabled, needs to be re enabled in prod
-            return c_spec
+            # return c_spec
             # raise Exception(
             #     "Calculation of species concentration aborted, no convergence found with conc {} at point {}".format(
             #         str(c_spec), point
@@ -279,94 +277,94 @@ class Optimizer:
 
         return c_tot_calc, c_spec
 
-    def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
-        logging.debug("ENTERING DAMP ROUTINE")
-        # TODO: Dampening of free concentration
+    # def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
+    #     logging.debug("ENTERING DAMP ROUTINE")
+    #     # TODO: Dampening of free concentration
 
-        c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
+    #     c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
 
-        ## ES42020 METHOD
+    #     ## ES42020 METHOD
 
-        clim1 = np.abs(c_tot) / 4
-        clim2 = np.abs(c_tot) * 4
+    #     clim1 = np.abs(c_tot) / 4
+    #     clim2 = np.abs(c_tot) * 4
 
-        damp_iteration = 0
-        while damp_iteration < 1000:
-            fmin = 1
-            fmax = 1
-            for i, calc_c in enumerate(c_tot_calc):
-                if abs(calc_c) < (clim1[i] / 2) or abs(calc_c) > (clim2[i] / 2):
-                    fatt = abs(c_tot[i] / calc_c)
-                    if fatt < fmin:
-                        m1 = i
-                        fmin = fatt
-                    elif fatt > fmax:
-                        m2 = i
-                        fmax = fatt
-                    else:
-                        pass
+    #     damp_iteration = 0
+    #     while damp_iteration < 1000:
+    #         fmin = 1
+    #         fmax = 1
+    #         for i, calc_c in enumerate(c_tot_calc):
+    #             if abs(calc_c) < (clim1[i] / 2) or abs(calc_c) > (clim2[i] / 2):
+    #                 fatt = abs(c_tot[i] / calc_c)
+    #                 if fatt < fmin:
+    #                     m1 = i
+    #                     fmin = fatt
+    #                 elif fatt > fmax:
+    #                     m2 = i
+    #                     fmax = fatt
+    #                 else:
+    #                     pass
 
-            if fmin != 1:
-                fatt = fmin
-                j = m1
-            elif fmax != 1:
-                fatt = fmax
-                j = m2
-            else:
-                logging.debug("EXITING DAMP ROUTINE")
-                return c
+    #         if fmin != 1:
+    #             fatt = fmin
+    #             j = m1
+    #         elif fmax != 1:
+    #             fatt = fmax
+    #             j = m2
+    #         else:
+    #             logging.debug("EXITING DAMP ROUTINE")
+    #             return c
 
-            exp = np.max(model[j]) ** (-1 / 1)
-            logging.debug("Damping {} by a factor {}".format(j, (fatt ** exp)))
-            c[j] = c[j] * fatt ** exp
-            logging.debug("Damped C: {}".format(c))
-            c_tot_calc, c_spec = self._speciesConcentration(
-                c, model, log_beta, nc, ns, nf
-            )
-            if np.isnan(c_tot_calc).any():
-                raise Exception(
-                    "Dampening routine got invalid values: {} at point {}".format(
-                        c, point
-                    )
-                )
+    #         exp = np.max(model[j]) ** (-1 / 1)
+    #         logging.debug("Damping {} by a factor {}".format(j, (fatt ** exp)))
+    #         c[j] = c[j] * fatt ** exp
+    #         logging.debug("Damped C: {}".format(c))
+    #         c_tot_calc, c_spec = self._speciesConcentration(
+    #             c, model, log_beta, nc, ns, nf
+    #         )
+    #         if np.isnan(c_tot_calc).any():
+    #             raise Exception(
+    #                 "Dampening routine got invalid values: {} at point {}".format(
+    #                     c, point
+    #                 )
+    #             )
 
-            damp_iteration += 1
+    #         damp_iteration += 1
 
-        ## ARTICLE METHOD
-        # print(c_tot)
-        # print(c_tot_calc)
-        # R = np.abs(np.divide(c_tot, c_tot_calc))
-        # damp_iteration = 0
-        # while all((R > 1 / 4) & (R < 4)) != True:
-        #     if damp_iteration > 1000:
-        #         raise Exception(
-        #             "Dampening routine got in a infinite loop: {} at point {}".format(
-        #                 str(c), point
-        #             )
-        #         )
-        #     R = np.ma.array(R, mask=False)
-        #     logging.debug("R: {}".format(R))
-        #     R.mask[(R > 1 / 4) & (R < 4)] = True
+    #     ## ARTICLE METHOD
+    #     # print(c_tot)
+    #     # print(c_tot_calc)
+    #     # R = np.abs(np.divide(c_tot, c_tot_calc))
+    #     # damp_iteration = 0
+    #     # while all((R > 1 / 4) & (R < 4)) != True:
+    #     #     if damp_iteration > 1000:
+    #     #         raise Exception(
+    #     #             "Dampening routine got in a infinite loop: {} at point {}".format(
+    #     #                 str(c), point
+    #     #             )
+    #     #         )
+    #     #     R = np.ma.array(R, mask=False)
+    #     #     logging.debug("R: {}".format(R))
+    #     #     R.mask[(R > 1 / 4) & (R < 4)] = True
 
-        #     if any(R < 1):
-        #         to_damp = np.argmin(R)
-        #     else:
-        #         to_damp = np.argmax(R)
+    #     #     if any(R < 1):
+    #     #         to_damp = np.argmin(R)
+    #     #     else:
+    #     #         to_damp = np.argmax(R)
 
-        #     exp = np.max(model[to_damp]) ** (-1 / 1)
-        #     logging.debug("exp: {}".format(exp))
+    #     #     exp = np.max(model[to_damp]) ** (-1 / 1)
+    #     #     logging.debug("exp: {}".format(exp))
 
-        #     c[to_damp] = c[to_damp] * (R[to_damp] ** exp)
+    #     #     c[to_damp] = c[to_damp] * (R[to_damp] ** exp)
 
-        #     logging.debug("damped c: {}".format(c))
+    #     #     logging.debug("damped c: {}".format(c))
 
-        #     c_tot_calc, c_spec = self._speciesConcentration(
-        #         c, model, log_beta, nc, ns, nf
-        #     )
-        #     R = np.abs(np.divide(c_tot, c_tot_calc))
-        #     damp_iteration = damp_iteration + 1
+    #     #     c_tot_calc, c_spec = self._speciesConcentration(
+    #     #         c, model, log_beta, nc, ns, nf
+    #     #     )
+    #     #     R = np.abs(np.divide(c_tot, c_tot_calc))
+    #     #     damp_iteration = damp_iteration + 1
 
-        # return c
+    #     # return c
 
     def _speciesNames(self, model, comps):
         """

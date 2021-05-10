@@ -5,7 +5,8 @@ from datetime import datetime
 
 from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 
-from optimizer import Optimizer
+from optimizers.titration import Titration
+from optimizers.distribution import Distribution
 
 
 # Main optimization routine worker and signals
