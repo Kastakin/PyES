@@ -41,8 +41,53 @@ class optimizeWorker(QRunnable):
             log.setLevel(logging.DEBUG)
 
         if self.data["dmode"] == 0:
+            ## TITRATION MODE ##
             # TODO: Error handling is still a bit weak, need testing
-            optimizer = Optimizer()
+            optimizer = Titration()
+            # Start timer to time entire process
+            start_time = time.time()
+
+            self.signals.log.emit(r"### Beginning Optimization ###")
+            self.signals.log.emit(r"Loading data...")
+
+            # load the data into the optimizer, catch errors that might invalidate the output
+            try:
+                optimizer.fit(self.data)
+            except Exception as e:
+                self.signals.aborted.emit(str(e))
+                return None
+
+            self.signals.log.emit(r"DATA LOADED!")
+            self.signals.log.emit(r"Simulating titration curve...")
+            start_time = time.time()
+            self.signals.log.emit("--" * 40)
+
+            # predict species distribution
+            try:
+                optimizer.predict()
+                # Calculate elapsed time between start to finish
+                elapsed_time = round((time.time() - start_time), 5)
+            except Exception as e:
+                self.signals.aborted.emit(str(e))
+                return None
+
+            distribution = optimizer.distribution()
+
+            # Print species distribution as text in the log console
+            self.signals.log.emit(distribution.to_string())
+
+            # Plot the species distribution using the optimized parameters
+            self.signals.result.emit(distribution)
+
+            self.signals.log.emit("--" * 40)
+            self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
+
+            self.signals.log.emit("### FINISHED ###")
+            self.signals.finished.emit()
+        else:
+            ## DISTRIBUTION MODE ##
+            # TODO: Error handling is still a bit weak, need testing
+            optimizer = Distribution()
             # Start timer to time entire process
             start_time = time.time()
 
@@ -83,6 +128,5 @@ class optimizeWorker(QRunnable):
 
             self.signals.log.emit("### FINISHED ###")
             self.signals.finished.emit()
-        else:
-            print("Mode = 1")
+
         return None
