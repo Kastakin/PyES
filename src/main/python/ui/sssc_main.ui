@@ -121,6 +121,9 @@
              <property name="minimum">
               <number>1</number>
              </property>
+             <property name="maximum">
+              <number>999</number>
+             </property>
             </widget>
            </item>
            <item row="2" column="0">
@@ -150,6 +153,9 @@
              <property name="minimum">
               <number>1</number>
              </property>
+             <property name="maximum">
+              <number>999</number>
+             </property>
             </widget>
            </item>
            <item row="3" column="0">
@@ -178,6 +184,9 @@
              </property>
              <property name="minimum">
               <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>999</number>
              </property>
              <property name="value">
               <number>0</number>

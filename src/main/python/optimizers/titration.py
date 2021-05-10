@@ -72,7 +72,9 @@ class Titration:
 
         # Get the number of not-ignored species
         self.ns = int(len(self.species_data) - self.species_data.Ignored.sum())
-        self.nf = int(len(self.solid_species_data) - self.solid_species_data.Ignored.sum())
+        self.nf = int(
+            len(self.solid_species_data) - self.solid_species_data.Ignored.sum()
+        )
 
         # Number of components and number of species has to be > 0
         if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):

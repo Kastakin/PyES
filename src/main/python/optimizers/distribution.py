@@ -33,46 +33,42 @@ class Distribution:
         # Data relative to comp concentrations
         self.conc_data = data["concModel"]
 
-        # Analytical concentration of each component
-        self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+        # Indipendent comp
+        self.ind_comp = data["ind_comp"]
+        # Initial log value
+        self.initl = data["initialLog"]
+        # Final log value
+        self.finall = data["finalLog"]
+        # log increments at each point
+        self.linc = data["logInc"]
 
-        # Concentration in the titrant for each component
-        self.c_added = self.conc_data.iloc[:, 1].copy().to_numpy(dtype="float")
+        # Final log value should be higher then the initial one
+        if self.initl > self.finall:
+            raise Exception("Initial -log[A] should be lower then final -log[A].")
 
-        # Initial volume
-        self.v0 = data["v0"]
-        # First titration point volume
-        self.initv = data["initv"]
-        # Volume increment at each point
-        self.vinc = data["vinc"]
-        # number of points
-        self.nop = int(data["nop"])
+        # Create two arrays (log and conc. of indipendent component)
+        self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
 
-        # Initial volume should be higher then v0
-        if self.v0 > self.initv:
-            raise Exception(
-                "Initial titration volume should be higer or equal to initial volume."
-            )
+        self.ind_comp_c = 10 ** (-self.ind_comp_logs)
+
+        # Calculate the number of points in the interval
+        self.nop = len(self.ind_comp_c)
+
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
-            raise Exception("Number of points in the titration is 0.")
+            raise Exception("Number of points in the -log[A] range shouldn't be 0.")
 
-        self.v_added = np.array([[self.vinc * x for x in range(self.nop)]])
-        v1_diff = self.initv - self.v0
-        self.v_added += v1_diff
-        self.v_tot = self.v0 + self.v_added
-
-        # Total concentration corrected for v_tot
-        # logging.debug("one {}".format(np.tile(self.c_tot, [self.nop, 1]) * self.v0))
-        # logging.debug("two: {}".format(np.tile(self.v_added, [self.nc, 1]).T * self.c_added))
-        self.c_tot_adj = (
-            np.tile(self.c_tot, [self.nop, 1]) * self.v0
-            + np.tile(self.v_added, [self.nc, 1]).T * self.c_added
-        ) / np.tile(self.v_tot, [self.nc, 1]).T
+        # Analytical concentration of each component
+        self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+        # Assign the indipendent component concentration for each point
+        self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
+        self.c_tot = np.tile(self.c_tot, [self.nop, 1])
 
         # Get the number of not-ignored species
         self.ns = int(len(self.species_data) - self.species_data.Ignored.sum())
-        self.nf = int(len(self.solid_species_data) - self.solid_species_data.Ignored.sum())
+        self.nf = int(
+            len(self.solid_species_data) - self.solid_species_data.Ignored.sum()
+        )
 
         # Number of components and number of species has to be > 0
         if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
@@ -83,11 +79,16 @@ class Distribution:
         # Define the stechiometric coefficients for the various species
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
+        # # Delete the column relative to the indipendent component
+        # aux_model = np.delete(aux_model, self.ind_comp, 1)
         species_not_ignored = self.species_data.loc[
             self.species_data["Ignored"] == False
         ]
         base_model = species_not_ignored.iloc[:, 7:].to_numpy(dtype="int").T
         self.model = np.concatenate((aux_model, base_model), axis=1)
+        # # Delete the row relative to the indipendent component
+        # self.model = np.delete(self.model, self.ind_comp, 0)
+
         # Stores log_betas
         base_log_beta = species_not_ignored.iloc[:, 1].to_numpy(dtype="float")
         self.log_beta = np.concatenate(
@@ -108,9 +109,12 @@ class Distribution:
         final_result = self._residuals()
         self.species_distribution = pd.DataFrame(
             final_result,
-            index=self.v_added[0],
+            index=self.ind_comp_logs,
             columns=self.species_names,
-        ).rename_axis(index="V. Added [ml]", columns="Species Con. [mol/L]")
+        ).rename_axis(
+            index="p[" + self.conc_data.index[self.ind_comp] + "]",
+            columns="Species Con. [mol/L]",
+        )
         logging.info("--- CALCULATION TERMINATED ---")
 
         return True
@@ -140,28 +144,27 @@ class Distribution:
             #   - Second and third points as estimate from previous point
             #   - Subsequent points are extrapolated as follows
 
-            if point > 3:
-                v = self.v_added[0, point]
-                v1 = self.v_added[0, (point - 1)]
-                v2 = self.v_added[0, (point - 2)]
-                v3 = self.v_added[0, (point - 3)]
+            fixed_c = self.ind_comp_c[point]
+
+            if point > 2:
                 lp1 = -np.log10(results_species_conc[(point - 1)][: self.nc])
                 lp2 = -np.log10(results_species_conc[(point - 2)][: self.nc])
                 lp3 = -np.log10(results_species_conc[(point - 3)][: self.nc])
-                c = lp1 + (((lp1 - lp2) / (v1 - v2)) ** 2) * (
-                    (v2 - v3) / (lp2 - lp3)
-                ) * (v - v1)
+                c = lp1 + ((lp1 - lp2) ** 2) / (lp2 - lp3)
                 c = 10 ** (-c)
+                c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
             elif point > 0:
-                c = results_species_conc[(point - 1)][: self.nc]
+                c = results_species_conc[(point - 1)][: self.nc].copy()
+                c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C FROM PREVIOUS POINT")
             elif point == 0:
-                c = np.multiply(self.c_tot_adj[0], 0.001)
+                c = np.multiply(self.c_tot[0], 0.001)
+                c = np.insert(c, self.ind_comp, fixed_c)
                 logging.debug("ESTIMATED C AS FRACTION TOTAL C")
 
             logging.debug("INITIAL ESTIMATED FREE C: {}".format(c))
-            logging.debug("TOTAL C: {}".format(self.c_tot_adj[point]))
+            logging.debug("TOTAL C: {}".format(self.c_tot[point]))
 
             # Calculate species concnetration or each curve point
             species_conc_calc = self._newtonRaphson(
@@ -169,7 +172,8 @@ class Distribution:
                 c,
                 self.model,
                 self.log_beta,
-                self.c_tot_adj[point],
+                self.c_tot[point],
+                fixed_c,
                 self.nc,
                 self.ns,
                 self.nf,
@@ -177,6 +181,7 @@ class Distribution:
 
             # Store calculated species concentration into a vector
             results_species_conc.append(species_conc_calc)
+            logging.debug(str(results_species_conc))
 
         # Stack calculated species concentration in tabular fashion (points x species)
         results_species_conc = np.stack(results_species_conc)
@@ -184,17 +189,18 @@ class Distribution:
         # Return distribution
         return results_species_conc
 
-    def _newtonRaphson(self, point, c, model, log_beta, c_tot, nc, ns, nf):
+    def _newtonRaphson(self, point, c, model, log_beta, c_tot, fixed_c, nc, ns, nf):
         # FIXME: FOR DEBUGGING PURPOSES
         np.seterr("print")
-
-        # Initiate the matrix for jacobian
-        J = np.zeros(shape=(nc, nc))
 
         for iteration in range(1000):
             logging.debug(
                 "-> BEGINNING ITERATION {} ON POINT {}".format(iteration, point)
             )
+
+            # Initiate the matrix for jacobian
+            J = np.zeros(shape=(nc, nc))
+
             # Calculate total concentration given the species concentration
             c_tot_calc, c_spec = self._speciesConcentration(
                 c, model, log_beta, nc, ns, nf
@@ -223,8 +229,14 @@ class Distribution:
                     J[j, k] = np.sum(model[j] * model[k] * c_spec)
                     J[k, j] = J[j, k]
 
+            J = np.delete(J, self.ind_comp, 0)
+            J = np.delete(J, self.ind_comp, 1)
+
             # Calculate shift to free concentration
+            c = np.delete(c, self.ind_comp, axis=0)
             delta_c = np.linalg.solve(J, delta) * c
+            delta_c = np.insert(delta_c, self.ind_comp, 0, axis=0)
+            c = np.insert(c, self.ind_comp, fixed_c, axis=0)
 
             # Positive constrain on freeC as present in STACO
             for i, shift in enumerate(delta_c):
@@ -273,6 +285,7 @@ class Distribution:
 
         # Estimate total concentration given the species concentration
         c_tot_calc = np.sum(model * np.tile(c_spec, [nc, 1]), axis=1)
+        c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
         logging.debug("Calculated Total Concentration: {}".format(c_tot_calc))
 
         return c_tot_calc, c_spec
