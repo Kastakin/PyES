@@ -182,7 +182,7 @@ class Distribution:
                 lp2 = -np.log10(results_species_conc[(point - 2)][: self.nc])
                 lp3 = -np.log10(results_species_conc[(point - 3)][: self.nc])
                 # Check for the divisor, if any of the differences is zero take
-                # it to the lowest possible value before udnerflow
+                # it to the lowest possible value before underflow
                 divisor = lp2 - lp3
                 divisor = np.where(divisor == 0, -self.epsl, divisor)
                 c = lp1 + ((lp1 - lp2) ** 2) / divisor
