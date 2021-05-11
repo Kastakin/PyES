@@ -47,11 +47,9 @@ class Distribution:
         # Create two arrays (log and conc. of indipendent component)
         # np.arange can return values higher then the desired amount, so we trim those out
         self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
-        print(self.ind_comp_logs)
         self.ind_comp_logs = self.ind_comp_logs[
             (self.ind_comp_logs >= self.initl) & (self.ind_comp_logs <= (self.finall + self.linc))
         ]
-        print(self.ind_comp_logs)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
         # Calculate the number of points in the interval
