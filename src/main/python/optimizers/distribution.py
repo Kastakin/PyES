@@ -20,11 +20,9 @@ class Distribution:
         :param data: data as given from the GUI.
         """
         logging.info("--- START DATA LOADING ---")
-        # Get number of components
-        self.nc = data["nc"]
 
         # Comp names
-        self.comp_name = data["compModel"]["Name"]
+        self.comps = data["compModel"]["Name"]
         # Charge values of comps
         self.comp_charge = data["compModel"]["Charge"]
         # Data relative to the species and solid species
@@ -47,8 +45,13 @@ class Distribution:
             raise Exception("Initial -log[A] should be lower then final -log[A].")
 
         # Create two arrays (log and conc. of indipendent component)
+        # np.arange can return values higher then the desired amount, so we trim those out
         self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
-
+        print(self.ind_comp_logs)
+        self.ind_comp_logs = self.ind_comp_logs[
+            (self.ind_comp_logs >= self.initl) & (self.ind_comp_logs <= (self.finall + self.linc))
+        ]
+        print(self.ind_comp_logs)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
         # Calculate the number of points in the interval
@@ -60,12 +63,59 @@ class Distribution:
 
         # Analytical concentration of each component
         self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
-        # Assign the indipendent component concentration for each point
+
         self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
+        # Find which components have to be ignored (c0 = 0)
+        # Remove those values afterwards
+        ignored_comps = np.where(self.c_tot == 0)[0]
+        self.c_tot = np.delete(self.c_tot, ignored_comps, 0)
+
+        # get number of effective components
+        self.nc = int(len(self.conc_data)) - len(ignored_comps)
+
+        # for every ignored comp which index is lower
+        # of the designated indipendent comp
+        # reduce its index by one (they "slide over")
+        for i in ignored_comps:
+            if i < self.ind_comp:
+                self.ind_comp -= 1
+
+        # Assign the indipendent component concentration for each point
         self.c_tot = np.tile(self.c_tot, [self.nop, 1])
 
+        # Define the stechiometric coefficients for the various species
+        # IMPORTANT: each component is considered as a species with logB = 0
+        aux_model = np.identity(self.nc, dtype="int")
+
+        # Ignore the rows relative to the flagged as ignored species
+        species_not_ignored = self.species_data.loc[
+            self.species_data["Ignored"] == False
+        ]
+        base_model = species_not_ignored.iloc[:, 7:].to_numpy(dtype="int").T
+
+        # Stores log_betas of not ignored species
+        base_log_beta = species_not_ignored.iloc[:, 1].to_numpy(dtype="float")
+
+        # Remove all the species that have one or more ignored comp with not null coeff.
+        # with their relative betas
+        for i in ignored_comps:
+            to_remove = base_model[i, :] != 0
+            base_model = np.delete(base_model, to_remove, axis=1)
+            base_log_beta = np.delete(base_log_beta, to_remove, axis=0)
+
+        # Delete the columns for the coeff relative to those components
+        base_model = np.delete(base_model, ignored_comps, axis=0)
+
+        # Assemble the model and betas matrix
+        self.model = np.concatenate((aux_model, base_model), axis=1)
+        self.log_beta = np.concatenate(
+            (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
+        )
+
         # Get the number of not-ignored species
-        self.ns = int(len(self.species_data) - self.species_data.Ignored.sum())
+        self.ns = base_model.shape[1]
+
+        # TODO: this will break the code sooner or later when phases will be introduced
         self.nf = int(
             len(self.solid_species_data) - self.solid_species_data.Ignored.sum()
         )
@@ -76,27 +126,10 @@ class Distribution:
                 "Number of components and number of species have to be > 0."
             )
 
-        # Define the stechiometric coefficients for the various species
-        # IMPORTANT: each component is considered as a species with logB = 0
-        aux_model = np.identity(self.nc, dtype="int")
-        # # Delete the column relative to the indipendent component
-        # aux_model = np.delete(aux_model, self.ind_comp, 1)
-        species_not_ignored = self.species_data.loc[
-            self.species_data["Ignored"] == False
-        ]
-        base_model = species_not_ignored.iloc[:, 7:].to_numpy(dtype="int").T
-        self.model = np.concatenate((aux_model, base_model), axis=1)
-        # # Delete the row relative to the indipendent component
-        # self.model = np.delete(self.model, self.ind_comp, 0)
-
-        # Stores log_betas
-        base_log_beta = species_not_ignored.iloc[:, 1].to_numpy(dtype="float")
-        self.log_beta = np.concatenate(
-            (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
-        )
-
         # Compose species names from the model
-        self.species_names = self._speciesNames(self.model, self.conc_data.index)
+        self.comp_names = self.conc_data.index
+        self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
+        self.species_names = self._speciesNames(self.model, self.comp_names)
         logging.info("--- DATA LOADED ---")
 
     def predict(self):
@@ -112,7 +145,7 @@ class Distribution:
             index=self.ind_comp_logs,
             columns=self.species_names,
         ).rename_axis(
-            index="p[" + self.conc_data.index[self.ind_comp] + "]",
+            index="p[" + self.comp_names[self.ind_comp] + "]",
             columns="Species Con. [mol/L]",
         )
         logging.info("--- CALCULATION TERMINATED ---")
@@ -150,7 +183,11 @@ class Distribution:
                 lp1 = -np.log10(results_species_conc[(point - 1)][: self.nc])
                 lp2 = -np.log10(results_species_conc[(point - 2)][: self.nc])
                 lp3 = -np.log10(results_species_conc[(point - 3)][: self.nc])
-                c = lp1 + ((lp1 - lp2) ** 2) / (lp2 - lp3)
+                # Check for the divisor, if any of the differences is zero take
+                # it to the lowest possible value before udnerflow
+                divisor = lp2 - lp3
+                divisor = np.where(divisor == 0, -self.epsl, divisor)
+                c = lp1 + ((lp1 - lp2) ** 2) / divisor
                 c = 10 ** (-c)
                 c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
@@ -181,7 +218,6 @@ class Distribution:
 
             # Store calculated species concentration into a vector
             results_species_conc.append(species_conc_calc)
-            logging.debug(str(results_species_conc))
 
         # Stack calculated species concentration in tabular fashion (points x species)
         results_species_conc = np.stack(results_species_conc)
@@ -229,10 +265,13 @@ class Distribution:
                     J[j, k] = np.sum(model[j] * model[k] * c_spec)
                     J[k, j] = J[j, k]
 
+            # Ignore row and column relative to the indipendent component
             J = np.delete(J, self.ind_comp, 0)
             J = np.delete(J, self.ind_comp, 1)
 
             # Calculate shift to free concentration
+            # The free concentration vector is manipulated so
+            # that the same value for the indipendent component is kept
             c = np.delete(c, self.ind_comp, axis=0)
             delta_c = np.linalg.solve(J, delta) * c
             delta_c = np.insert(delta_c, self.ind_comp, 0, axis=0)
@@ -251,6 +290,7 @@ class Distribution:
             c = c + delta_c
             logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
 
+            # FIXME: skipped damping routine
             # print((c_tot > 0).all())
             # if (c_tot > 0).all():
             #     c = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
@@ -263,13 +303,11 @@ class Distribution:
                     point
                 )
             )
-            # FIXME: for debug purposes this is disabled, needs to be re enabled in prod
-            # return c_spec
-            # raise Exception(
-            #     "Calculation of species concentration aborted, no convergence found with conc {} at point {}".format(
-            #         str(c_spec), point
-            #     )
-            # )
+            raise Exception(
+                "Calculation of species concentration aborted, no convergence found with conc {} at point {}".format(
+                    str(c_spec), point
+                )
+            )
 
     # TODO: document added functions
     def _speciesConcentration(self, c, model, log_beta, nc, ns, nf):
@@ -285,6 +323,7 @@ class Distribution:
 
         # Estimate total concentration given the species concentration
         c_tot_calc = np.sum(model * np.tile(c_spec, [nc, 1]), axis=1)
+        # Take out the analytical concentration relative to the indipendent component
         c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
         logging.debug("Calculated Total Concentration: {}".format(c_tot_calc))
 
