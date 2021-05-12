@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>963</width>
-    <height>795</height>
+    <width>1204</width>
+    <height>778</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>916</width>
-    <height>608</height>
+    <width>1204</width>
+    <height>778</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -53,6 +53,9 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
+      <property name="usesScrollButtons">
+       <bool>false</bool>
+      </property>
       <property name="documentMode">
        <bool>false</bool>
       </property>
@@ -63,7 +66,7 @@
        <attribute name="title">
         <string>Species</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,5">
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
@@ -80,167 +83,27 @@
          <number>5</number>
         </property>
         <item>
-         <widget class="QWidget" name="widget_9" native="true">
-          <layout class="QFormLayout" name="formLayout_5">
-           <property name="horizontalSpacing">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item row="1" column="0">
-            <widget class="QLabel" name="comp_label">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>N° Comp.</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QSpinBox" name="numComp">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="statusTip">
-              <string>Number of components present.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <number>999</number>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="species_label">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>N° Species</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QSpinBox" name="numSpecies">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="statusTip">
-              <string>Number of species to be considered.</string>
-             </property>
-             <property name="minimum">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <number>999</number>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="phases_label">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>N° Solid Phases</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="numPhases">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="statusTip">
-              <string>Number of solid phases to be considered.</string>
-             </property>
-             <property name="minimum">
-              <number>0</number>
-             </property>
-             <property name="maximum">
-              <number>999</number>
-             </property>
-             <property name="value">
-              <number>0</number>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0" colspan="2">
-            <widget class="QLabel" name="sys_opt_label">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;System Options&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="widget_6" native="true">
+         <widget class="QWidget" name="widget_7" native="true">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <property name="leftMargin">
-            <number>0</number>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="spacing">
+            <number>15</number>
            </property>
            <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
+            <number>25</number>
            </property>
            <item>
-            <widget class="QLabel" name="tab_comp_label">
+            <widget class="QFrame" name="frame_9">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Components&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QTableView" name="compView">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+              <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -248,39 +111,132 @@
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
-             <property name="sizeAdjustPolicy">
-              <enum>QAbstractScrollArea::AdjustIgnored</enum>
-             </property>
-             <property name="editTriggers">
-              <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
-             </property>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
+             <layout class="QFormLayout" name="formLayout_5">
+              <property name="horizontalSpacing">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>5</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>5</number>
+              </property>
+              <item row="0" column="0" colspan="2">
+               <widget class="QLabel" name="sys_opt_label">
+                <property name="text">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;System Options&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="comp_label">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>N° Comp.</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="numComp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>Number of components present.</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="species_label">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>N° Species</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QSpinBox" name="numSpecies">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>Number of species to be considered.</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="phases_label">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>N° Solid Phases</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QSpinBox" name="numPhases">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>Number of solid phases to be considered.</string>
+                </property>
+                <property name="minimum">
+                 <number>0</number>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
+                </property>
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="widget_2" native="true">
-          <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>25</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
            <item>
             <widget class="QFrame" name="frame_5">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -308,16 +264,25 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QWidget" name="widget_7" native="true">
+               <widget class="QWidget" name="widget_8" native="true">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
                 <layout class="QFormLayout" name="formLayout_3">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetFixedSize</enum>
+                 </property>
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                 </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>5</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>5</number>
                  </property>
                  <item row="0" column="0" colspan="2">
                   <widget class="QLabel" name="calc_opt_label">
@@ -413,105 +378,7 @@
                    </item>
                   </widget>
                  </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QWidget" name="widget_8" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <layout class="QFormLayout" name="formLayout_4">
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0" colspan="2">
-                  <spacer name="verticalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>60</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="A">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="statusTip">
-                    <string>&quot;A&quot; term of the Debye-Hückel equation.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="A_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>A</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QDoubleSpinBox" name="c0">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="statusTip">
-                    <string>&quot;c0&quot; term of the Debye-Hückel equation.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="c0_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>c0</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QDoubleSpinBox" name="d0">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="statusTip">
-                    <string>&quot;d0&quot; term of the Debye-Hückel equation.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="d0_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>d0</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QDoubleSpinBox" name="e0">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="statusTip">
-                    <string>&quot;e0&quot; term of the Debye-Hückel equation.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
+                 <item row="11" column="0">
                   <widget class="QLabel" name="e0_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -521,35 +388,27 @@
                    </property>
                   </widget>
                  </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QWidget" name="widget_10" native="true">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <layout class="QFormLayout" name="formLayout_6">
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <item row="0" column="0" colspan="2">
-                  <spacer name="verticalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="A_label">
+                   <property name="enabled">
+                    <bool>false</bool>
                    </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>60</height>
-                    </size>
+                   <property name="text">
+                    <string>A</string>
                    </property>
-                  </spacer>
+                  </widget>
                  </item>
-                 <item row="1" column="0">
+                 <item row="5" column="1">
+                  <widget class="QDoubleSpinBox" name="A">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="statusTip">
+                    <string>&quot;A&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
                   <widget class="QLabel" name="B_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -559,7 +418,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1">
+                 <item row="6" column="1">
                   <widget class="QDoubleSpinBox" name="B">
                    <property name="enabled">
                     <bool>false</bool>
@@ -569,7 +428,27 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="c0_label">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>c0</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QDoubleSpinBox" name="c0">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="statusTip">
+                    <string>&quot;c0&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="0">
                   <widget class="QLabel" name="c1_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -579,7 +458,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1">
+                 <item row="8" column="1">
                   <widget class="QDoubleSpinBox" name="c1">
                    <property name="enabled">
                     <bool>false</bool>
@@ -589,7 +468,27 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="9" column="1">
+                  <widget class="QDoubleSpinBox" name="d0">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="statusTip">
+                    <string>&quot;d0&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0">
+                  <widget class="QLabel" name="d0_label">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>d0</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="10" column="0">
                   <widget class="QLabel" name="d1_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -599,7 +498,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
+                 <item row="10" column="1">
                   <widget class="QDoubleSpinBox" name="d1">
                    <property name="enabled">
                     <bool>false</bool>
@@ -609,7 +508,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="0">
+                 <item row="11" column="1">
+                  <widget class="QDoubleSpinBox" name="e0">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="statusTip">
+                    <string>&quot;e0&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="12" column="0">
                   <widget class="QLabel" name="e1_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -619,7 +528,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
+                 <item row="12" column="1">
                   <widget class="QDoubleSpinBox" name="e1">
                    <property name="enabled">
                     <bool>false</bool>
@@ -636,37 +545,182 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="tab_species_label">
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="widget_6" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="tab_comp_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Species&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Components&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QTableView" name="speciesView">
+            <widget class="QTableView" name="compView">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>150</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
              <property name="sizeAdjustPolicy">
               <enum>QAbstractScrollArea::AdjustIgnored</enum>
              </property>
-             <attribute name="horizontalHeaderCascadingSectionResizes">
-              <bool>true</bool>
+             <property name="editTriggers">
+              <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+             </property>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
              </attribute>
             </widget>
            </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="widget_2" native="true">
+          <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>2</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QLabel" name="tab_solid_species_label">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Solid Species&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <widget class="QTabWidget" name="tabWidget_2">
+             <property name="tabPosition">
+              <enum>QTabWidget::North</enum>
              </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QTableView" name="solidSpeciesView">
-             <property name="sizeAdjustPolicy">
-              <enum>QAbstractScrollArea::AdjustIgnored</enum>
+             <property name="tabShape">
+              <enum>QTabWidget::Rounded</enum>
              </property>
-             <attribute name="horizontalHeaderCascadingSectionResizes">
-              <bool>true</bool>
-             </attribute>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <property name="usesScrollButtons">
+              <bool>false</bool>
+             </property>
+             <property name="tabBarAutoHide">
+              <bool>false</bool>
+             </property>
+             <widget class="QWidget" name="species">
+              <attribute name="title">
+               <string>Solution Species</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>5</number>
+               </property>
+               <property name="rightMargin">
+                <number>5</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
+               <item>
+                <widget class="QTableView" name="speciesView">
+                 <property name="sizeAdjustPolicy">
+                  <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                 </property>
+                 <attribute name="horizontalHeaderCascadingSectionResizes">
+                  <bool>true</bool>
+                 </attribute>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="solidspecies">
+              <attribute name="title">
+               <string>Solid Species</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>5</number>
+               </property>
+               <property name="topMargin">
+                <number>5</number>
+               </property>
+               <property name="rightMargin">
+                <number>5</number>
+               </property>
+               <property name="bottomMargin">
+                <number>5</number>
+               </property>
+               <item>
+                <widget class="QTableView" name="solidSpeciesView">
+                 <property name="sizeAdjustPolicy">
+                  <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                 </property>
+                 <attribute name="horizontalHeaderCascadingSectionResizes">
+                  <bool>true</bool>
+                 </attribute>
+                </widget>
+               </item>
+              </layout>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -1466,7 +1520,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>963</width>
+     <width>1204</width>
      <height>24</height>
     </rect>
    </property>
@@ -1584,46 +1638,14 @@
  </resources>
  <connections>
   <connection>
-   <sender>numComp</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updateComp()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>168</x>
-     <y>153</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>132</x>
-     <y>216</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>numSpecies</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updateSpecies()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>168</x>
-     <y>187</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>175</x>
-     <y>278</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>calcButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>calculate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>419</x>
-     <y>728</y>
+     <x>423</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -1638,8 +1660,8 @@
    <slot>exportDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>219</x>
-     <y>761</y>
+     <x>223</x>
+     <y>744</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -1654,60 +1676,12 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>953</x>
-     <y>761</y>
+     <x>1194</x>
+     <y>744</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
      <y>583</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>imode</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>imodeUpdater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>610</x>
-     <y>204</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>772</x>
-     <y>64</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>numPhases</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updatePhase()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>147</x>
-     <y>206</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>235</x>
-     <y>63</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>relErrorMode</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>relErrorsUpdater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>637</x>
-     <y>162</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>909</x>
-     <y>63</y>
     </hint>
    </hints>
   </connection>
@@ -1735,7 +1709,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>544</x>
-     <y>552</y>
+     <y>535</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
@@ -1756,6 +1730,86 @@
     <hint type="destinationlabel">
      <x>804</x>
      <y>769</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>numComp</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updateComp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>160</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>382</x>
+     <y>-7</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>numSpecies</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updateSpecies()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>154</x>
+     <y>184</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>548</x>
+     <y>-16</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>numPhases</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePhase()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>140</x>
+     <y>223</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>-5</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>relErrorMode</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>relErrorsUpdater()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>310</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1204</x>
+     <y>280</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>imode</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>imodeUpdater()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>172</x>
+     <y>350</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1204</x>
+     <y>376</y>
     </hint>
    </hints>
   </connection>
