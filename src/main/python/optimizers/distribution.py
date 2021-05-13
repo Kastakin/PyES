@@ -48,7 +48,8 @@ class Distribution:
         # np.arange can return values higher then the desired amount, so we trim those out
         self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
         self.ind_comp_logs = self.ind_comp_logs[
-            (self.ind_comp_logs >= self.initl) & (self.ind_comp_logs <= (self.finall + self.linc))
+            (self.ind_comp_logs >= self.initl)
+            & (self.ind_comp_logs <= (self.finall + self.linc))
         ]
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
@@ -61,6 +62,9 @@ class Distribution:
 
         # Analytical concentration of each component
         self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+
+        # Charges of components
+        self.comp_charge = self.comp_charge.copy().to_numpy(dtype="int")
 
         self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
         # Find which components have to be ignored (c0 = 0)
@@ -98,6 +102,7 @@ class Distribution:
         # with their relative betas
         for i in ignored_comps:
             to_remove = base_model[i, :] != 0
+            self.comp_charge = np.delete(self.comp_charge, i)
             base_model = np.delete(base_model, to_remove, axis=1)
             base_log_beta = np.delete(base_log_beta, to_remove, axis=0)
 
@@ -106,7 +111,7 @@ class Distribution:
 
         # Assemble the model and betas matrix
         self.model = np.concatenate((aux_model, base_model), axis=1)
-        self.log_beta = np.concatenate(
+        self.log_beta_ris = np.concatenate(
             (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
         )
 
@@ -123,6 +128,54 @@ class Distribution:
             raise Exception(
                 "Number of components and number of species have to be > 0."
             )
+
+        # Check the ionic strength mode
+        # Load the required data if so
+        self.imode = data["imode"]
+        if self.imode == 1:
+            # Load reference ionic strength
+            self.ris = data["ris"]
+            self.radqris = np.sqrt(self.ris)
+
+            # Load background ions concentration
+            self.bs = data["cback"]
+
+            a = data["a"]
+            self.b = data["b"]
+            c0 = data["c0"]
+            c1 = data["c1"]
+            d0 = data["d0"]
+            d1 = data["d1"]
+            e0 = data["e0"]
+            e1 = data["e1"]
+
+            # Check if default have to be used
+            if (a == 0) & (self.b == 0):
+                a = 0.5
+                b = 1.5
+
+            # Compute p* for alla the species
+            past = self.model.sum(axis=0) - 1
+
+            # Reshape charges into a column vector
+            comp_charge_column = np.reshape(self.comp_charge, (self.nc, 1))
+            self.species_charges = (self.model * comp_charge_column).sum(axis=0)
+
+            # Compute z* for all the species
+            zast = (self.model * (comp_charge_column ** 2)).sum(axis=0) - (
+                self.species_charges
+            ) ** 2
+
+            # Compute A/B term of D-H equation
+            self.az = a * zast
+            self.fib = np.tile(
+                (self.radqris / (1 + self.b * self.radqris)), self.nc + self.ns
+            )
+
+            # Compute CG/DG/EG terms of D-H
+            self.cg = c0 * past + c1 * zast
+            self.dg = d0 * past + d1 * zast
+            self.eg = e0 * past + e1 * zast
 
         # Compose species names from the model
         self.comp_names = self.conc_data.index
@@ -206,7 +259,7 @@ class Distribution:
                 point,
                 c,
                 self.model,
-                self.log_beta,
+                self.log_beta_ris,
                 self.c_tot[point],
                 fixed_c,
                 self.nc,
@@ -223,9 +276,16 @@ class Distribution:
         # Return distribution
         return results_species_conc
 
-    def _newtonRaphson(self, point, c, model, log_beta, c_tot, fixed_c, nc, ns, nf):
+    def _newtonRaphson(self, point, c, model, log_beta_ris, c_tot, fixed_c, nc, ns, nf):
         # FIXME: FOR DEBUGGING PURPOSES
         np.seterr("print")
+
+        # If working with variable ionic strength ompute initial guess for species concentration
+        if self.imode == 1:
+            log_beta = self._updateLogB(c, log_beta_ris, self.comp_charge)
+            logging.debug("Updated LogB: {}".format(log_beta))
+
+            c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
 
         for iteration in range(1000):
             logging.debug(
@@ -234,6 +294,14 @@ class Distribution:
 
             # Initiate the matrix for jacobian
             J = np.zeros(shape=(nc, nc))
+
+            # If working with variable ionic strength
+            # adjust formation costants to the current ionic strenght
+            if self.imode == 1:
+                log_beta = self._updateLogB(c_spec, log_beta_ris, self.species_charges)
+                logging.debug("Updated LogB: {}".format(log_beta))
+            else:
+                log_beta = log_beta_ris
 
             # Calculate total concentration given the species concentration
             c_tot_calc, c_spec = self._speciesConcentration(
@@ -247,7 +315,7 @@ class Distribution:
             # conv_criteria = np.sum(np.divide(delta, c_tot) ** 2)
             # logging.debug(
 
-            conv_criteria = np.sum(delta) ** 2
+            conv_criteria = np.sum(delta / c_tot) ** 2
 
             logging.debug(
                 "Convergence at Point {} iteration {}: {}".format(
@@ -255,7 +323,7 @@ class Distribution:
                 )
             )
 
-            if conv_criteria < 1e-15:
+            if conv_criteria < 1e-10:
                 return c_spec
 
             for j in range(nc):
@@ -287,6 +355,8 @@ class Distribution:
             # Apply shift to free concentrations
             c = c + delta_c
             logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
+
+            c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
 
             # FIXME: skipped damping routine
             # print((c_tot > 0).all())
@@ -327,94 +397,119 @@ class Distribution:
 
         return c_tot_calc, c_spec
 
-    # def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
-    #     logging.debug("ENTERING DAMP ROUTINE")
-    #     # TODO: Dampening of free concentration
+    def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
+        logging.debug("ENTERING DAMP ROUTINE")
+        # TODO: Dampening of free concentration
 
-    #     c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
+        c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
 
-    #     ## ES42020 METHOD
+        ## ES42020 METHOD
 
-    #     clim1 = np.abs(c_tot) / 4
-    #     clim2 = np.abs(c_tot) * 4
+        clim1 = np.abs(c_tot) / 4
+        clim2 = np.abs(c_tot) * 4
 
-    #     damp_iteration = 0
-    #     while damp_iteration < 1000:
-    #         fmin = 1
-    #         fmax = 1
-    #         for i, calc_c in enumerate(c_tot_calc):
-    #             if abs(calc_c) < (clim1[i] / 2) or abs(calc_c) > (clim2[i] / 2):
-    #                 fatt = abs(c_tot[i] / calc_c)
-    #                 if fatt < fmin:
-    #                     m1 = i
-    #                     fmin = fatt
-    #                 elif fatt > fmax:
-    #                     m2 = i
-    #                     fmax = fatt
-    #                 else:
-    #                     pass
+        damp_iteration = 0
+        jrc = 1
+        while damp_iteration < 200:
+            fmin = 1
+            fmax = 1
+            for i, calc_c in enumerate(c_tot_calc):
+                if abs(calc_c) < (clim1[i] / jrc) or abs(calc_c) > (clim2[i] / jrc):
+                    fatt = abs(c_tot[i] / calc_c)
+                    if fatt < fmin:
+                        m1 = i
+                        fmin = fatt
+                    elif fatt > fmax:
+                        m2 = i
+                        fmax = fatt
+                    else:
+                        pass
 
-    #         if fmin != 1:
-    #             fatt = fmin
-    #             j = m1
-    #         elif fmax != 1:
-    #             fatt = fmax
-    #             j = m2
-    #         else:
-    #             logging.debug("EXITING DAMP ROUTINE")
-    #             return c
+            if fmin != 1:
+                fatt = fmin
+                j = m1
+            elif fmax != 1:
+                fatt = fmax
+                j = m2
+            else:
+                logging.debug("EXITING DAMP ROUTINE")
+                return c, c_spec
 
-    #         exp = np.max(model[j]) ** (-1 / 1)
-    #         logging.debug("Damping {} by a factor {}".format(j, (fatt ** exp)))
-    #         c[j] = c[j] * fatt ** exp
-    #         logging.debug("Damped C: {}".format(c))
-    #         c_tot_calc, c_spec = self._speciesConcentration(
-    #             c, model, log_beta, nc, ns, nf
-    #         )
-    #         if np.isnan(c_tot_calc).any():
-    #             raise Exception(
-    #                 "Dampening routine got invalid values: {} at point {}".format(
-    #                     c, point
-    #                 )
-    #             )
+            exp = np.max(model[j]) ** (-1 / 1)
+            logging.debug("Damping {} by a factor {}".format(j, (fatt ** exp)))
+            c[j] = c[j] * fatt ** exp
+            logging.debug("Damped C: {}".format(c))
+            c_tot_calc, c_spec = self._speciesConcentration(
+                c, model, log_beta, nc, ns, nf
+            )
 
-    #         damp_iteration += 1
+            if np.isnan(c_tot_calc).any():
+                raise Exception(
+                    "Dampening routine got invalid values: {} at point {}".format(
+                        c, point
+                    )
+                )
 
-    #     ## ARTICLE METHOD
-    #     # print(c_tot)
-    #     # print(c_tot_calc)
-    #     # R = np.abs(np.divide(c_tot, c_tot_calc))
-    #     # damp_iteration = 0
-    #     # while all((R > 1 / 4) & (R < 4)) != True:
-    #     #     if damp_iteration > 1000:
-    #     #         raise Exception(
-    #     #             "Dampening routine got in a infinite loop: {} at point {}".format(
-    #     #                 str(c), point
-    #     #             )
-    #     #         )
-    #     #     R = np.ma.array(R, mask=False)
-    #     #     logging.debug("R: {}".format(R))
-    #     #     R.mask[(R > 1 / 4) & (R < 4)] = True
+            damp_iteration += 1
 
-    #     #     if any(R < 1):
-    #     #         to_damp = np.argmin(R)
-    #     #     else:
-    #     #         to_damp = np.argmax(R)
+        ## ARTICLE METHOD
+        # print(c_tot)
+        # print(c_tot_calc)
+        # R = np.abs(np.divide(c_tot, c_tot_calc))
+        # damp_iteration = 0
+        # while all((R > 1 / 4) & (R < 4)) != True:
+        #     if damp_iteration > 1000:
+        #         raise Exception(
+        #             "Dampening routine got in a infinite loop: {} at point {}".format(
+        #                 str(c), point
+        #             )
+        #         )
+        #     R = np.ma.array(R, mask=False)
+        #     logging.debug("R: {}".format(R))
+        #     R.mask[(R > 1 / 4) & (R < 4)] = True
 
-    #     #     exp = np.max(model[to_damp]) ** (-1 / 1)
-    #     #     logging.debug("exp: {}".format(exp))
+        #     if any(R < 1):
+        #         to_damp = np.argmin(R)
+        #     else:
+        #         to_damp = np.argmax(R)
 
-    #     #     c[to_damp] = c[to_damp] * (R[to_damp] ** exp)
+        #     exp = np.max(model[to_damp]) ** (-1 / 1)
+        #     logging.debug("exp: {}".format(exp))
 
-    #     #     logging.debug("damped c: {}".format(c))
+        #     c[to_damp] = c[to_damp] * (R[to_damp] ** exp)
 
-    #     #     c_tot_calc, c_spec = self._speciesConcentration(
-    #     #         c, model, log_beta, nc, ns, nf
-    #     #     )
-    #     #     R = np.abs(np.divide(c_tot, c_tot_calc))
-    #     #     damp_iteration = damp_iteration + 1
+        #     logging.debug("damped c: {}".format(c))
 
-    #     # return c
+        #     c_tot_calc, c_spec = self._speciesConcentration(
+        #         c, model, log_beta, nc, ns, nf
+        #     )
+        #     R = np.abs(np.divide(c_tot, c_tot_calc))
+        #     damp_iteration = damp_iteration + 1
+
+        # return c
+
+    def _ionicStr(self, c, charges):
+        """
+        Calculate ionic strength given component concentrations and their charges.
+        """
+        I = ((c * (charges ** 2)).sum() + self.bs) / 2
+        return I
+
+    def _updateLogB(self, c, log_beta, charges):
+        """
+        Update formation costants from the reference ionic strength to the current one.
+        """
+        cis = self._ionicStr(c, charges)
+        logging.debug("Current I: {}".format(cis))
+        radqcis = np.sqrt(cis)
+        fib2 = np.tile((radqcis / (1 + self.b * radqcis)), self.nc + self.ns)
+        updated_log_beta = (
+            log_beta
+            - (self.az * (fib2 - self.fib))
+            + (self.cg * (cis - self.ris))
+            + (self.dg * ((cis * radqcis) - (self.ris * self.radqris)))
+        )
+        return updated_log_beta
 
     def _speciesNames(self, model, comps):
         """
@@ -423,6 +518,7 @@ class Distribution:
         model = model.T
         names = []
 
+        # TODO: vectorize the operation
         for i in range(len(model)):
             names.append("")
             for j, comp in enumerate(comps):

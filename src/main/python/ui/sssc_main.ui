@@ -103,7 +103,7 @@
            <item>
             <widget class="QFrame" name="frame_9">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -113,16 +113,16 @@
              </property>
              <layout class="QFormLayout" name="formLayout_5">
               <property name="horizontalSpacing">
-               <number>0</number>
+               <number>6</number>
               </property>
               <property name="topMargin">
-               <number>5</number>
+               <number>9</number>
               </property>
               <property name="rightMargin">
-               <number>0</number>
+               <number>5</number>
               </property>
               <property name="bottomMargin">
-               <number>5</number>
+               <number>9</number>
               </property>
               <item row="0" column="0" colspan="2">
                <widget class="QLabel" name="sys_opt_label">
@@ -144,25 +144,6 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="numComp">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="statusTip">
-                 <string>Number of components present.</string>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>999</number>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="0">
                <widget class="QLabel" name="species_label">
                 <property name="sizePolicy">
@@ -173,25 +154,6 @@
                 </property>
                 <property name="text">
                  <string>N° Species</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QSpinBox" name="numSpecies">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="statusTip">
-                 <string>Number of species to be considered.</string>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>999</number>
                 </property>
                </widget>
               </item>
@@ -227,6 +189,44 @@
                 </property>
                 <property name="value">
                  <number>0</number>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QSpinBox" name="numComp">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>Number of components present.</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QSpinBox" name="numSpecies">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>Number of species to be considered.</string>
+                </property>
+                <property name="minimum">
+                 <number>1</number>
+                </property>
+                <property name="maximum">
+                 <number>999</number>
                 </property>
                </widget>
               </item>
@@ -345,6 +345,12 @@
                    <property name="statusTip">
                     <string>Reference Ionic Strength to be used (if no other ionic strengths are being explicited).</string>
                    </property>
+                   <property name="decimals">
+                    <number>5</number>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
                    <property name="singleStep">
                     <double>0.050000000000000</double>
                    </property>
@@ -406,6 +412,18 @@
                    <property name="statusTip">
                     <string>&quot;A&quot; term of the Debye-Hückel equation.</string>
                    </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item row="6" column="0">
@@ -425,6 +443,18 @@
                    </property>
                    <property name="statusTip">
                     <string>&quot;B&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -446,6 +476,18 @@
                    <property name="statusTip">
                     <string>&quot;c0&quot; term of the Debye-Hückel equation.</string>
                    </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item row="8" column="0">
@@ -466,6 +508,18 @@
                    <property name="statusTip">
                     <string>&quot;c1&quot; term of the Debye-Hückel equation.</string>
                    </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item row="9" column="1">
@@ -475,6 +529,18 @@
                    </property>
                    <property name="statusTip">
                     <string>&quot;d0&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -506,6 +572,18 @@
                    <property name="statusTip">
                     <string>&quot;d1&quot; term of the Debye-Hückel equation.</string>
                    </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
+                   </property>
                   </widget>
                  </item>
                  <item row="11" column="1">
@@ -515,6 +593,18 @@
                    </property>
                    <property name="statusTip">
                     <string>&quot;e0&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -535,6 +625,18 @@
                    </property>
                    <property name="statusTip">
                     <string>&quot;e1&quot; term of the Debye-Hückel equation.</string>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                   <property name="minimum">
+                    <double>-999.000000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>999.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.050000000000000</double>
                    </property>
                   </widget>
                  </item>
@@ -1074,7 +1176,7 @@
                     <string> mol/l</string>
                    </property>
                    <property name="decimals">
-                    <number>3</number>
+                    <number>5</number>
                    </property>
                    <property name="maximum">
                     <double>900.000000000000000</double>
@@ -1096,7 +1198,7 @@
                     <string> mol/l</string>
                    </property>
                    <property name="decimals">
-                    <number>3</number>
+                    <number>5</number>
                    </property>
                    <property name="maximum">
                     <double>900.000000000000000</double>
@@ -1352,7 +1454,7 @@
                     <string> mol/l</string>
                    </property>
                    <property name="decimals">
-                    <number>3</number>
+                    <number>5</number>
                    </property>
                    <property name="maximum">
                     <double>900.000000000000000</double>
@@ -1734,62 +1836,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>numComp</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updateComp()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>157</x>
-     <y>160</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>382</x>
-     <y>-7</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>numSpecies</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updateSpecies()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>154</x>
-     <y>184</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>548</x>
-     <y>-16</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>numPhases</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updatePhase()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>140</x>
-     <y>223</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>612</x>
-     <y>-5</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>relErrorMode</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>MainWindow</receiver>
    <slot>relErrorsUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>187</x>
-     <y>310</y>
+     <x>259</x>
+     <y>345</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -1804,12 +1858,60 @@
    <slot>imodeUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>172</x>
-     <y>350</y>
+     <x>259</x>
+     <y>387</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
      <y>376</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>numPhases</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updatePhase()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>193</x>
+     <y>256</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>-5</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>numComp</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updateComp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>193</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>382</x>
+     <y>-7</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>numSpecies</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updateSpecies()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>193</x>
+     <y>222</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>548</x>
+     <y>-16</y>
     </hint>
    </hints>
   </connection>

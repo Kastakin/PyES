@@ -375,6 +375,7 @@ class Titration:
         model = model.T
         names = []
 
+        # TODO: vectorize the operation
         for i in range(len(model)):
             names.append("")
             for j, comp in enumerate(comps):
