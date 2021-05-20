@@ -301,7 +301,7 @@ class Distribution:
         if self.imode == 1:
             if point == 0:
                 log_beta, _ = self._updateLogB(
-                    c_tot, log_beta_ris, self.comp_charge_no_indipendent, point
+                    c_tot, log_beta_ris, self.comp_charge_no_indipendent, first_guess=True
                 )
                 logging.debug("Estimate LogB for point 0: {}".format(log_beta))
             else:
@@ -309,7 +309,7 @@ class Distribution:
 
             c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
             log_beta, cis = self._updateLogB(
-                c_spec, log_beta_ris, self.species_charges, point
+                c_spec, log_beta_ris, self.species_charges
             )
             self.previous_log_beta = log_beta
             logging.debug("Updated LogB: {}".format(log_beta))
@@ -473,22 +473,22 @@ class Distribution:
 
             damp_iteration += 1
 
-    def _ionicStr(self, c, charges, point):
+    def _ionicStr(self, c, charges, first_guess):
         """
         Calculate ionic strength given component concentrations and their charges.
         """
-        if point == 0:
+        if first_guess:
             I = ((c * (charges ** 2)).sum() / 2) + self.bs
         else:
             I = ((c * (charges ** 2)).sum() + self.bs) / 2
 
         return I
 
-    def _updateLogB(self, c, log_beta, charges, point):
+    def _updateLogB(self, c, log_beta, charges, first_guess=False):
         """
         Update formation costants from the reference ionic strength to the current one.
         """
-        cis = self._ionicStr(c, charges, point)
+        cis = self._ionicStr(c, charges, first_guess)
         logging.debug("Current I: {}".format(cis))
         radqcis = math.sqrt(cis)
         fib2 = radqcis / (1 + (self.b * radqcis))
