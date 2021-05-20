@@ -116,9 +116,15 @@ class optimizeWorker(QRunnable):
                 return None
 
             distribution = optimizer.distribution()
+            formation_constants = optimizer.formation_constants()
 
-            # Print species distribution as text in the log console
+            # Print species results as text in the log console
             self.signals.log.emit(distribution.to_string())
+
+            # If working at variable ionic strenght print formation constants aswell
+            if self.data["imode"] == 1:
+                self.signals.log.emit("--" * 40)
+                self.signals.log.emit(formation_constants.to_string())
 
             # Plot the species distribution using the optimized parameters
             self.signals.result.emit(distribution)
