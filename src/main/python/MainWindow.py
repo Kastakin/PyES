@@ -423,6 +423,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Clear logger output
         self.consoleOutput.clear()
 
+        # Clear previous stored results
+        self.result = {}
+
         # if the function is called after
         # first initialization when models are already
         # declared update them to the empty values
@@ -520,7 +523,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.exportButton.setEnabled(False)
 
         # Clear old results and graphs
-        self.result = None
+        self.result = {}
         if self.PlotWindow:
             self.PlotWindow.close()
             self.PlotWindow = None
@@ -637,11 +640,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Maybe do this in a separated thread?
         pass
 
-    def storeResults(self, data):
+    def storeResults(self, data, location):
         """
         Store result for exporting.
         """
-        self.result = data
+        self.result[location] = data
 
     def plotDist(self, data):
         """

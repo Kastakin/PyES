@@ -11,7 +11,10 @@ class Distribution:
     """
 
     def __init__(self):
+        # Set limit for underflow/overflow exp
         self.epsl = 200
+        # Set flag to report that computation is done
+        self.done_flag = False
 
     def fit(self, data):
         """
@@ -46,21 +49,18 @@ class Distribution:
 
         # Create two arrays (log and conc. of indipendent component)
         # np.arange can return values higher then the desired amount, so we trim those out
-        self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
-        self.ind_comp_logs = self.ind_comp_logs[
-            (self.ind_comp_logs >= self.initl)
-            & (self.ind_comp_logs <= (self.finall + self.linc))
-        ]
+        self.nop = round((self.finall - self.initl) / self.linc)
+        self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
         # Calculate the number of points in the interval
-        self.nop = len(self.ind_comp_c)
+        # self.nop = len(self.ind_comp_c)
 
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
             raise Exception("Number of points in the -log[A] range shouldn't be 0.")
 
-        # Analytical concentration of each component
+        # Analytical concentration of each component (including the ones that will be ignored)
         self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
 
         # Charges of components
@@ -132,8 +132,13 @@ class Distribution:
         self.imode = data["imode"]
         if self.imode == 1:
             # Load reference ionic strength
-            self.ris = data["ris"]
-            self.radqris = math.sqrt(self.ris)
+            self.ris = species_not_ignored.iloc[:, 3].to_numpy(dtype="float")
+            self.ris = np.delete(self.ris, to_remove, axis=0)
+            # If ref. ionic strength is not given for a point use the reference one
+            self.ris = np.where(self.ris == 0, data["ris"], self.ris)
+            # Add ref. ionic strength for components
+            self.ris = np.insert(self.ris, 0, [data["ris"] for i in range(self.nc)])
+            self.radqris = np.sqrt(self.ris)
 
             # Load background ions concentration
             self.bs = data["cback"]
@@ -172,10 +177,29 @@ class Distribution:
             self.az = a * zast
             self.fib = self.radqris / (1 + (self.b * self.radqris))
 
+            # Retrive CG/DG/EG for each of the species
+            # Remove values that refers to ignored comps
+            self.cg = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
+            self.dg = species_not_ignored.iloc[:, 5].to_numpy(dtype="float")
+            self.eg = species_not_ignored.iloc[:, 6].to_numpy(dtype="float")
+            self.cg = np.delete(self.cg, to_remove, axis=0)
+            self.dg = np.delete(self.dg, to_remove, axis=0)
+            self.eg = np.delete(self.eg, to_remove, axis=0)
+            # Adds values for components
+            self.cg = np.insert(self.cg, 0, [0 for i in range(self.nc)])
+            self.dg = np.insert(self.dg, 0, [0 for i in range(self.nc)])
+            self.eg = np.insert(self.eg, 0, [0 for i in range(self.nc)])
+
+            to_compute = (self.cg == 0) + (self.dg == 0) + (self.eg == 0)
+
             # Compute CG/DG/EG terms of D-H
-            self.cg = c0 * past + c1 * zast
-            self.dg = d0 * past + d1 * zast
-            self.eg = e0 * past + e1 * zast
+            default_cg = c0 * past + c1 * zast
+            default_dg = d0 * past + d1 * zast
+            default_eg = e0 * past + e1 * zast
+
+            self.cg = np.where(to_compute, default_cg, self.cg)
+            self.dg = np.where(to_compute, default_dg, self.dg)
+            self.eg = np.where(to_compute, default_eg, self.eg)
 
         # Compose species names from the model
         self.comp_names = self.conc_data.index
@@ -192,6 +216,9 @@ class Distribution:
         logging.info("--- BEGINNING CALCULATION --- ")
         species, log_b, ionic_strength = self._compute()
 
+        # Set the flag to signal a completed run
+        self.done_flag = True
+
         self.species_distribution = pd.DataFrame(
             species,
             index=self.ind_comp_logs,
@@ -200,13 +227,20 @@ class Distribution:
             index="p[" + self.comp_names[self.ind_comp] + "]",
             columns="Species Con. [mol/L]",
         )
+
+        # If working at variable ionic strength
         if self.imode == 1:
+            # Add column to the species distribution containing the ionic strength
             self.species_distribution.insert(0, "I", ionic_strength)
 
+            # Create table for the adjusted LogB at each point
             self.log_beta = pd.DataFrame(
                 log_b[:, self.nc :],
                 index=self.ind_comp_logs,
                 columns=self.species_names[self.nc :],
+            ).rename_axis(
+                index="p[" + self.comp_names[self.ind_comp] + "]",
+                columns="Formation Constants",
             )
             self.log_beta.insert(0, "I", ionic_strength)
 
@@ -215,10 +249,50 @@ class Distribution:
         return True
 
     def distribution(self):
-        return self.species_distribution
+        """
+        Returns the species concentration table.
+        """
+        if self.done_flag == True:
+            return self.species_distribution
+        else:
+            return False
 
     def formation_constants(self):
-        return self.log_beta
+        """
+        Returns the table containing formation costants and the ionic strength.
+        """
+        if self.done_flag == True:
+            return self.log_beta
+        else:
+            return False
+
+    def parameters(self):
+        """
+        Returns relevant data that was used for the computation
+        """
+        species_info = pd.DataFrame(
+            {
+                "logB": self.log_beta_ris[self.nc :],
+            },
+            index=self.species_names[self.nc :],
+        ).rename_axis(index="Species Names")
+
+        if self.imode == 1:
+            species_info.insert(1, "Ref. I", self.ris[self.nc :])
+            species_info.insert(2, "Charge", self.species_charges[self.nc :])
+            species_info.insert(3, "C", self.cg[self.nc :])
+            species_info.insert(4, "D", self.dg[self.nc :])
+            species_info.insert(5, "E", self.eg[self.nc :])
+
+        comp_info = pd.DataFrame(
+            {
+                "Charge": self.comp_charge,
+                "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
+            },
+            index=self.species_names[: self.nc],
+        ).rename_axis(index="Components Names")
+
+        return species_info, comp_info
 
     def _compute(self):
         """
@@ -247,9 +321,13 @@ class Distribution:
                 lp2 = -np.log10(results_species_conc[(point - 2)][: self.nc])
                 lp3 = -np.log10(results_species_conc[(point - 3)][: self.nc])
 
+                # If two subsequent points present the same concentration
+                # avoid the issue by using simply the previous point concentration
                 c = np.where(lp2 == lp3, lp1, (lp1 + ((lp1 - lp2) ** 2) / (lp2 - lp3)))
+                # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
                 c = np.where(c > (self.epsl / 2), (self.epsl / 2), c)
                 c = np.where(c < (-self.epsl / 2), (-self.epsl / 2), c)
+                # Converto logs back to concentrations
                 c = 10 ** (-c)
                 c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
@@ -301,21 +379,22 @@ class Distribution:
         if self.imode == 1:
             if point == 0:
                 log_beta, _ = self._updateLogB(
-                    c_tot, log_beta_ris, self.comp_charge_no_indipendent, first_guess=True
+                    c_tot,
+                    log_beta_ris,
+                    self.comp_charge_no_indipendent,
+                    first_guess=True,
                 )
                 logging.debug("Estimate LogB for point 0: {}".format(log_beta))
             else:
                 log_beta = self.previous_log_beta
 
             c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
-            log_beta, cis = self._updateLogB(
-                c_spec, log_beta_ris, self.species_charges
-            )
+            log_beta, cis = self._updateLogB(c_spec, log_beta_ris, self.species_charges)
             self.previous_log_beta = log_beta
             logging.debug("Updated LogB: {}".format(log_beta))
         else:
             log_beta = log_beta_ris
-            cis = self.ris
+            cis = [None]
 
         # Calculate total concentration given the species concentration
         c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
@@ -381,7 +460,7 @@ class Distribution:
 
             # If convergence criteria is met return the result
             if conv_criteria < 1e-10:
-                return c_spec, log_beta, cis
+                return c_spec, log_beta, cis[0]
 
         else:
             logging.error(
@@ -472,10 +551,13 @@ class Distribution:
                 )
 
             damp_iteration += 1
+            if (damp_iteration == 200) & (jrc == 1):
+                damp_iteration = 0
+                jrc = 2
 
     def _ionicStr(self, c, charges, first_guess):
         """
-        Calculate ionic strength given component concentrations and their charges.
+        Calculate ionic strength given concentrations of species and their charges.
         """
         if first_guess:
             I = ((c * (charges ** 2)).sum() / 2) + self.bs
@@ -490,7 +572,8 @@ class Distribution:
         """
         cis = self._ionicStr(c, charges, first_guess)
         logging.debug("Current I: {}".format(cis))
-        radqcis = math.sqrt(cis)
+        cis = np.tile(cis, self.nc + self.ns)
+        radqcis = np.sqrt(cis)
         fib2 = radqcis / (1 + (self.b * radqcis))
         updated_log_beta = (
             log_beta
