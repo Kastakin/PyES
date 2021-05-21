@@ -1,11 +1,9 @@
-# This script handles the creation of all the required dialogs
+# This file handles the creation of all the custom dialogs
 # used by the software
 
-import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
 
-from models import PreviewModel
 from ui.sssc_about import Ui_dialogAbout
 from ui.sssc_newDialog import Ui_dialogNew
 
