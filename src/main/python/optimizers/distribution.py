@@ -507,6 +507,7 @@ class Distribution:
 
         damp_iteration = 0
         jrc = 1
+        # TODO: this subroutine could be vectorized to make it faster
         while damp_iteration < 200:
             fmin = 1
             fmax = 1
@@ -580,6 +581,7 @@ class Distribution:
             - self.az * (fib2 - self.fib)
             + self.cg * (cis - self.ris)
             + self.dg * ((cis * radqcis) - (self.ris * self.radqris))
+            + self.eg * ((cis ** 2) - (self.ris ** 2))
         )
 
         return updated_log_beta, cis
