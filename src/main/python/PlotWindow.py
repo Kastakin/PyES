@@ -9,7 +9,7 @@ class PlotWindow(QWidget, Ui_plotWindow):
         super().__init__()
         self.setupUi(self)
 
-        self.result = parent.result
+        self.result = parent.result["distribution"]
 
         self.plot.plot(
             [self.result.index for i in range(self.result.shape[1])],

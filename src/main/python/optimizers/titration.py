@@ -107,7 +107,7 @@ class Titration:
         # Calculate species distribution
         # Return formatted species distribution as a nice table
         logging.info("--- BEGINNING CALCULATION --- ")
-        final_result = self._residuals()
+        final_result = self._compute()
         self.species_distribution = pd.DataFrame(
             final_result,
             index=self.v_added[0],
@@ -124,7 +124,7 @@ class Titration:
     # def potential(self):
     #     return self.pot_calc
 
-    def _residuals(self):
+    def _compute(self):
         """
         Calculate species distribution.
         """
@@ -375,6 +375,7 @@ class Titration:
         model = model.T
         names = []
 
+        # TODO: vectorize the operation
         for i in range(len(model)):
             names.append("")
             for j, comp in enumerate(comps):

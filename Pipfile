@@ -9,7 +9,7 @@ pyqt5 = "*"
 matplotlib = "==3.2.2"
 numpy = "*"
 pandas = "*"
-scipy = "*"
+openpyxl = "*"
 
 [dev-packages]
 bump2version = "*"

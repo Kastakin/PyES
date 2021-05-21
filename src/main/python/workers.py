@@ -14,7 +14,7 @@ class optimizeSignal(QObject):
     log = pyqtSignal(str)
     aborted = pyqtSignal(str)
     finished = pyqtSignal()
-    result = pyqtSignal(object)
+    result = pyqtSignal(object, str)
 
 
 class optimizeWorker(QRunnable):
@@ -73,11 +73,9 @@ class optimizeWorker(QRunnable):
 
             distribution = optimizer.distribution()
 
-            # Print species distribution as text in the log console
+            # Print in the logging form and store species distribution
             self.signals.log.emit(distribution.to_string())
-
-            # Plot the species distribution using the optimized parameters
-            self.signals.result.emit(distribution)
+            self.signals.result.emit(distribution, "distribution")
 
             self.signals.log.emit("--" * 40)
             self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
@@ -116,12 +114,19 @@ class optimizeWorker(QRunnable):
                 return None
 
             distribution = optimizer.distribution()
+            species_info, comp_info = optimizer.parameters()
 
-            # Print species distribution as text in the log console
+            # Print and store species results
             self.signals.log.emit(distribution.to_string())
+            self.signals.result.emit(distribution, "distribution")
 
-            # Plot the species distribution using the optimized parameters
-            self.signals.result.emit(distribution)
+            # If working at variable ionic strenght print and store formation constants aswell
+            if self.data["imode"] == 1:
+                formation_constants = optimizer.formation_constants()
+                self.signals.log.emit("--" * 40)
+                self.signals.log.emit(formation_constants.to_string())
+                self.signals.result.emit(formation_constants, "formation_constants")
+
 
             self.signals.log.emit("--" * 40)
             self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)

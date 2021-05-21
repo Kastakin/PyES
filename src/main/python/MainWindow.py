@@ -25,11 +25,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
-        # Prepare for secondary windows
+        # Set window title and project path as defaults
+        self.setWindowTitle("PyES4 - New Project")
+        self.project_path = None
+
+        # Setup for secondary windows
         self.PlotWindow = None
 
+        # Initiate threadpool
         self.threadpool = QThreadPool()
 
+        # Generate clean data for tableviews
         (
             self.conc_data,
             self.comp_data,
@@ -110,6 +116,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog = newDialog(self)
         if dialog.exec_():
             self.resetFields()
+            self.project_path = None
+            self.setWindowTitle("PyES4 - New Project")
         else:
             pass
 
@@ -120,39 +128,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dialog = aboutDialog(self)
         dialog.exec_()
 
-    # TODO: both open and save have to be reworked
     def file_save(self):
         """
         Saves current project as json file that can be later reopened
         """
-        outputFile, _ = QFileDialog.getSaveFileName(
-            self, "Save Project", "ProjectName", "JSON (*.json)"
-        )
-        if outputFile:
-            fileName = outputFile.split(".")
-            # dict that holds all the relevant data locations
+        if self.project_path:
+            output_path, _ = QFileDialog.getSaveFileName(
+                self, "Save Project", self.project_path, "JSON (*.json)"
+            )
+        else:
+            output_path, _ = QFileDialog.getSaveFileName(
+                self, "Save Project", "", "JSON (*.json)"
+            )
+
+        if output_path:
+            file_name = output_path.split(".")
+
+            # Store the file path
+            self.project_path = output_path
+
+            # Set window title accordingly
+            self.setWindowTitle("PyES4 - " + self.project_path)
+
+            # dictionary that holds all the relevant data locations
             data_list = returnDataDict(self)
             data = {**self.check_line, **data_list}
 
             with open(
-                fileName[0] + ".json",
+                file_name[0] + ".json",
                 "w",
-            ) as outFile:
-                json.dump(data, outFile)
+            ) as out_file:
+                json.dump(data, out_file)
 
     def file_open(self):
         """
         Load a previously saved project
         """
-        fileName, _ = QFileDialog.getOpenFileName(
+        input_path, _ = QFileDialog.getOpenFileName(
             self, "Open Project", "~", "JSON (*.json)"
         )
-        if fileName:
+
+        if input_path:
             with open(
-                fileName,
+                input_path,
                 "r",
-            ) as inputFile:
-                jsdata = json.load(inputFile)
+            ) as input_file:
+                jsdata = json.load(input_file)
 
             # TODO: better and more robust validation of project files
             # The loaded file has to be a valid project file, discard it if not
@@ -160,6 +181,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dialog = wrongFileDialog(self)
                 dialog.exec_()
                 return False
+
+            # Get file path from the open project file
+            self.project_path = input_path
+            # Set window title accordingly
+            self.setWindowTitle("PyES4 - " + self.project_path)
 
             try:
                 self.numComp.setValue(jsdata["nc"])
@@ -397,6 +423,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Clear logger output
         self.consoleOutput.clear()
 
+        # Clear previous stored results
+        self.result = {}
+
         # if the function is called after
         # first initialization when models are already
         # declared update them to the empty values
@@ -494,7 +523,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.exportButton.setEnabled(False)
 
         # Clear old results and graphs
-        self.result = None
+        self.result = {}
         if self.PlotWindow:
             self.PlotWindow.close()
             self.PlotWindow = None
@@ -611,11 +640,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Maybe do this in a separated thread?
         pass
 
-    def storeResults(self, data):
+    def storeResults(self, data, location):
         """
         Store result for exporting.
         """
-        self.result = data
+        self.result[location] = data
 
     def plotDist(self, data):
         """
