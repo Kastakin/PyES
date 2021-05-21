@@ -624,14 +624,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.speciesView.model().setColumnReadOnly(range(3, 7), True)
             self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), True)
 
-    def displayCurve(self):
-        """
-        Display the titration Curve
-        """
-        # TODO: move this feature from the dedicated tab to a dialog
-        # Maybe do this in a separated thread?
-        pass
-
     def exportDist(self):
         """
         Export calculated distribution in csv/excel format
