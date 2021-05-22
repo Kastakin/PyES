@@ -688,3 +688,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def v0Updater(self, value):
         self.initv.setMinimum(value)
+
+    def closeEvent(self, event):
+        """
+        Cleanup before closing.
+        """
+        # Close any secondary window still open
+        if self.ExportWindow:
+            self.ExportWindow.close()
+        if self.PlotWindow:
+            self.PlotWindow.close()
+
+        event.accept()
