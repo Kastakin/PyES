@@ -1,22 +1,23 @@
 import json
 
 import pandas as pd
+from ExportWindow import ExportWindow
 from PyQt5.QtCore import QRect, QThreadPool, QUrl
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QSizePolicy
 
-from delegate import CheckBoxDelegate
 from dialogs import aboutDialog, newDialog, wrongFileDialog
-from model_proxy import ProxyModel
-from models import (
+from PlotWindow import PlotWindow
+from ui.sssc_main import Ui_MainWindow
+from utils_func import cleanData, indCompUpdater, returnDataDict
+from viewmodels.delegate import CheckBoxDelegate
+from viewmodels.model_proxy import ProxyModel
+from viewmodels.models import (
     ComponentsModel,
     SolidSpeciesModel,
     SpeciesModel,
     TitrationComponentsModel,
 )
-from PlotWindow import PlotWindow
-from ui.sssc_main import Ui_MainWindow
-from utils_func import cleanData, indCompUpdater, returnDataDict
 from workers import optimizeWorker
 
 
@@ -31,6 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Setup for secondary windows
         self.PlotWindow = None
+        self.ExportWindow = None
 
         # Initiate threadpool
         self.threadpool = QThreadPool()
@@ -118,6 +120,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.resetFields()
             self.project_path = None
             self.setWindowTitle("PyES4 - New Project")
+
+            # Resets results
+            self.result = {}
+
+            # Disable results windows
+            if self.PlotWindow:
+                self.PlotWindow.close()
+            if self.ExportWindow:
+                self.ExportWindow.close()
+
+            # Disable buttons to show results
+            self.exportButton.setEnabled(False)
+            self.plotDistButton.setEnabled(False)
         else:
             pass
 
@@ -182,10 +197,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dialog.exec_()
                 return False
 
+            # Resets results
+            self.result = {}
             # Get file path from the open project file
             self.project_path = input_path
             # Set window title accordingly
             self.setWindowTitle("PyES4 - " + self.project_path)
+
+            # Disable results windows
+            if self.PlotWindow:
+                self.PlotWindow.close()
+            if self.ExportWindow:
+                self.ExportWindow.close()
+
+            # Disable buttons to show results
+            self.exportButton.setEnabled(False)
+            self.plotDistButton.setEnabled(False)
 
             try:
                 self.numComp.setValue(jsdata["nc"])
@@ -522,11 +549,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.plotDistButton.setEnabled(False)
         self.exportButton.setEnabled(False)
 
-        # Clear old results and graphs
+        # Clear old results and secondary windows
         self.result = {}
-        if self.PlotWindow:
-            self.PlotWindow.close()
-            self.PlotWindow = None
 
         # Clear Logger
         self.consoleOutput.setText("")
@@ -628,9 +652,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Export calculated distribution in csv/excel format
         """
-        # TODO: implement this feature
-        # Maybe do this in a separated thread?
-        pass
+        if self.ExportWindow is None:
+            self.ExportWindow = ExportWindow(self)
+        else:
+            self.ExportWindow.result = self.result
+        self.ExportWindow.show()
 
     def storeResults(self, data, location):
         """

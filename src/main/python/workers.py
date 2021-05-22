@@ -116,6 +116,10 @@ class optimizeWorker(QRunnable):
             distribution = optimizer.distribution()
             species_info, comp_info = optimizer.parameters()
 
+            # Store input info
+            self.signals.result.emit(species_info, "species_info")
+            self.signals.result.emit(comp_info, "comp_info")
+
             # Print and store species results
             self.signals.log.emit(distribution.to_string())
             self.signals.result.emit(distribution, "distribution")
@@ -126,7 +130,6 @@ class optimizeWorker(QRunnable):
                 self.signals.log.emit("--" * 40)
                 self.signals.log.emit(formation_constants.to_string())
                 self.signals.result.emit(formation_constants, "formation_constants")
-
 
             self.signals.log.emit("--" * 40)
             self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
