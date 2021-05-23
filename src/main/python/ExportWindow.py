@@ -1,9 +1,11 @@
+from datetime import datetime
+
+from openpyxl.utils import get_column_letter
+from pandas import ExcelWriter
 from PyQt5.QtWidgets import QFileDialog, QWidget
 
 from ui.sssc_dataExport import Ui_ExportWindow
-
-from pandas import ExcelWriter
-from datetime import datetime
+from utils_func import getColWidths
 
 
 class ExportWindow(QWidget, Ui_ExportWindow):
@@ -55,6 +57,11 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                 self.result["distribution"].to_excel(
                     writer, sheet_name="Species Distribution"
                 )
+
+                ws = wb["Species Distribution"]
+                dist_widths = getColWidths(self.result["distribution"])
+                for i, column_width in enumerate(dist_widths):
+                    ws.column_dimensions[get_column_letter(i + 1)].width = column_width
 
     def TableEnabler(self, state):
         if state == True:

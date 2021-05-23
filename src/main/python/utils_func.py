@@ -120,3 +120,10 @@ def cleanData():
     ).drop(0)
 
     return conc_data, comp_data, species_data, solid_species_data
+
+def getColWidths(dataframe):
+    # Find the maximum length for the index
+    idx_max = max([len(str(s)) for s in dataframe.index.values] + [len(str(dataframe.index.name))])
+    cols_max = [max([len(str(s)) for s in dataframe[col].values] + [len(col)]) for col in dataframe.columns]
+    # Concatenate the two
+    return [idx_max] + cols_max
