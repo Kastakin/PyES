@@ -35,33 +35,51 @@ class ExportWindow(QWidget, Ui_ExportWindow):
 
             with ExcelWriter(self.export_path) as writer:
                 wb = writer.book
-                self.result["species_info"].to_excel(
-                    writer, sheet_name="System Info", startrow=3
-                )
-                self.result["comp_info"].to_excel(
-                    writer,
-                    sheet_name="System Info",
-                    startrow=3,
-                    startcol=(self.result["species_info"].shape[1] + 3),
-                )
 
-                ws = wb["System Info"]
-                ws["A1"] = "File:"
-                ws["A2"] = "Date:"
-                ws.merge_cells("B1:D1")
-                ws.merge_cells("B2:D2")
-                # TODO: make it print sensible info
-                ws["B1"] = "SAMPLE FILE PLACEHOLDER"
-                ws["B2"] = datetime.now()
+                if self.input_check.isChecked():
+                    self.result["species_info"].to_excel(
+                        writer, sheet_name="System Info", startrow=3
+                    )
+                    self.result["comp_info"].to_excel(
+                        writer,
+                        sheet_name="System Info",
+                        startrow=3,
+                        startcol=(self.result["species_info"].shape[1] + 3),
+                    )
 
-                self.result["distribution"].to_excel(
-                    writer, sheet_name="Species Distribution"
-                )
+                    ws = wb["System Info"]
+                    ws["A1"] = "File:"
+                    ws["A2"] = "Date:"
+                    ws.merge_cells("B1:D1")
+                    ws.merge_cells("B2:D2")
+                    # TODO: make it print sensible info
+                    ws["B1"] = "SAMPLE FILE PLACEHOLDER"
+                    ws["B2"] = datetime.now()
 
-                ws = wb["Species Distribution"]
-                dist_widths = getColWidths(self.result["distribution"])
-                for i, column_width in enumerate(dist_widths):
-                    ws.column_dimensions[get_column_letter(i + 1)].width = column_width
+                if self.distribution_check.isChecked():
+                    self.result["distribution"].to_excel(
+                        writer, sheet_name="Species Distribution"
+                    )
+
+                    ws = wb["Species Distribution"]
+                    dist_widths = getColWidths(self.result["distribution"])
+                    for i, column_width in enumerate(dist_widths):
+                        ws.column_dimensions[
+                            get_column_letter(i + 1)
+                        ].width = column_width
+
+                if self.adjlogb_check.isChecked():
+                    self.result["formation_constants"].to_excel(
+                        writer,
+                        sheet_name="Adjusted Formation Constants",
+                        float_format="%.3f",
+                    )
+                    ws = wb["Adjusted Formation Constants"]
+                    logb_width = getColWidths(self.result["formation_constants"])
+                    for i, column_width in enumerate(logb_width):
+                        ws.column_dimensions[
+                            get_column_letter(i + 1)
+                        ].width = column_width
 
     def TableEnabler(self, state):
         if state == True:
