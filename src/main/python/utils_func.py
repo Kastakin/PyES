@@ -122,6 +122,9 @@ def cleanData():
     return conc_data, comp_data, species_data, solid_species_data
 
 def getColWidths(dataframe):
+    """
+    Function to be used in conjuction with openpyxl to adjust width to tontent of a dataframe.
+    """
     # Find the maximum length for the index
     idx_max = max([len(str(s)) for s in dataframe.index.values] + [len(str(dataframe.index.name))])
     cols_max = [max([len(str(s)) for s in dataframe[col].values] + [len(col)]) for col in dataframe.columns]
