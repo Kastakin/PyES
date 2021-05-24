@@ -5,7 +5,7 @@ import re
 
 import pandas as pd
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColorConstants
 
 
 class PreviewModel(QAbstractTableModel):
@@ -189,6 +189,16 @@ class SpeciesModel(QAbstractTableModel):
                 return QVariant("{0}".format(value))
             else:
                 return QVariant(value)
+
+        if role == Qt.BackgroundRole:
+            if index.column() >= 7:
+                return QColorConstants.LightGray
+            elif index.column() == 1:
+                return QColorConstants.DarkCyan
+            elif index.column() == 2:
+                return QColorConstants.LightGray
+            else:
+                return QColorConstants.White
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
