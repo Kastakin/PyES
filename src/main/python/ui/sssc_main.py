@@ -345,6 +345,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.speciesView = QtWidgets.QTableView(self.species)
         self.speciesView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
+        self.speciesView.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
+        self.speciesView.setProperty("showDropIndicator", False)
         self.speciesView.setObjectName("speciesView")
         self.speciesView.horizontalHeader().setCascadingSectionResizes(True)
         self.verticalLayout_3.addWidget(self.speciesView)
@@ -766,6 +768,7 @@ class Ui_MainWindow(object):
         self.numPhases.valueChanged['int'].connect(MainWindow.updatePhase)
         self.numComp.valueChanged['int'].connect(MainWindow.updateComp)
         self.numSpecies.valueChanged['int'].connect(MainWindow.updateSpecies)
+        self.speciesView.clicked['QModelIndex'].connect(self.speciesView.edit)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

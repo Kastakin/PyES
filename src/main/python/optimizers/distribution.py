@@ -49,12 +49,13 @@ class Distribution:
 
         # Create two arrays (log and conc. of indipendent component)
         # np.arange can return values higher then the desired amount, so we trim those out
-        self.nop = round((self.finall - self.initl) / self.linc)
-        self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
+        # self.nop = round((self.finall - self.initl) / self.linc)
+        # self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
+        self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
         # Calculate the number of points in the interval
-        # self.nop = len(self.ind_comp_c)
+        self.nop = len(self.ind_comp_c)
 
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
@@ -327,7 +328,11 @@ class Distribution:
                 # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
                 c = np.where(c > (self.epsl / 2), (self.epsl / 2), c)
                 c = np.where(c < (-self.epsl / 2), (-self.epsl / 2), c)
-                # Converto logs back to concentrations
+
+                if (c < 0).any():
+                    c = lp1
+
+                # Convert logs back to concentrations
                 c = 10 ** (-c)
                 c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
@@ -384,9 +389,10 @@ class Distribution:
                     self.comp_charge_no_indipendent,
                     first_guess=True,
                 )
-                logging.debug("Estimate LogB for point 0: {}".format(log_beta))
             else:
                 log_beta = self.previous_log_beta
+
+            logging.debug("Estimate LogB for point {}: {}".format(point, log_beta))
 
             c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
             log_beta, cis = self._updateLogB(c_spec, log_beta_ris, self.species_charges)

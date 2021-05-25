@@ -4,13 +4,19 @@ import pandas as pd
 from ExportWindow import ExportWindow
 from PyQt5.QtCore import QRect, QThreadPool, QUrl
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QSizePolicy
+from PyQt5.QtWidgets import (
+    QFileDialog,
+    QHeaderView,
+    QMainWindow,
+    QSizePolicy,
+    QAbstractItemView,
+)
 
 from dialogs import aboutDialog, newDialog, wrongFileDialog
 from PlotWindow import PlotWindow
 from ui.sssc_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
-from viewmodels.delegate import CheckBoxDelegate
+from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
 from viewmodels.model_proxy import ProxyModel
 from viewmodels.models import (
     ComponentsModel,
@@ -88,6 +94,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.speciesProxy.setSourceModel(self.speciesModel)
         self.speciesView.setModel(self.speciesProxy)
         self.speciesView.setItemDelegateForColumn(0, CheckBoxDelegate(self.speciesView))
+        # assign combobox delegate to last column
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.speciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
         speciesHeader = self.speciesView.horizontalHeader()
         speciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -477,27 +490,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.compModel.rowCount() < rows:
             added_rows = rows - self.compModel.rowCount()
             self.compModel.insertRows(self.compModel.rowCount(), added_rows)
-            self.speciesModel.insertColumns(self.speciesModel.columnCount(), added_rows)
+            self.speciesView.setItemDelegateForColumn(
+                self.speciesModel.columnCount() - 1, None
+            )
+            self.speciesModel.insertColumns(
+                self.speciesModel.columnCount() - 2, added_rows
+            )
+            self.speciesView.setItemDelegateForColumn(
+                self.speciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.speciesView, self.compModel._data["Name"].tolist()
+                ),
+            )
             self.solidSpeciesModel.insertColumns(
                 self.solidSpeciesModel.columnCount(), added_rows
             )
             self.concModel.insertRows(self.concModel.rowCount(), added_rows)
-            self.updateCompName()
-            indCompUpdater(self)
         elif self.compModel.rowCount() > rows:
             removed_rows = self.compModel.rowCount() - rows
             self.compModel.removeRows(self.compModel.rowCount(), removed_rows)
+            self.speciesView.setItemDelegateForColumn(
+                self.speciesModel.columnCount() - 1, None
+            )
             self.speciesModel.removeColumns(
-                self.speciesModel.columnCount(), removed_rows
+                self.speciesModel.columnCount() - 2, removed_rows
+            )
+            self.speciesView.setItemDelegateForColumn(
+                self.speciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.speciesView, self.compModel._data["Name"].tolist()
+                ),
             )
             self.solidSpeciesModel.removeColumns(
                 self.solidSpeciesModel.columnCount(), removed_rows
             )
             self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
-            self.updateCompName()
-            indCompUpdater(self)
         else:
             pass
+        self.updateCompName()
+        indCompUpdater(self)
 
     def updateSpecies(self, s):
         """
@@ -537,10 +568,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Handles the displayed names in the species table when edited in the components one
         """
-        updated_comp = self.compModel._data["Name"].tolist()
-        self.speciesModel.updateHeader(updated_comp)
-        self.solidSpeciesModel.updateHeader(updated_comp)
-        self.concModel.updateIndex(updated_comp)
+        updated_comps = self.compModel._data["Name"].tolist()
+            
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.speciesView, updated_comps
+            ),
+        )
+        self.speciesModel.updateHeader(updated_comps)
+        self.speciesModel.updateCompName(updated_comps)
+        self.solidSpeciesModel.updateHeader(updated_comps)
+        self.concModel.updateIndex(updated_comps)
         indCompUpdater(self)
 
     def calculate(self):
@@ -615,7 +654,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback.setEnabled(True)
             self.cback_label.setEnabled(True)
 
-            self.speciesView.model().setColumnReadOnly(range(3, 7), False)
+            self.speciesView.model().setColumnReadOnly(range(4, 8), False)
             self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), False)
 
         else:
@@ -645,7 +684,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback.setEnabled(False)
             self.cback_label.setEnabled(False)
 
-            self.speciesView.model().setColumnReadOnly(range(3, 7), True)
+            self.speciesView.model().setColumnReadOnly(range(4, 8), True)
             self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), True)
 
     def exportDist(self):
@@ -702,13 +741,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         gray out the corresponding columns in tableviews.
         """
         if mode == 0:
-            self.speciesView.model().setColumnReadOnly([2], False)
-            self.solidSpeciesView.model().setColumnReadOnly([2], False)
+            self.speciesView.model().setColumnReadOnly([3], False)
+            self.solidSpeciesView.model().setColumnReadOnly([3], False)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
         else:
-            self.speciesView.model().setColumnReadOnly([2], True)
-            self.solidSpeciesView.model().setColumnReadOnly([2], True)
+            self.speciesView.model().setColumnReadOnly([3], True)
+            self.solidSpeciesView.model().setColumnReadOnly([3], True)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], True)
 

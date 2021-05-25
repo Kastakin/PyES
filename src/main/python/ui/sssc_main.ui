@@ -784,6 +784,12 @@
                  <property name="sizeAdjustPolicy">
                   <enum>QAbstractScrollArea::AdjustIgnored</enum>
                  </property>
+                 <property name="editTriggers">
+                  <set>QAbstractItemView::AllEditTriggers</set>
+                 </property>
+                 <property name="showDropIndicator" stdset="0">
+                  <bool>false</bool>
+                 </property>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>true</bool>
                  </attribute>
@@ -1843,7 +1849,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>259</x>
-     <y>345</y>
+     <y>339</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -1859,7 +1865,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>259</x>
-     <y>387</y>
+     <y>381</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -1912,6 +1918,22 @@
     <hint type="destinationlabel">
      <x>548</x>
      <y>-16</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>speciesView</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>speciesView</receiver>
+   <slot>edit(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>533</x>
+     <y>505</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>477</x>
+     <y>560</y>
     </hint>
    </hints>
   </connection>
