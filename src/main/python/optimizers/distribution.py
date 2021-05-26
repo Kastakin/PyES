@@ -49,12 +49,13 @@ class Distribution:
 
         # Create two arrays (log and conc. of indipendent component)
         # np.arange can return values higher then the desired amount, so we trim those out
-        self.nop = round((self.finall - self.initl) / self.linc)
-        self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
+        # self.nop = round((self.finall - self.initl) / self.linc)
+        # self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
+        self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
         # Calculate the number of points in the interval
-        # self.nop = len(self.ind_comp_c)
+        self.nop = len(self.ind_comp_c)
 
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
@@ -93,10 +94,10 @@ class Distribution:
         species_not_ignored = self.species_data.loc[
             self.species_data["Ignored"] == False
         ]
-        base_model = species_not_ignored.iloc[:, 7:].to_numpy(dtype="int").T
+        base_model = species_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
 
         # Stores log_betas of not ignored species
-        base_log_beta = species_not_ignored.iloc[:, 1].to_numpy(dtype="float")
+        base_log_beta = species_not_ignored.iloc[:, 2].to_numpy(dtype="float")
 
         # Remove all the species that have one or more ignored comp with not null coeff.
         # with their relative betas
@@ -132,7 +133,7 @@ class Distribution:
         self.imode = data["imode"]
         if self.imode == 1:
             # Load reference ionic strength
-            self.ris = species_not_ignored.iloc[:, 3].to_numpy(dtype="float")
+            self.ris = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
             self.ris = np.delete(self.ris, to_remove, axis=0)
             # If ref. ionic strength is not given for a point use the reference one
             self.ris = np.where(self.ris == 0, data["ris"], self.ris)
@@ -179,9 +180,9 @@ class Distribution:
 
             # Retrive CG/DG/EG for each of the species
             # Remove values that refers to ignored comps
-            self.cg = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
-            self.dg = species_not_ignored.iloc[:, 5].to_numpy(dtype="float")
-            self.eg = species_not_ignored.iloc[:, 6].to_numpy(dtype="float")
+            self.cg = species_not_ignored.iloc[:, 5].to_numpy(dtype="float")
+            self.dg = species_not_ignored.iloc[:, 6].to_numpy(dtype="float")
+            self.eg = species_not_ignored.iloc[:, 7].to_numpy(dtype="float")
             self.cg = np.delete(self.cg, to_remove, axis=0)
             self.dg = np.delete(self.dg, to_remove, axis=0)
             self.eg = np.delete(self.eg, to_remove, axis=0)
@@ -327,7 +328,11 @@ class Distribution:
                 # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
                 c = np.where(c > (self.epsl / 2), (self.epsl / 2), c)
                 c = np.where(c < (-self.epsl / 2), (-self.epsl / 2), c)
-                # Converto logs back to concentrations
+
+                if (c < 0).any():
+                    c = lp1
+
+                # Convert logs back to concentrations
                 c = 10 ** (-c)
                 c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
@@ -384,9 +389,10 @@ class Distribution:
                     self.comp_charge_no_indipendent,
                     first_guess=True,
                 )
-                logging.debug("Estimate LogB for point 0: {}".format(log_beta))
             else:
                 log_beta = self.previous_log_beta
+
+            logging.debug("Estimate LogB for point {}: {}".format(point, log_beta))
 
             c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
             log_beta, cis = self._updateLogB(c_spec, log_beta_ris, self.species_charges)

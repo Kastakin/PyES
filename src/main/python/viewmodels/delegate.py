@@ -1,10 +1,14 @@
-from PyQt5.QtCore import QEvent, QPoint, QRect, Qt
+from PyQt5.QtCore import QEvent, QPoint, QRect, Qt, QVariant, QTimer
 from PyQt5.QtWidgets import (
     QApplication,
     QItemDelegate,
     QStyle,
     QStyledItemDelegate,
     QStyleOptionButton,
+    QComboBox,
+    QApplication,
+    QStyleOptionComboBox,
+    QAbstractItemDelegate
 )
 
 
@@ -91,3 +95,49 @@ class CheckBoxDelegate(QStyledItemDelegate):
             option.rect.y() + option.rect.height() / 2 - check_box_rect.height() / 2,
         )
         return QRect(check_box_point, check_box_rect.size())
+
+
+class ComboBoxDelegate(QItemDelegate):
+    def __init__(self, owner, view, choices):
+        super().__init__(owner)
+        self.items = choices
+        self._view = view
+
+    def createEditor(self, parent, option, index):
+        self.editor = QComboBox(parent)
+        self.editor.addItems(self.items)
+
+        self.editor.activated.connect(
+            lambda index, editor=self.editor: self._view.commitData(editor)
+        )
+        self.editor.activated.connect(
+            lambda index, editor=self.editor: self._view.closeEditor(
+                editor, QAbstractItemDelegate.NoHint
+            )
+        )
+        QTimer.singleShot(10, self.editor.showPopup)
+        return self.editor
+
+    def paint(self, painter, option, index):
+        value = index.data(Qt.DisplayRole)
+        style = QApplication.style()
+        opt = QStyleOptionComboBox()
+        opt.text = str(value)
+        opt.rect = option.rect
+        style.drawComplexControl(QStyle.CC_ComboBox, opt, painter)
+        QItemDelegate.paint(self, painter, option, index)
+
+    def setEditorData(self, editor, index):
+        value = index.data(Qt.DisplayRole)
+        num = self.items.index(value)
+        editor.setCurrentIndex(num)
+
+    def setModelData(self, editor, model, index):
+        try:
+            value = self.items[editor.currentIndex()]
+            model.setData(index, value, Qt.EditRole)
+        except:
+            pass
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)

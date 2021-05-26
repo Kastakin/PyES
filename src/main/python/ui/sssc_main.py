@@ -345,6 +345,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.speciesView = QtWidgets.QTableView(self.species)
         self.speciesView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
+        self.speciesView.setEditTriggers(QtWidgets.QAbstractItemView.AllEditTriggers)
+        self.speciesView.setProperty("showDropIndicator", False)
         self.speciesView.setObjectName("speciesView")
         self.speciesView.horizontalHeader().setCascadingSectionResizes(True)
         self.verticalLayout_3.addWidget(self.speciesView)
