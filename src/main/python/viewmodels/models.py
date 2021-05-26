@@ -308,6 +308,8 @@ class SpeciesModel(QAbstractTableModel):
 
     def insertColumns(self, position, columns=1, index=QModelIndex()):
         """ Add columns to the model """
+        start = position + 1
+        finish = position + columns
         self.beginInsertColumns(index, position, position + columns - 1)
 
         for column in range(columns):
@@ -320,10 +322,12 @@ class SpeciesModel(QAbstractTableModel):
 
     def removeColumns(self, position, columns=1, index=QModelIndex()):
         """ Remove columns from the model. """
-        self.beginRemoveColumns(index, position, position + columns - 1)
+        start = position - columns
+        finish = position
+        self.beginRemoveColumns(index, start, finish)
 
         self._data = self._data.drop(
-            self._data.columns[position - columns : position], axis=1
+            self._data.columns[start : finish], axis=1
         )
 
         self.endRemoveColumns()

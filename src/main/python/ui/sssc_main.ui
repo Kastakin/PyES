@@ -1921,6 +1921,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>speciesView</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>speciesView</receiver>
+   <slot>edit(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>533</x>
+     <y>505</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>477</x>
+     <y>560</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>browseSlot()</slot>

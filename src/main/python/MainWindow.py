@@ -510,8 +510,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.solidSpeciesModel.columnCount(), added_rows
             )
             self.concModel.insertRows(self.concModel.rowCount(), added_rows)
-            self.updateCompName()
-            indCompUpdater(self)
         elif self.compModel.rowCount() > rows:
             removed_rows = self.compModel.rowCount() - rows
             self.compModel.removeRows(self.compModel.rowCount(), removed_rows)
@@ -531,10 +529,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.solidSpeciesModel.columnCount(), removed_rows
             )
             self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
-            self.updateCompName()
-            indCompUpdater(self)
         else:
             pass
+        self.updateCompName()
+        indCompUpdater(self)
 
     def updateSpecies(self, s):
         """
