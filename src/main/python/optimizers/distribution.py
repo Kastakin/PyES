@@ -23,9 +23,6 @@ class Distribution:
         :param data: data as given from the GUI.
         """
         logging.info("--- START DATA LOADING ---")
-
-        # Comp names
-        self.comps = data["compModel"]["Name"]
         # Charge values of comps
         self.comp_charge = data["compModel"]["Charge"]
         # Data relative to the species and solid species
@@ -86,7 +83,7 @@ class Distribution:
         # Assign the indipendent component concentration for each point
         self.c_tot = np.tile(self.c_tot, [self.nop, 1])
 
-        # Define the stechiometric coefficients for the various species
+        # Store the stechiometric coefficients for the components
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
 
@@ -94,16 +91,48 @@ class Distribution:
         species_not_ignored = self.species_data.loc[
             self.species_data["Ignored"] == False
         ]
+
+        # Store the stechiometric coefficients for the species
         base_model = species_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
 
         # Stores log_betas of not ignored species
         base_log_beta = species_not_ignored.iloc[:, 2].to_numpy(dtype="float")
 
+        # Store comp_names
+        self.comp_names = self.conc_data.index
+        ignored_comp_names = self.comp_names[ignored_comps]
+        self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
+
+        # Store for each species to which component calculate percentage.
+        self.perc_to_comp_string = species_not_ignored.iloc[:, -1].to_numpy(dtype="str")
+
         # Remove all the species that have one or more ignored comp with not null coeff.
-        # with their relative betas
+        # with their relative betas and component for percentage computation
         to_remove = (base_model[ignored_comps, :] != 0).sum(axis=0) != 0
         base_model = np.delete(base_model, to_remove, axis=1)
         base_log_beta = np.delete(base_log_beta, to_remove, axis=0)
+        self.perc_to_comp_string = np.delete(
+            self.perc_to_comp_string, to_remove, axis=0
+        )
+
+        # Encode the desired comp for percentages comutation as its index
+        # If any of the species would use one of the ignored comps
+        # assign the index for computation as if the indipendent comp
+        # would be used instead (its percent value will be zero)
+        comp_encoder = dict(zip(self.comp_names, range(self.comp_names.shape[0])))
+        invalid_comp_encoder = dict(
+            zip(ignored_comp_names, range(len(ignored_comp_names)))
+        )
+        perc_to_comp = self.perc_to_comp_string
+        self.perc_to_comp_string = np.concatenate(
+            (self.comp_names, self.perc_to_comp_string), axis=0
+        )
+        for key, value in comp_encoder.items():
+            perc_to_comp = np.where(perc_to_comp == key, value, perc_to_comp)
+        for key, value in invalid_comp_encoder.items():
+            perc_to_comp = np.where(perc_to_comp == key, self.ind_comp, perc_to_comp)
+
+        self.perc_to_comp = perc_to_comp.astype(int)
 
         # Delete the columns for the coeff relative to those components
         base_model = np.delete(base_model, ignored_comps, axis=0)
@@ -134,6 +163,7 @@ class Distribution:
         if self.imode == 1:
             # Load reference ionic strength
             self.ris = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
+            # Remove ionic strenght for species that are ignored
             self.ris = np.delete(self.ris, to_remove, axis=0)
             # If ref. ionic strength is not given for a point use the reference one
             self.ris = np.where(self.ris == 0, data["ris"], self.ris)
@@ -203,8 +233,6 @@ class Distribution:
             self.eg = np.where(to_compute, default_eg, self.eg)
 
         # Compose species names from the model
-        self.comp_names = self.conc_data.index
-        self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
         self.species_names = self._speciesNames(self.model, self.comp_names)
         logging.info("--- DATA LOADED ---")
 
@@ -227,6 +255,27 @@ class Distribution:
         ).rename_axis(
             index="p[" + self.comp_names[self.ind_comp] + "]",
             columns="Species Con. [mol/L]",
+        )
+
+        cans = np.insert(self.c_tot[0], self.ind_comp, 0)
+        can_to_perc = np.concatenate(
+            (cans, [cans[i] for i in self.perc_to_comp]), axis=0
+        )
+
+        perc_table = np.where(can_to_perc == 0, 0, species / can_to_perc)
+        perc_table = perc_table * 100
+
+        self.species_percentages = (
+            pd.DataFrame(
+                perc_table,
+                index=self.ind_comp_logs,
+                columns=[self.species_names, self.perc_to_comp_string],
+            )
+            .rename_axis(
+                index="p[" + self.comp_names[self.ind_comp] + "]",
+                columns=["Species", "%% relative to comp."],
+            )
+            .round(2)
         )
 
         # If working at variable ionic strength
@@ -267,33 +316,45 @@ class Distribution:
         else:
             return False
 
+    def percentages(self):
+        """
+        Return percentages of species with respect to the desired component.
+        """
+        if self.done_flag == True:
+            return self.species_percentages
+        else:
+            return False
+
     def parameters(self):
         """
         Returns relevant data that was used for the computation
         """
-        species_info = pd.DataFrame(
-            {
-                "logB": self.log_beta_ris[self.nc :],
-            },
-            index=self.species_names[self.nc :],
-        ).rename_axis(index="Species Names")
+        if self.done_flag == True:
+            species_info = pd.DataFrame(
+                {
+                    "logB": self.log_beta_ris[self.nc :],
+                },
+                index=self.species_names[self.nc :],
+            ).rename_axis(index="Species Names")
 
-        if self.imode == 1:
-            species_info.insert(1, "Ref. I", self.ris[self.nc :])
-            species_info.insert(2, "Charge", self.species_charges[self.nc :])
-            species_info.insert(3, "C", self.cg[self.nc :])
-            species_info.insert(4, "D", self.dg[self.nc :])
-            species_info.insert(5, "E", self.eg[self.nc :])
+            if self.imode == 1:
+                species_info.insert(1, "Ref. I", self.ris[self.nc :])
+                species_info.insert(2, "Charge", self.species_charges[self.nc :])
+                species_info.insert(3, "C", self.cg[self.nc :])
+                species_info.insert(4, "D", self.dg[self.nc :])
+                species_info.insert(5, "E", self.eg[self.nc :])
 
-        comp_info = pd.DataFrame(
-            {
-                "Charge": self.comp_charge,
-                "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
-            },
-            index=self.species_names[: self.nc],
-        ).rename_axis(index="Components Names")
+            comp_info = pd.DataFrame(
+                {
+                    "Charge": self.comp_charge,
+                    "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
+                },
+                index=self.species_names[: self.nc],
+            ).rename_axis(index="Components Names")
 
-        return species_info, comp_info
+            return species_info, comp_info
+        else:
+            return False
 
     def _compute(self):
         """

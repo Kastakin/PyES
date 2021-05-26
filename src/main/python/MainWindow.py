@@ -380,6 +380,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             indCompUpdater(self)
             self.indComp.setCurrentIndex(ind_comp)
+            self.speciesView.setItemDelegateForColumn(
+                self.speciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.speciesView, self.compModel._data["Name"].tolist()
+                ),
+            )
 
             # The model layout changed so it has to be updated
             self.compModel.layoutChanged.emit()
