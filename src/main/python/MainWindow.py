@@ -239,7 +239,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             try:
                 self.relErrorMode.setCurrentIndex(jsdata["emode"])
             except:
-                self.relErrorMode.setCurrentIndex(0)
+                self.relErrorMode.setCurrentIndex(1)
 
             try:
                 self.imode.setCurrentIndex(jsdata["imode"])
@@ -427,8 +427,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesView.setEnabled(False)
 
         # Reset rel. error settings
-        self.relErrorMode.setCurrentIndex(0)
-        self.relErrorsUpdater(0)
+        self.relErrorMode.setCurrentIndex(1)
+        self.relErrorsUpdater(1)
 
         # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)

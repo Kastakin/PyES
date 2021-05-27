@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>473</width>
-    <height>365</height>
+    <height>256</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,47 +19,19 @@
   <property name="minimumSize">
    <size>
     <width>473</width>
-    <height>365</height>
+    <height>256</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>473</width>
-    <height>365</height>
+    <height>256</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>About</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item alignment="Qt::AlignHCenter">
-    <widget class="QLabel" name="label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>100</height>
-      </size>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="pixmap">
-      <pixmap resource="../../resources/base/resources.qrc">:/img/chemistry.png</pixmap>
-     </property>
-     <property name="scaledContents">
-      <bool>true</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
    <item>
     <widget class="QLabel" name="label_3">
      <property name="sizePolicy">
@@ -69,7 +41,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;About PyBSTAC: &lt;/p&gt;&lt;p&gt;PyBSTAC is a Sotware created by the chemistry department of the University of Turin.&lt;/p&gt;&lt;p&gt;Heavly inspired by previous work of Professor Sammartano of the University of Messina, PyBSTAC aims to calculate and refine formation costant and other parameters from potentiometric titration.&lt;/p&gt;&lt;p&gt;PyBSTAC is licensed under GPL3 and its source code is aviable on its entirety on &lt;a href=&quot;https://github.com/Kastakin/PyBSTAC&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Github.&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PyES4 is a sotware created by the chemistry department of the University of Turin.&lt;/p&gt;&lt;p&gt;Heavly inspired by previous work of Professor Sammartano of the University of Messina, PyES4 aims to empower researchers with the ability to easly compute species distribution and simulate titration curves even for complex systems.&lt;/p&gt;&lt;p&gt;PyBSTAC is licensed under GPL3 and its source code is aviable on its entirety on &lt;a href=&quot;https://github.com/Kastakin/PyES4&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
