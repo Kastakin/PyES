@@ -326,9 +326,7 @@ class SpeciesModel(QAbstractTableModel):
         finish = position
         self.beginRemoveColumns(index, start, finish)
 
-        self._data = self._data.drop(
-            self._data.columns[start : finish], axis=1
-        )
+        self._data = self._data.drop(self._data.columns[start:finish], axis=1)
 
         self.endRemoveColumns()
         self.layoutChanged.emit()

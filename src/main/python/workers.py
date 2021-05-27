@@ -1,12 +1,11 @@
-import math
-import time
 import logging
+import time
 from datetime import datetime
 
 from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
 
-from optimizers.titration import Titration
 from optimizers.distribution import Distribution
+from optimizers.titration import Titration
 
 
 # Main optimization routine worker and signals

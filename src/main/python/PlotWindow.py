@@ -1,7 +1,6 @@
-from ui.sssc_plotExport import Ui_plotWindow
+from PyQt5.QtWidgets import QWidget
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWidget, QSizePolicy
+from ui.sssc_plotExport import Ui_plotWindow
 
 
 class PlotWindow(QWidget, Ui_plotWindow):

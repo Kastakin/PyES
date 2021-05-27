@@ -1,5 +1,4 @@
 import logging
-import math
 
 import numpy as np
 import pandas as pd
@@ -298,7 +297,6 @@ class Distribution:
             )
             self.log_beta.insert(0, "I", ionic_strength)
             self.log_beta.set_index("I", append=True, inplace=True)
-
 
         logging.info("--- CALCULATION TERMINATED ---")
 

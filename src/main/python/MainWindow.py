@@ -1,18 +1,12 @@
 import json
 
 import pandas as pd
-from ExportWindow import ExportWindow
-from PyQt5.QtCore import QRect, QThreadPool, QUrl
+from PyQt5.QtCore import QThreadPool, QUrl
 from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import (
-    QFileDialog,
-    QHeaderView,
-    QMainWindow,
-    QSizePolicy,
-    QAbstractItemView,
-)
+from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 
 from dialogs import aboutDialog, newDialog, wrongFileDialog
+from ExportWindow import ExportWindow
 from PlotWindow import PlotWindow
 from ui.sssc_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict

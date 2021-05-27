@@ -1,8 +1,7 @@
 # This file handles the creation of all the custom dialogs
 # used by the software
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QDialog, QMessageBox
 
 from ui.sssc_about import Ui_dialogAbout
 from ui.sssc_newDialog import Ui_dialogNew
