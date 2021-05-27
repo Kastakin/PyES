@@ -248,6 +248,7 @@ class Distribution:
         # Set the flag to signal a completed run
         self.done_flag = True
 
+        # Create the table containing the species/comp. concentration
         self.species_distribution = pd.DataFrame(
             species,
             index=self.ind_comp_logs,
@@ -257,6 +258,8 @@ class Distribution:
             columns="Species Con. [mol/L]",
         )
 
+        # Compute and create table with percentages of species with respect to component
+        # As defined with the input
         cans = np.insert(self.c_tot[0], self.ind_comp, 0)
         can_to_perc = np.concatenate(
             (cans, [cans[i] for i in self.perc_to_comp]), axis=0
@@ -273,17 +276,18 @@ class Distribution:
             )
             .rename_axis(
                 index="p[" + self.comp_names[self.ind_comp] + "]",
-                columns=["Species", "%% relative to comp."],
+                columns=["Species", r"% relative to comp."],
             )
             .round(2)
         )
 
         # If working at variable ionic strength
         if self.imode == 1:
-            # Add column to the species distribution containing the ionic strength
+            # Add multi index to the species distribution containing the ionic strength
             self.species_distribution.insert(0, "I", ionic_strength)
+            self.species_distribution.set_index("I", append=True, inplace=True)
 
-            # Create table for the adjusted LogB at each point
+            # Create table containging adjusted LogB for each point
             self.log_beta = pd.DataFrame(
                 log_b[:, self.nc :],
                 index=self.ind_comp_logs,
@@ -293,6 +297,8 @@ class Distribution:
                 columns="Formation Constants",
             )
             self.log_beta.insert(0, "I", ionic_strength)
+            self.log_beta.set_index("I", append=True, inplace=True)
+
 
         logging.info("--- CALCULATION TERMINATED ---")
 
