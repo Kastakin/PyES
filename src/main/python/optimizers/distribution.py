@@ -40,13 +40,13 @@ class Distribution:
         self.linc = data["logInc"]
 
         # Final log value should be higher then the initial one
-        if self.initl > self.finall:
+        if self.initl >= self.finall:
             raise Exception("Initial -log[A] should be lower then final -log[A].")
 
+        if self.linc == 0:
+            raise Exception("Increment of -log[A] should be more then zero.")
+
         # Create two arrays (log and conc. of indipendent component)
-        # np.arange can return values higher then the desired amount, so we trim those out
-        # self.nop = round((self.finall - self.initl) / self.linc)
-        # self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
         self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
@@ -59,6 +59,12 @@ class Distribution:
 
         # Analytical concentration of each component (including the ones that will be ignored)
         self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+
+        # Check if thay are all zero
+        if (self.c_tot == 0).all():
+            raise Exception(
+                "Analytical concentration shouldn't be zero for all components."
+            )
 
         # Charges of components
         self.comp_charge = self.comp_charge.copy().to_numpy(dtype="int")
@@ -153,7 +159,7 @@ class Distribution:
         # Number of components and number of species has to be > 0
         if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
             raise Exception(
-                "Number of components and number of species have to be > 0."
+                "Number of components and number of not ignored species should be more then zero."
             )
 
         # Check the ionic strength mode
@@ -267,6 +273,7 @@ class Distribution:
         perc_table = np.where(can_to_perc == 0, 0, species / can_to_perc)
         perc_table = perc_table * 100
 
+        # Percentages are rounded two the second decimal
         self.species_percentages = (
             pd.DataFrame(
                 perc_table,
