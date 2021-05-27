@@ -360,7 +360,7 @@ class Distribution:
                     "Charge": self.comp_charge,
                     "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
                 },
-                index=self.species_names[: self.nc],
+                index=self.species_names[: self.nc], 
             ).rename_axis(index="Components Names")
 
             return species_info, comp_info
@@ -450,7 +450,7 @@ class Distribution:
 
     def _newtonRaphson(self, point, c, model, log_beta_ris, c_tot, fixed_c, nc, ns, nf):
         # FIXME: FOR DEBUGGING PURPOSES
-        np.seterr("print")
+        # np.seterr("print")
 
         # If working with variable ionic strength ompute initial guess for species concentration
         if self.imode == 1:

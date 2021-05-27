@@ -765,7 +765,9 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
+        self.relErrorMode.setCurrentIndex(1)
         self.tabWidget_2.setCurrentIndex(0)
+        self.dmode.setCurrentIndex(1)
         self.calcButton.clicked.connect(MainWindow.calculate)
         self.exportButton.clicked.connect(MainWindow.exportDist)
         self.plotDistButton.clicked.connect(MainWindow.plotDist)

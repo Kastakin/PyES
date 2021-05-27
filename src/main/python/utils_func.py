@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from openpyxl.utils import get_column_letter
+
 
 # TODO: has to be updated from legacy code
 def returnDataDict(self, saving=True):
@@ -145,12 +147,16 @@ def getColWidths(dataframe):
     Function to be used in conjuction with openpyxl to adjust width to tontent of a dataframe.
     """
     # Find the maximum length for the index
-    idx_max = max(
-        [len(str(s)) for s in dataframe.index.values] + [len(str(dataframe.index.name))]
-    )
-    cols_max = [
-        max([len(str(s)) for s in dataframe[col].values] + [len(col)])
-        for col in dataframe.columns
-    ]
+    idx_max = [len(str(dataframe.index.name)) + 5]
+
+    cols_max = [(len(col) + 5) for col in dataframe.columns]
     # Concatenate the two
-    return [idx_max] + cols_max
+    return idx_max + cols_max
+
+
+def adjustWidths(ws, widths):
+    """
+    Given a worksheet apply the desired withs to all the columns
+    """
+    for i, column_width in enumerate(widths):
+        ws.column_dimensions[get_column_letter(i + 1)].width = column_width
