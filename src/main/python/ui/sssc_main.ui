@@ -760,6 +760,10 @@
               <bool>false</bool>
              </property>
              <widget class="QWidget" name="species">
+              <attribute name="icon">
+               <iconset resource="../../resources/base/resources.qrc">
+                <normaloff>:/icons/flask.png</normaloff>:/icons/flask.png</iconset>
+              </attribute>
               <attribute name="title">
                <string>Solution Species</string>
               </attribute>
@@ -798,6 +802,10 @@
               </layout>
              </widget>
              <widget class="QWidget" name="solidspecies">
+              <attribute name="icon">
+               <iconset resource="../../resources/base/resources.qrc">
+                <normaloff>:/icons/beaker-empty.png</normaloff>:/icons/beaker-empty.png</iconset>
+              </attribute>
               <attribute name="title">
                <string>Solid Species</string>
               </attribute>
@@ -1568,6 +1576,10 @@
           <property name="text">
            <string>Calculate</string>
           </property>
+          <property name="icon">
+           <iconset resource="../../resources/base/resources.qrc">
+            <normaloff>:/icons/control.png</normaloff>:/icons/control.png</iconset>
+          </property>
          </widget>
         </item>
         <item>
@@ -1599,6 +1611,10 @@
              <property name="text">
               <string>Export Results</string>
              </property>
+             <property name="icon">
+              <iconset resource="../../resources/base/resources.qrc">
+               <normaloff>:/icons/application-export.png</normaloff>:/icons/application-export.png</iconset>
+             </property>
             </widget>
            </item>
            <item>
@@ -1611,6 +1627,10 @@
              </property>
              <property name="text">
               <string>Plot Results</string>
+             </property>
+             <property name="icon">
+              <iconset resource="../../resources/base/resources.qrc">
+               <normaloff>:/icons/pencil-ruler.png</normaloff>:/icons/pencil-ruler.png</iconset>
              </property>
             </widget>
            </item>
@@ -1642,12 +1662,6 @@
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-    <addaction name="actionResult_report"/>
-   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>?</string>
@@ -1657,7 +1671,6 @@
     <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -1667,6 +1680,12 @@
    </property>
    <property name="movable">
     <bool>false</bool>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>18</width>
+     <height>18</height>
+    </size>
    </property>
    <property name="floatable">
     <bool>false</bool>
@@ -1681,6 +1700,7 @@
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
+   <addaction name="actionAbout"/>
   </widget>
   <action name="actionNew">
    <property name="enabled">
@@ -1713,6 +1733,10 @@
    </property>
   </action>
   <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="../../resources/base/resources.qrc">
+     <normaloff>:/icons/question-frame.png</normaloff>:/icons/question-frame.png</iconset>
+   </property>
    <property name="text">
     <string>About</string>
    </property>
@@ -1720,19 +1744,6 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionHideToolbar">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Toolbar</string>
-   </property>
-  </action>
-  <action name="actionResult_report">
-   <property name="text">
-    <string>Results report</string>
    </property>
   </action>
   <action name="actionWebsite">
@@ -1849,7 +1860,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>259</x>
-     <y>339</y>
+     <y>333</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -1865,7 +1876,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>259</x>
-     <y>381</y>
+     <y>375</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -1881,7 +1892,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>193</x>
-     <y>256</y>
+     <y>250</y>
     </hint>
     <hint type="destinationlabel">
      <x>612</x>
@@ -1897,7 +1908,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>193</x>
-     <y>188</y>
+     <y>182</y>
     </hint>
     <hint type="destinationlabel">
      <x>382</x>
@@ -1913,7 +1924,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>193</x>
-     <y>222</y>
+     <y>216</y>
     </hint>
     <hint type="destinationlabel">
      <x>548</x>

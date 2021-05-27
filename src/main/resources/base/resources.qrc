@@ -1,11 +1,17 @@
 <RCC>
   <qresource prefix="icons">
+    <file>pencil-ruler.png</file>
+    <file>question-frame.png</file>
+    <file>control.png</file>
+    <file>flask.png</file>
+    <file>beaker-empty.png</file>
+    <file>application-export.png</file>
+    <file>table.png</file>
     <file>application-import.png</file>
+    <file>document-excel.png</file>
     <file>folder-open-document.png</file>
     <file>document.png</file>
     <file>disk.png</file>
   </qresource>
-  <qresource prefix="img">
-    <file>chemistry.png</file>
-  </qresource>
+  <qresource prefix="img"/>
 </RCC>

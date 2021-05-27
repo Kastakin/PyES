@@ -6,24 +6,28 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>505</width>
-    <height>606</height>
+    <width>498</width>
+    <height>237</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>505</width>
-    <height>606</height>
+    <width>498</width>
+    <height>237</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>505</width>
-    <height>606</height>
+    <width>498</width>
+    <height>237</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Export Results</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../../resources/base/resources.qrc">
+    <normaloff>:/icons/application-export.png</normaloff>:/icons/application-export.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -31,31 +35,44 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="excel_tab">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <attribute name="icon">
+       <iconset resource="../../resources/base/resources.qrc">
+        <normaloff>:/icons/document-excel.png</normaloff>:/icons/document-excel.png</iconset>
+      </attribute>
       <attribute name="title">
        <string>Excel</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="leftMargin">
-        <number>0</number>
+        <number>5</number>
        </property>
        <property name="topMargin">
         <number>0</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>5</number>
        </property>
        <property name="bottomMargin">
         <number>10</number>
        </property>
        <item>
         <widget class="QWidget" name="widget_3" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <property name="leftMargin">
            <number>1</number>
@@ -137,37 +154,6 @@
             </layout>
            </widget>
           </item>
-          <item>
-           <widget class="QWidget" name="perc_group" native="true">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>5</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="perc_label">
-               <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Components for % concentrations:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QTableWidget" name="perc_table"/>
-             </item>
-            </layout>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -192,7 +178,11 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab_2">
+     <widget class="QWidget" name="csv_tab">
+      <attribute name="icon">
+       <iconset resource="../../resources/base/resources.qrc">
+        <normaloff>:/icons/table.png</normaloff>:/icons/table.png</iconset>
+      </attribute>
       <attribute name="title">
        <string>CSV</string>
       </attribute>
@@ -201,7 +191,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../resources/base/resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>export_button</sender>
@@ -210,28 +202,12 @@
    <slot>ExcelExport()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>184</x>
-     <y>576</y>
+     <x>200</x>
+     <y>215</y>
     </hint>
     <hint type="destinationlabel">
      <x>217</x>
-     <y>599</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>perc_check</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>ExportWindow</receiver>
-   <slot>TableEnabler()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>149</x>
-     <y>147</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>121</x>
-     <y>336</y>
+     <y>236</y>
     </hint>
    </hints>
   </connection>
