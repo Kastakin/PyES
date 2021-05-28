@@ -72,6 +72,9 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.tableView.resizeColumnToContents(0)
 
         self.graphWidget.setTitle("Distribution of Species")
+        self.graphWidget.setLabel('left', text="Concentration [mol/l]",)
+        self.graphWidget.setLabel('bottom', text="Indipendent Component [-log[A]]",)
+
         self.graphWidget.enableAutoRange()
 
         self.legend = pg.LegendItem()
@@ -129,7 +132,7 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                     self._data_lines.pop(species)
 
         self.graphWidget.setLimits(
-            yMin=y_min * 0.9, yMax=y_max * 1.1, xMin=x_min - 0.25, xMax=x_max + 0.25
+            yMin=y_min * 0.5, yMax=y_max * 1.1, xMin=x_min - 0.25, xMax=x_max + 0.25
         )
 
     def selectAll(self):
