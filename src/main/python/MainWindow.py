@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 
 from dialogs import aboutDialog, newDialog, wrongFileDialog
 from ExportWindow import ExportWindow
-from PlotWindow import PlotWindow
+from PlotWindow_pyqtgraph import PlotWindow
 from ui.sssc_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
@@ -592,6 +592,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear old results and secondary windows
         self.result = {}
+        self.PlotWindow = None
+        self.ExportWindow = None
 
         # Clear Logger
         self.consoleOutput.setText("")

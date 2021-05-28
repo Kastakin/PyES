@@ -42,6 +42,8 @@ class optimizeWorker(QRunnable):
         if self.data["dmode"] == 0:
             self.signals.log.emit(r"THE ABILITY TO SIMULATE TITRATION CURVES IS YET TO BE FULLY IMPLEMENTED")
             self.signals.log.emit(r"WE ARE SORRY FOR THE INCONVENIENCE")
+            self.signals.aborted.emit("")
+        #         return None
         #     ## TITRATION MODE ##
         #     # TODO: Error handling is still a bit weak, need testing
         #     optimizer = Titration()
