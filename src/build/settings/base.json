@@ -2,5 +2,5 @@
   "app_name": "PyES4",
   "author": "Lorenzo Castellino",
   "main_module": "src/main/python/main.py",
-  "version": "0.1.0"
+  "version": "0.0.0"
 }
