@@ -3,8 +3,8 @@
 
 from PyQt5.QtWidgets import QDialog, QMessageBox
 
-from ui.sssc_about import Ui_dialogAbout
-from ui.sssc_newDialog import Ui_dialogNew
+from ui.PyES4_about import Ui_dialogAbout
+from ui.PyES4_newDialog import Ui_dialogNew
 
 
 class newDialog(QDialog):

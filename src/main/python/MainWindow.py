@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 from dialogs import aboutDialog, newDialog, wrongFileDialog
 from ExportWindow import ExportWindow
 from PlotWindow_pyqtgraph import PlotWindow
-from ui.sssc_main import Ui_MainWindow
+from ui.PyES4_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
 from viewmodels.model_proxy import ProxyModel
@@ -51,8 +51,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionOpen.triggered.connect(self.file_open)
 
         self.actionCalculate.triggered.connect(self.calculate)
-        self.actionExport_Results.triggered.connect(self.plotDist)
-        self.actionPlot_Results.triggered.connect(self.exportDist)
+        self.actionExport_Results.triggered.connect(self.exportDist)
+        self.actionPlot_Results.triggered.connect(self.plotDist)
 
         self.actionAbout.triggered.connect(self.help_about)
         self.actionWebsite.triggered.connect(self.help_website)
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         indCompUpdater(self)
 
         # declare the checkline used to validate project files
-        self.check_line = {"check": "SSSC project file --- DO NOT MODIFY THIS LINE!"}
+        self.check_line = {"check": "PyES4 project file --- DO NOT MODIFY THIS LINE!"}
 
     def file_new(self):
         """

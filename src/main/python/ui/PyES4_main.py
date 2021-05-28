@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/lorenzo/Coding/SSSC/src/main/python/ui/sssc_main.ui'
+# Form implementation generated from reading ui file '/home/lorenzo/Coding/SSSC/src/main/python/ui/PyES4_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #

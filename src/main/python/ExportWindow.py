@@ -4,7 +4,7 @@ from datetime import datetime
 from pandas import ExcelWriter
 from PyQt5.QtWidgets import QFileDialog, QWidget
 
-from ui.sssc_dataExport import Ui_ExportWindow
+from ui.PyES4_dataExport import Ui_ExportWindow
 from utils_func import adjustWidths, getColWidths
 
 

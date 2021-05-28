@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import QInputDialog, QMainWindow
 
-from ui.sssc_pyqtgraphPlotExport import Ui_PlotWindow
+from ui.PyES4_pyqtgraphPlotExport import Ui_PlotWindow
 
 # Setup white background and black axis for the plot
 # THIS NEEDS TO BE DONE BOFORE LOADING THE UI FILE
