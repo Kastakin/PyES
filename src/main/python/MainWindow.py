@@ -50,6 +50,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.file_save)
         self.actionOpen.triggered.connect(self.file_open)
 
+        self.actionCalculate.triggered.connect(self.calculate)
+        self.actionExport_Results.triggered.connect(self.plotDist)
+        self.actionPlot_Results.triggered.connect(self.exportDist)
+
         self.actionAbout.triggered.connect(self.help_about)
         self.actionWebsite.triggered.connect(self.help_website)
 
@@ -140,6 +144,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Disable buttons to show results
             self.exportButton.setEnabled(False)
             self.plotDistButton.setEnabled(False)
+            self.actionExport_Results.setEnabled(False)
+            self.actionPlot_Results.setEnabled(False)
         else:
             pass
 
@@ -220,6 +226,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Disable buttons to show results
             self.exportButton.setEnabled(False)
             self.plotDistButton.setEnabled(False)
+            self.actionExport_Results.setEnabled(False)
+            self.actionPlot_Results.setEnabled(False)
 
             try:
                 self.numComp.setValue(jsdata["nc"])
@@ -464,6 +472,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # grayout export and plot buttons
         self.plotDistButton.setEnabled(False)
         self.exportButton.setEnabled(False)
+        self.actionExport_Results.setEnabled(False)
+        self.actionPlot_Results.setEnabled(False)
         # Clear logger output
         self.consoleOutput.clear()
 
@@ -589,6 +599,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.calcButton.setEnabled(False)
         self.plotDistButton.setEnabled(False)
         self.exportButton.setEnabled(False)
+        self.actionExport_Results.setEnabled(False)
+        self.actionPlot_Results.setEnabled(False)
 
         # Clear old results and secondary windows
         self.result = {}
@@ -614,6 +626,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.calcButton.setEnabled(True)
         self.plotDistButton.setEnabled(True)
         self.exportButton.setEnabled(True)
+        self.actionExport_Results.setEnabled(True)
+        self.actionPlot_Results.setEnabled(True)
 
     def aborted(self, error):
         self.consoleOutput.append("### ERROR ###")
