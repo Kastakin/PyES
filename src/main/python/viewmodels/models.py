@@ -5,32 +5,8 @@ import re
 
 import pandas as pd
 from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
-from PyQt5.QtGui import QColor
-
-
-class PreviewModel(QAbstractTableModel):
-    def __init__(self):
-        super().__init__()
-        self._data = pd.DataFrame([[0, 0]])
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            value = self._data.iloc[index.row(), index.column()]
-            return str(value)
-
-    def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Vertical:
-                return str(self._data.index[section])
-
-    def rowCount(self, index=QModelIndex()):
-        return self._data.shape[0]
-
-    def columnCount(self, index=QModelIndex()):
-        return self._data.shape[1]
+from PyQt5.QtGui import QColorConstants
+from utils_func import getName
 
 
 class TitrationComponentsModel(QAbstractTableModel):
@@ -186,9 +162,21 @@ class SpeciesModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             if index.column() != 0:
-                return QVariant("{0}".format(value))
+                return QVariant("{}".format(value))
             else:
                 return QVariant(value)
+
+        if role == Qt.BackgroundRole:
+            if (index.column() >= 8) & (index.column() < self.columnCount() - 1):
+                return QColorConstants.LightGray
+            elif index.column() == 2:
+                return QColorConstants.DarkCyan
+            elif index.column() == 3:
+                return QColorConstants.LightGray
+            elif index.column() == self.columnCount() - 1:
+                return False
+            else:
+                return QColorConstants.White
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -198,25 +186,53 @@ class SpeciesModel(QAbstractTableModel):
             if orientation == Qt.Vertical:
                 return str(self._data.index[section])
 
+    def updateCompName(self, new_comp):
+        # print(self._data["Comp. %"].isin(new_comp))
+        if self._data["Comp. %"].isin(new_comp).all() == False:
+            self._data["Comp. %"] = self._data["Comp. %"].where(
+                self._data["Comp. %"].isin(new_comp),
+                new_comp[0],
+            )
+            return True
+        else:
+            return False
+
     def updateHeader(self, new_header):
-        self._data.columns = [
-            "Ignored",
-            "LogB",
-            "Sigma",
-            "Ref. Ionic Str.",
-            "CG",
-            "DG",
-            "EG",
-        ] + new_header
+        # print(new_header)
+        self._data.columns = (
+            [
+                "Ignored",
+                "Name",
+                "LogB",
+                "Sigma",
+                "Ref. Ionic Str.",
+                "CG",
+                "DG",
+                "EG",
+            ]
+            + new_header
+            + ["Comp. %"]
+        )
+
+        for row in self._data.index:
+            self._data.iloc[row, 1] = str(getName(self._data.iloc[row, 8:-1]))
+            if self._data.iloc[row, 1] == "0":
+                self._data.iloc[row, 1] = ""
+
         self.layoutChanged.emit()
 
     def flags(self, index):
         if index.column() == 0:
             return Qt.ItemIsEditable | Qt.ItemIsEnabled
+        elif index.column() == 1:
+            return Qt.ItemIsSelectable | Qt.ItemIsEnabled
         else:
             value = self._data.iloc[index.row(), 0]
             if value == False:
-                return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+                if index.column() == self.columnCount() - 1:
+                    return Qt.ItemIsEditable | Qt.ItemIsEnabled
+                else:
+                    return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
             else:
                 return Qt.NoItemFlags
 
@@ -229,18 +245,28 @@ class SpeciesModel(QAbstractTableModel):
                     self.layoutChanged.emit()
                 except:
                     return False
-            # The following 6 columns are float values
-            elif index.column() < 7:
+            # The second column holds the species name as a string
+            elif index.column() == 1:
+                self._data.iloc[index.row(), index.column()] = str(value)
+            # Columns before the coeff. holds floating point values
+            elif index.column() < 8:
                 try:
                     self._data.iloc[index.row(), index.column()] = float(value)
                 except:
                     return False
+            # Last column always stores the info relative to % calculations
+            elif index.column() == self.columnCount() - 1:
+                self._data.iloc[index.row(), index.column()] = value
             # All the other columns hold stechiometric coeff. as int
             else:
                 try:
                     self._data.iloc[index.row(), index.column()] = int(value)
                 except:
                     return False
+                # Updating coeff. should update the corresponding species name
+                self._data.iloc[index.row(), 1] = str(
+                    getName(self._data.iloc[index.row(), 8:-1])
+                )
             self.dataChanged.emit(index, index)
         return True
 
@@ -251,8 +277,10 @@ class SpeciesModel(QAbstractTableModel):
         empty_row = pd.DataFrame(
             [
                 [False]
+                + [""]
                 + [0.0 for x in range(6)]
-                + [0 for x in range(self.columnCount(index) - 7)],
+                + [0 for x in range(self.columnCount(index) - 9)]
+                + [self._data.columns[8]],
             ],
             columns=self._data.columns,
         )
@@ -280,6 +308,8 @@ class SpeciesModel(QAbstractTableModel):
 
     def insertColumns(self, position, columns=1, index=QModelIndex()):
         """ Add columns to the model """
+        start = position + 1
+        finish = position + columns
         self.beginInsertColumns(index, position, position + columns - 1)
 
         for column in range(columns):
@@ -292,11 +322,11 @@ class SpeciesModel(QAbstractTableModel):
 
     def removeColumns(self, position, columns=1, index=QModelIndex()):
         """ Remove columns from the model. """
-        self.beginRemoveColumns(index, position, position + columns - 1)
+        start = position - columns
+        finish = position
+        self.beginRemoveColumns(index, start, finish)
 
-        self._data = self._data.drop(
-            self._data.columns[position - columns : position], axis=1
-        )
+        self._data = self._data.drop(self._data.columns[start:finish], axis=1)
 
         self.endRemoveColumns()
         self.layoutChanged.emit()
@@ -352,6 +382,7 @@ class SolidSpeciesModel(QAbstractTableModel):
                 return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
             else:
                 return Qt.NoItemFlags
+
     def setData(self, index, value, role):
         if role == Qt.EditRole:
             # The frist column holds the ignore flag

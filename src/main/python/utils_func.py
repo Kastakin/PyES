@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from openpyxl.utils import get_column_letter
+
 
 # TODO: has to be updated from legacy code
 def returnDataDict(self, saving=True):
@@ -93,9 +95,10 @@ def cleanData():
         ],
     )
     species_data = pd.DataFrame(
-        [[False] + [0.0 for x in range(6)] + [0]],
+        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
         columns=[
             "Ignored",
+            "Name",
             "LogB",
             "Sigma",
             "Ref. Ionic Str.",
@@ -103,6 +106,7 @@ def cleanData():
             "DG",
             "EG",
             "COMP1",
+            "Comp. %",
         ],
     )
     solid_species_data = pd.DataFrame(
@@ -120,3 +124,39 @@ def cleanData():
     ).drop(0)
 
     return conc_data, comp_data, species_data, solid_species_data
+
+
+def getName(vector):
+    """
+    Get name of species given their coefficients.
+    """
+    comps = vector.index.to_numpy(copy=True)
+    coeff = vector.to_numpy(copy=True)
+    comps = comps[coeff != 0]
+    coeff = coeff[coeff != 0]
+    comps = np.where(coeff < 0, "OH", comps)
+    coeff = np.abs(coeff)
+    comps = np.where(
+        coeff > 1, "(" + comps + ")" + coeff.astype(str), "(" + comps + ")"
+    )
+    return comps.sum()
+
+
+def getColWidths(dataframe):
+    """
+    Function to be used in conjuction with openpyxl to adjust width to tontent of a dataframe.
+    """
+    # Find the maximum length for the index
+    idx_max = [len(str(dataframe.index.name)) + 5]
+
+    cols_max = [(len(col) + 5) for col in dataframe.columns]
+    # Concatenate the two
+    return idx_max + cols_max
+
+
+def adjustWidths(ws, widths):
+    """
+    Given a worksheet apply the desired withs to all the columns
+    """
+    for i, column_width in enumerate(widths):
+        ws.column_dimensions[get_column_letter(i + 1)].width = column_width

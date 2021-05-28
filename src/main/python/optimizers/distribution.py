@@ -1,5 +1,4 @@
 import logging
-import math
 
 import numpy as np
 import pandas as pd
@@ -23,9 +22,6 @@ class Distribution:
         :param data: data as given from the GUI.
         """
         logging.info("--- START DATA LOADING ---")
-
-        # Comp names
-        self.comps = data["compModel"]["Name"]
         # Charge values of comps
         self.comp_charge = data["compModel"]["Charge"]
         # Data relative to the species and solid species
@@ -44,17 +40,18 @@ class Distribution:
         self.linc = data["logInc"]
 
         # Final log value should be higher then the initial one
-        if self.initl > self.finall:
+        if self.initl >= self.finall:
             raise Exception("Initial -log[A] should be lower then final -log[A].")
 
+        if self.linc == 0:
+            raise Exception("Increment of -log[A] should be more then zero.")
+
         # Create two arrays (log and conc. of indipendent component)
-        # np.arange can return values higher then the desired amount, so we trim those out
-        self.nop = round((self.finall - self.initl) / self.linc)
-        self.ind_comp_logs = np.linspace(self.initl, self.finall, self.nop)
+        self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
         self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
         # Calculate the number of points in the interval
-        # self.nop = len(self.ind_comp_c)
+        self.nop = len(self.ind_comp_c)
 
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
@@ -62,6 +59,12 @@ class Distribution:
 
         # Analytical concentration of each component (including the ones that will be ignored)
         self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+
+        # Check if thay are all zero
+        if (self.c_tot == 0).all():
+            raise Exception(
+                "Analytical concentration shouldn't be zero for all components."
+            )
 
         # Charges of components
         self.comp_charge = self.comp_charge.copy().to_numpy(dtype="int")
@@ -85,7 +88,7 @@ class Distribution:
         # Assign the indipendent component concentration for each point
         self.c_tot = np.tile(self.c_tot, [self.nop, 1])
 
-        # Define the stechiometric coefficients for the various species
+        # Store the stechiometric coefficients for the components
         # IMPORTANT: each component is considered as a species with logB = 0
         aux_model = np.identity(self.nc, dtype="int")
 
@@ -93,16 +96,48 @@ class Distribution:
         species_not_ignored = self.species_data.loc[
             self.species_data["Ignored"] == False
         ]
-        base_model = species_not_ignored.iloc[:, 7:].to_numpy(dtype="int").T
+
+        # Store the stechiometric coefficients for the species
+        base_model = species_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
 
         # Stores log_betas of not ignored species
-        base_log_beta = species_not_ignored.iloc[:, 1].to_numpy(dtype="float")
+        base_log_beta = species_not_ignored.iloc[:, 2].to_numpy(dtype="float")
+
+        # Store comp_names
+        self.comp_names = self.conc_data.index
+        ignored_comp_names = self.comp_names[ignored_comps]
+        self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
+
+        # Store for each species to which component calculate percentage.
+        self.perc_to_comp_string = species_not_ignored.iloc[:, -1].to_numpy(dtype="str")
 
         # Remove all the species that have one or more ignored comp with not null coeff.
-        # with their relative betas
+        # with their relative betas and component for percentage computation
         to_remove = (base_model[ignored_comps, :] != 0).sum(axis=0) != 0
         base_model = np.delete(base_model, to_remove, axis=1)
         base_log_beta = np.delete(base_log_beta, to_remove, axis=0)
+        self.perc_to_comp_string = np.delete(
+            self.perc_to_comp_string, to_remove, axis=0
+        )
+
+        # Encode the desired comp for percentages comutation as its index
+        # If any of the species would use one of the ignored comps
+        # assign the index for computation as if the indipendent comp
+        # would be used instead (its percent value will be zero)
+        comp_encoder = dict(zip(self.comp_names, range(self.comp_names.shape[0])))
+        invalid_comp_encoder = dict(
+            zip(ignored_comp_names, range(len(ignored_comp_names)))
+        )
+        perc_to_comp = self.perc_to_comp_string
+        self.perc_to_comp_string = np.concatenate(
+            (self.comp_names, self.perc_to_comp_string), axis=0
+        )
+        for key, value in comp_encoder.items():
+            perc_to_comp = np.where(perc_to_comp == key, value, perc_to_comp)
+        for key, value in invalid_comp_encoder.items():
+            perc_to_comp = np.where(perc_to_comp == key, self.ind_comp, perc_to_comp)
+
+        self.perc_to_comp = perc_to_comp.astype(int)
 
         # Delete the columns for the coeff relative to those components
         base_model = np.delete(base_model, ignored_comps, axis=0)
@@ -124,7 +159,7 @@ class Distribution:
         # Number of components and number of species has to be > 0
         if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
             raise Exception(
-                "Number of components and number of species have to be > 0."
+                "Number of components and number of not ignored species should be more then zero."
             )
 
         # Check the ionic strength mode
@@ -132,7 +167,8 @@ class Distribution:
         self.imode = data["imode"]
         if self.imode == 1:
             # Load reference ionic strength
-            self.ris = species_not_ignored.iloc[:, 3].to_numpy(dtype="float")
+            self.ris = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
+            # Remove ionic strenght for species that are ignored
             self.ris = np.delete(self.ris, to_remove, axis=0)
             # If ref. ionic strength is not given for a point use the reference one
             self.ris = np.where(self.ris == 0, data["ris"], self.ris)
@@ -179,9 +215,9 @@ class Distribution:
 
             # Retrive CG/DG/EG for each of the species
             # Remove values that refers to ignored comps
-            self.cg = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
-            self.dg = species_not_ignored.iloc[:, 5].to_numpy(dtype="float")
-            self.eg = species_not_ignored.iloc[:, 6].to_numpy(dtype="float")
+            self.cg = species_not_ignored.iloc[:, 5].to_numpy(dtype="float")
+            self.dg = species_not_ignored.iloc[:, 6].to_numpy(dtype="float")
+            self.eg = species_not_ignored.iloc[:, 7].to_numpy(dtype="float")
             self.cg = np.delete(self.cg, to_remove, axis=0)
             self.dg = np.delete(self.dg, to_remove, axis=0)
             self.eg = np.delete(self.eg, to_remove, axis=0)
@@ -202,8 +238,6 @@ class Distribution:
             self.eg = np.where(to_compute, default_eg, self.eg)
 
         # Compose species names from the model
-        self.comp_names = self.conc_data.index
-        self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
         self.species_names = self._speciesNames(self.model, self.comp_names)
         logging.info("--- DATA LOADED ---")
 
@@ -219,6 +253,7 @@ class Distribution:
         # Set the flag to signal a completed run
         self.done_flag = True
 
+        # Create the table containing the species/comp. concentration
         self.species_distribution = pd.DataFrame(
             species,
             index=self.ind_comp_logs,
@@ -228,12 +263,37 @@ class Distribution:
             columns="Species Con. [mol/L]",
         )
 
+        # Compute and create table with percentages of species with respect to component
+        # As defined with the input
+        cans = np.insert(self.c_tot[0], self.ind_comp, 0)
+        can_to_perc = np.concatenate(
+            (cans, [cans[i] for i in self.perc_to_comp]), axis=0
+        )
+
+        perc_table = np.where(can_to_perc == 0, 0, species / can_to_perc)
+        perc_table = perc_table * 100
+
+        # Percentages are rounded two the second decimal
+        self.species_percentages = (
+            pd.DataFrame(
+                perc_table,
+                index=self.ind_comp_logs,
+                columns=[self.species_names, self.perc_to_comp_string],
+            )
+            .rename_axis(
+                index="p[" + self.comp_names[self.ind_comp] + "]",
+                columns=["Species", r"% relative to comp."],
+            )
+            .round(2)
+        )
+
         # If working at variable ionic strength
         if self.imode == 1:
-            # Add column to the species distribution containing the ionic strength
+            # Add multi index to the species distribution containing the ionic strength
             self.species_distribution.insert(0, "I", ionic_strength)
+            self.species_distribution.set_index("I", append=True, inplace=True)
 
-            # Create table for the adjusted LogB at each point
+            # Create table containging adjusted LogB for each point
             self.log_beta = pd.DataFrame(
                 log_b[:, self.nc :],
                 index=self.ind_comp_logs,
@@ -243,6 +303,7 @@ class Distribution:
                 columns="Formation Constants",
             )
             self.log_beta.insert(0, "I", ionic_strength)
+            self.log_beta.set_index("I", append=True, inplace=True)
 
         logging.info("--- CALCULATION TERMINATED ---")
 
@@ -266,33 +327,45 @@ class Distribution:
         else:
             return False
 
+    def percentages(self):
+        """
+        Return percentages of species with respect to the desired component.
+        """
+        if self.done_flag == True:
+            return self.species_percentages
+        else:
+            return False
+
     def parameters(self):
         """
         Returns relevant data that was used for the computation
         """
-        species_info = pd.DataFrame(
-            {
-                "logB": self.log_beta_ris[self.nc :],
-            },
-            index=self.species_names[self.nc :],
-        ).rename_axis(index="Species Names")
+        if self.done_flag == True:
+            species_info = pd.DataFrame(
+                {
+                    "logB": self.log_beta_ris[self.nc :],
+                },
+                index=self.species_names[self.nc :],
+            ).rename_axis(index="Species Names")
 
-        if self.imode == 1:
-            species_info.insert(1, "Ref. I", self.ris[self.nc :])
-            species_info.insert(2, "Charge", self.species_charges[self.nc :])
-            species_info.insert(3, "C", self.cg[self.nc :])
-            species_info.insert(4, "D", self.dg[self.nc :])
-            species_info.insert(5, "E", self.eg[self.nc :])
+            if self.imode == 1:
+                species_info.insert(1, "Ref. I", self.ris[self.nc :])
+                species_info.insert(2, "Charge", self.species_charges[self.nc :])
+                species_info.insert(3, "C", self.cg[self.nc :])
+                species_info.insert(4, "D", self.dg[self.nc :])
+                species_info.insert(5, "E", self.eg[self.nc :])
 
-        comp_info = pd.DataFrame(
-            {
-                "Charge": self.comp_charge,
-                "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
-            },
-            index=self.species_names[: self.nc],
-        ).rename_axis(index="Components Names")
+            comp_info = pd.DataFrame(
+                {
+                    "Charge": self.comp_charge,
+                    "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
+                },
+                index=self.species_names[: self.nc], 
+            ).rename_axis(index="Components Names")
 
-        return species_info, comp_info
+            return species_info, comp_info
+        else:
+            return False
 
     def _compute(self):
         """
@@ -327,7 +400,11 @@ class Distribution:
                 # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
                 c = np.where(c > (self.epsl / 2), (self.epsl / 2), c)
                 c = np.where(c < (-self.epsl / 2), (-self.epsl / 2), c)
-                # Converto logs back to concentrations
+
+                if (c < 0).any():
+                    c = lp1
+
+                # Convert logs back to concentrations
                 c = 10 ** (-c)
                 c[self.ind_comp] = fixed_c
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
@@ -373,7 +450,7 @@ class Distribution:
 
     def _newtonRaphson(self, point, c, model, log_beta_ris, c_tot, fixed_c, nc, ns, nf):
         # FIXME: FOR DEBUGGING PURPOSES
-        np.seterr("print")
+        # np.seterr("print")
 
         # If working with variable ionic strength ompute initial guess for species concentration
         if self.imode == 1:
@@ -384,9 +461,10 @@ class Distribution:
                     self.comp_charge_no_indipendent,
                     first_guess=True,
                 )
-                logging.debug("Estimate LogB for point 0: {}".format(log_beta))
             else:
                 log_beta = self.previous_log_beta
+
+            logging.debug("Estimate LogB for point {}: {}".format(point, log_beta))
 
             c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
             log_beta, cis = self._updateLogB(c_spec, log_beta_ris, self.species_charges)
