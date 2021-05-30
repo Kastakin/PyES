@@ -4,18 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-numpy = "*"
-pandas = "*"
-openpyxl = "*"
-pyqtgraph = "*"
 fbs = "*"
 pyqt5 = "*"
 pyinstaller = "*"
-
-[dev-packages]
-bump2version = "*"
-pillow = "*"
-black = "*"
+pandas = "*"
+pyqtgraph = "*"
 
 [requires]
 python_version = "3.6"
+
+[dev-packages]
+bump2version = "*"

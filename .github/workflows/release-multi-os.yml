@@ -38,7 +38,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-deps -r requirements/base.txt
+          pip install -r requirements/base.txt
       - name: Run fbs
         run: |
           fbs freeze
@@ -68,7 +68,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-deps -r requirements/base.txt
+          pip install -r requirements/base.txt
       - name: Run fbs
         run: |
           fbs freeze
@@ -98,7 +98,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-deps -r requirements/base.txt
+          pip install -r requirements/base.txt
       - name: Run fbs and freeze application
         run: |
           fbs freeze
