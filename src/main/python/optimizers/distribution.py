@@ -270,7 +270,15 @@ class Distribution:
             (cans, [cans[i] for i in self.perc_to_comp]), axis=0
         )
 
-        perc_table = np.where(can_to_perc == 0, 0, species / can_to_perc)
+        adjust_factor = np.array(
+            [self.model[comp, self.nc + i] for i, comp in enumerate(self.perc_to_comp)]
+        )
+        adjust_factor = np.where(adjust_factor <= 0, 1, adjust_factor)
+        adjust_factor = np.concatenate(([1 for i in range(self.nc)], adjust_factor), axis=0)
+
+        perc_table = np.where(
+            can_to_perc == 0, 0, (species * adjust_factor) / can_to_perc
+        )
         perc_table = perc_table * 100
 
         # Percentages are rounded two the second decimal and stored in a dataframe
@@ -360,7 +368,7 @@ class Distribution:
                     "Charge": self.comp_charge,
                     "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
                 },
-                index=self.species_names[: self.nc], 
+                index=self.species_names[: self.nc],
             ).rename_axis(index="Components Names")
 
             return species_info, comp_info
