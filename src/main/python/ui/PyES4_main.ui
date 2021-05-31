@@ -1782,7 +1782,7 @@
     <string>Export Results</string>
    </property>
    <property name="toolTip">
-    <string>Esport Results</string>
+    <string>Export Results</string>
    </property>
   </action>
   <action name="actionPlot_Results">

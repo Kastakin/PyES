@@ -895,7 +895,7 @@ class Ui_MainWindow(object):
         self.actionCalculate.setText(_translate("MainWindow", "Calculate"))
         self.actionCalculate.setToolTip(_translate("MainWindow", "Launch the calculation"))
         self.actionExport_Results.setText(_translate("MainWindow", "Export Results"))
-        self.actionExport_Results.setToolTip(_translate("MainWindow", "Esport Results"))
+        self.actionExport_Results.setToolTip(_translate("MainWindow", "Export Results"))
         self.actionPlot_Results.setText(_translate("MainWindow", "Plot Results"))
         self.actionPlot_Results.setToolTip(_translate("MainWindow", "Plot Results"))
 import resources_rc
