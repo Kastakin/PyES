@@ -1467,8 +1467,11 @@
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
+                   <property name="toolTip">
+                    <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
+                   </property>
                    <property name="statusTip">
-                    <string>Concentration of background ions.</string>
+                    <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
                    </property>
                    <property name="suffix">
                     <string> mol/l</string>
