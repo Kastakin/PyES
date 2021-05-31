@@ -871,7 +871,7 @@ class Ui_MainWindow(object):
         self.cback_label.setText(_translate("MainWindow", "Concentration:"))
         self.cback.setStatusTip(_translate("MainWindow", "Concentration of background ions."))
         self.cback.setSuffix(_translate("MainWindow", " mol/l"))
-        self.indComp_label.setText(_translate("MainWindow", "Indipendent Comp:"))
+        self.indComp_label.setText(_translate("MainWindow", "Indipendent Comp A:"))
         self.indComp.setStatusTip(_translate("MainWindow", "Component to be considered indipendent."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Settings), _translate("MainWindow", "Settings"))
         self.debug.setStatusTip(_translate("MainWindow", "Create a Debug Log to file."))

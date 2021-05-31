@@ -1487,7 +1487,7 @@
                  <item row="1" column="0">
                   <widget class="QLabel" name="indComp_label">
                    <property name="text">
-                    <string>Indipendent Comp:</string>
+                    <string>Indipendent Comp A:</string>
                    </property>
                   </widget>
                  </item>
