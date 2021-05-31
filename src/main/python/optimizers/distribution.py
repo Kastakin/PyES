@@ -273,7 +273,7 @@ class Distribution:
         perc_table = np.where(can_to_perc == 0, 0, species / can_to_perc)
         perc_table = perc_table * 100
 
-        # Percentages are rounded two the second decimal
+        # Percentages are rounded two the second decimal and stored in a dataframe
         self.species_percentages = (
             pd.DataFrame(
                 perc_table,
