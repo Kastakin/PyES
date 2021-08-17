@@ -1467,8 +1467,11 @@
                    <property name="enabled">
                     <bool>false</bool>
                    </property>
+                   <property name="toolTip">
+                    <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
+                   </property>
                    <property name="statusTip">
-                    <string>Concentration of background ions.</string>
+                    <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
                    </property>
                    <property name="suffix">
                     <string> mol/l</string>
@@ -1487,7 +1490,7 @@
                  <item row="1" column="0">
                   <widget class="QLabel" name="indComp_label">
                    <property name="text">
-                    <string>Indipendent Comp:</string>
+                    <string>Indipendent Comp A:</string>
                    </property>
                   </widget>
                  </item>
@@ -1782,7 +1785,7 @@
     <string>Export Results</string>
    </property>
    <property name="toolTip">
-    <string>Esport Results</string>
+    <string>Export Results</string>
    </property>
   </action>
   <action name="actionPlot_Results">
