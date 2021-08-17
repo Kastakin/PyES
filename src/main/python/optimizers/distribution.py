@@ -274,7 +274,9 @@ class Distribution:
             [self.model[comp, self.nc + i] for i, comp in enumerate(self.perc_to_comp)]
         )
         adjust_factor = np.where(adjust_factor <= 0, 1, adjust_factor)
-        adjust_factor = np.concatenate(([1 for i in range(self.nc)], adjust_factor), axis=0)
+        adjust_factor = np.concatenate(
+            ([1 for i in range(self.nc)], adjust_factor), axis=0
+        )
 
         perc_table = np.where(
             can_to_perc == 0, 0, (species * adjust_factor) / can_to_perc
@@ -458,7 +460,7 @@ class Distribution:
 
     def _newtonRaphson(self, point, c, model, log_beta_ris, c_tot, fixed_c, nc, ns, nf):
         # FIXME: FOR DEBUGGING PURPOSES
-        # np.seterr("print")
+        np.seterr("print")
 
         # If working with variable ionic strength ompute initial guess for species concentration
         if self.imode == 1:
@@ -472,7 +474,7 @@ class Distribution:
             else:
                 log_beta = self.previous_log_beta
 
-            logging.debug("Estimate LogB for point {}: {}".format(point, log_beta))
+            logging.debug("Estimate of LogB for point {}: {}".format(point, log_beta))
 
             c, c_spec = self._damping(point, c, log_beta, c_tot, model, nc, ns, nf)
             log_beta, cis = self._updateLogB(c_spec, log_beta_ris, self.species_charges)
@@ -489,26 +491,13 @@ class Distribution:
 
         for iteration in range(200):
             logging.debug(
-                "-> BEGINNING ITERATION {} ON POINT {}".format(iteration, point)
+                "-> BEGINNING NEWTON-RAPHSON ITERATION {} ON POINT {}".format(
+                    iteration, point
+                )
             )
 
-            # Initiate the matrix for jacobian
-            J = np.zeros(shape=(nc, nc))
-
             # Compute Jacobian
-            for j in range(nc):
-                for k in range(j, nc):
-                    J[j, k] = np.sum(model[j] * model[k] * c_spec)
-                    J[k, j] = J[j, k]
-
-            # Ignore row and column relative to the indipendent component
-            J = np.delete(J, self.ind_comp, axis=0)
-            J = np.delete(J, self.ind_comp, axis=1)
-
-            # Calculate shift to free concentration
-            # The free concentration vector is manipulated so
-            # that the same value for the indipendent component is kept
-            c = np.delete(c, self.ind_comp, axis=0)
+            J, c = self._computeJacobian(nc, model, c_spec, c)
             delta_c = np.linalg.solve(J, delta) * c
             delta_c = np.insert(delta_c, self.ind_comp, 0, axis=0)
             c = np.insert(c, self.ind_comp, fixed_c, axis=0)
@@ -560,15 +549,39 @@ class Distribution:
                 )
             )
 
+    def _computeJacobian(self, nc, model, c_spec, c):
+        # Initiate the matrix for jacobian
+        J = np.zeros(shape=(nc, nc))
+
+        # Compute Jacobian
+        for j in range(nc):
+            for k in range(j, nc):
+                J[j, k] = np.sum(model[j] * model[k] * c_spec)
+                J[k, j] = J[j, k]
+
+        # Ignore row and column relative to the indipendent component
+        J = np.delete(J, self.ind_comp, axis=0)
+        J = np.delete(J, self.ind_comp, axis=1)
+
+        # Calculate shift to free concentration
+        # The free concentration vector is manipulated so
+        # that the same value for the indipendent component is kept
+        c = np.delete(c, self.ind_comp, axis=0)
+        return J, c
+
     # TODO: document added functions
     def _speciesConcentration(self, c, model, log_beta, nc, ns, nf):
-        # Calculate species concentration (c_spec[0->nc]=free conc/c_spec[nc+1->nc+ns]=species conc)
+        """
+        Calculate species concentration it returns c_spec and c_tot_calc:
+        - c_spec[0->nc] = free conc for each component.
+        - c_spec[nc+1->nc+ns] = species concentrations.
+        - c_tot_calc = estimated anaytical concentration.
+        """
         log_c = np.log10(c)
         tiled_log_c = np.tile(log_c, [ns + nc, 1]).T
         log_spec_mat = tiled_log_c * model
         log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
-        log_c_spec = np.where(log_c_spec > self.epsl, self.epsl, log_c_spec)
-        log_c_spec = np.where(log_c_spec < -self.epsl, -self.epsl, log_c_spec)
+        log_c_spec = self._checkOverUnderFlow(log_c_spec)
         c_spec = 10 ** log_c_spec
         logging.debug("Species Concentrations: {}".format(c_spec))
 
@@ -579,6 +592,11 @@ class Distribution:
         logging.debug("Calculated Total Concentration: {}".format(c_tot_calc))
 
         return c_tot_calc, c_spec
+
+    def _checkOverUnderFlow(self, log_c_spec):
+        log_c_spec = np.where(log_c_spec > self.epsl, self.epsl, log_c_spec)
+        log_c_spec = np.where(log_c_spec < -self.epsl, -self.epsl, log_c_spec)
+        return log_c_spec
 
     def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
         logging.debug("ENTERING DAMP ROUTINE")
