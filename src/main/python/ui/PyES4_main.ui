@@ -833,6 +833,12 @@
                  <property name="sizeAdjustPolicy">
                   <enum>QAbstractScrollArea::AdjustIgnored</enum>
                  </property>
+                 <property name="editTriggers">
+                  <set>QAbstractItemView::AllEditTriggers</set>
+                 </property>
+                 <property name="showDropIndicator" stdset="0">
+                  <bool>false</bool>
+                 </property>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>true</bool>
                  </attribute>

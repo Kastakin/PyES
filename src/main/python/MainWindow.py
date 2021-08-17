@@ -110,6 +110,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesView.setItemDelegateForColumn(
             0, CheckBoxDelegate(self.solidSpeciesView)
         )
+        # assign combobox delegate to last column
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
         solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -516,8 +523,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self, self.speciesView, self.compModel._data["Name"].tolist()
                 ),
             )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1, None
+            )
             self.solidSpeciesModel.insertColumns(
-                self.solidSpeciesModel.columnCount(), added_rows
+                self.solidSpeciesModel.columnCount() - 1, added_rows
+            )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+                ),
             )
             self.concModel.insertRows(self.concModel.rowCount(), added_rows)
         elif self.compModel.rowCount() > rows:
@@ -535,8 +551,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self, self.speciesView, self.compModel._data["Name"].tolist()
                 ),
             )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1, None
+            )
             self.solidSpeciesModel.removeColumns(
                 self.solidSpeciesModel.columnCount(), removed_rows
+            )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+                ),
             )
             self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
         else:

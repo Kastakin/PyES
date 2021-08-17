@@ -110,16 +110,18 @@ def cleanData():
         ],
     )
     solid_species_data = pd.DataFrame(
-        [[False] + [0.0 for x in range(6)] + [0]],
+        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
         columns=[
             "Ignored",
-            "LogKs",
+            "Name",
+            "LogB",
             "Sigma",
             "Ref. Ionic Str.",
-            "CGF",
-            "DGF",
-            "EGF",
+            "CG",
+            "DG",
+            "EG",
             "COMP1",
+            "Comp. %",
         ],
     ).drop(0)
 
