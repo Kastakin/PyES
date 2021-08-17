@@ -26,7 +26,7 @@ class Distribution:
         self.comp_charge = data["compModel"]["Charge"]
         # Data relative to the species and solid species
         self.species_data = data["speciesModel"]
-        self.solid_species_data = data["solidSpeciesModel"]
+        self.solid_data = data["solidSpeciesModel"]
         # Data relative to comp concentrations
         self.conc_data = data["concModel"]
 
@@ -90,71 +90,86 @@ class Distribution:
 
         # Store the stechiometric coefficients for the components
         # IMPORTANT: each component is considered as a species with logB = 0
-        aux_model = np.identity(self.nc, dtype="int")
+        comp_model = np.identity(self.nc, dtype="int")
 
-        # Ignore the rows relative to the flagged as ignored species
+        # Ignore the rows relative to the flagged as ignored species and solid species
         species_not_ignored = self.species_data.loc[
             self.species_data["Ignored"] == False
         ]
+        solid_not_ignored = self.solid_data.loc[self.solid_data["Ignored"] == False]
 
-        # Store the stechiometric coefficients for the species
+        # Store the stechiometric coefficients for the species and solid species
         base_model = species_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
+        solid_model = solid_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
 
-        # Stores log_betas of not ignored species
+        # Stores log_betas and log_ks of not ignored species
         base_log_beta = species_not_ignored.iloc[:, 2].to_numpy(dtype="float")
+        solid_log_ks = solid_not_ignored.iloc[:, 2].to_numpy(dtype="float")
 
         # Store comp_names
         self.comp_names = self.conc_data.index
         ignored_comp_names = self.comp_names[ignored_comps]
         self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
 
-        # Store for each species to which component calculate percentage.
-        self.perc_to_comp_string = species_not_ignored.iloc[:, -1].to_numpy(dtype="str")
+        # Store for each species which component is used to calculate relative percentage.
+        self.species_perc_str = species_not_ignored.iloc[:, -1].to_numpy(dtype="str")
+        self.solid_perc_str = solid_not_ignored.iloc[:, -1].to_numpy(dtype="str")
 
-        # Remove all the species that have one or more ignored comp with not null coeff.
+        # Remove all the species and solid species that have one or more ignored comp with not null coeff.
         # with their relative betas and component for percentage computation
-        to_remove = (base_model[ignored_comps, :] != 0).sum(axis=0) != 0
-        base_model = np.delete(base_model, to_remove, axis=1)
-        base_log_beta = np.delete(base_log_beta, to_remove, axis=0)
-        self.perc_to_comp_string = np.delete(
-            self.perc_to_comp_string, to_remove, axis=0
+        species_to_remove = (base_model[ignored_comps, :] != 0).sum(axis=0) != 0
+        solid_to_remove = (solid_model[ignored_comps, :] != 0).sum(axis=0) != 0
+        base_model = np.delete(base_model, species_to_remove, axis=1)
+        solid_model = np.delete(solid_model, solid_to_remove, axis=1)
+        base_log_beta = np.delete(base_log_beta, species_to_remove, axis=0)
+        solid_log_ks = np.delete(solid_log_ks, solid_to_remove, axis=0)
+        self.species_perc_str = np.delete(
+            self.species_perc_str, species_to_remove, axis=0
         )
+        self.solid_perc_str = np.delete(self.solid_perc_str, solid_to_remove, axis=0)
 
-        # Encode the desired comp for percentages comutation as its index
-        # If any of the species would use one of the ignored comps
+        # Encode the desired comp for percentages computation as its index
+        # If any of the species or solid species would use one of the ignored comps
         # assign the index for computation as if the indipendent comp
         # would be used instead (its percent value will be zero)
         comp_encoder = dict(zip(self.comp_names, range(self.comp_names.shape[0])))
         invalid_comp_encoder = dict(
             zip(ignored_comp_names, range(len(ignored_comp_names)))
         )
-        perc_to_comp = self.perc_to_comp_string
-        self.perc_to_comp_string = np.concatenate(
-            (self.comp_names, self.perc_to_comp_string), axis=0
+        species_perc_int = self.species_perc_str
+        solid_perc_int = self.solid_perc_str
+        self.species_perc_str = np.concatenate(
+            (self.comp_names, self.species_perc_str), axis=0
         )
         for key, value in comp_encoder.items():
-            perc_to_comp = np.where(perc_to_comp == key, value, perc_to_comp)
+            species_perc_int = np.where(
+                species_perc_int == key, value, species_perc_int
+            )
+            solid_perc_int = np.where(solid_perc_int == key, value, solid_perc_int)
         for key, value in invalid_comp_encoder.items():
-            perc_to_comp = np.where(perc_to_comp == key, self.ind_comp, perc_to_comp)
+            species_perc_int = np.where(
+                species_perc_int == key, self.ind_comp, species_perc_int
+            )
+            solid_perc_int = np.where(
+                solid_perc_int == key, self.ind_comp, solid_perc_int
+            )
 
-        self.perc_to_comp = perc_to_comp.astype(int)
+        self.species_perc_int = species_perc_int.astype(int)
+        self.solid_perc_int = solid_perc_int.astype(int)
 
-        # Delete the columns for the coeff relative to those components
+        # Delete the columns for the coeff relative to the ignored components
         base_model = np.delete(base_model, ignored_comps, axis=0)
+        solid_model = np.delete(solid_model, ignored_comps, axis=0)
 
         # Assemble the model and betas matrix
-        self.model = np.concatenate((aux_model, base_model), axis=1)
+        self.model = np.concatenate((comp_model, base_model), axis=1)
         self.log_beta_ris = np.concatenate(
             (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
         )
 
-        # Get the number of not-ignored species
+        # Get the number of not-ignored species/solid species
         self.ns = base_model.shape[1]
-
-        # TODO: this will break the code sooner or later when phases will be introduced
-        self.nf = int(
-            len(self.solid_species_data) - self.solid_species_data.Ignored.sum()
-        )
+        self.nf = solid_model.shape[1]
 
         # Number of components and number of species has to be > 0
         if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
@@ -167,14 +182,22 @@ class Distribution:
         self.imode = data["imode"]
         if self.imode == 1:
             # Load reference ionic strength
-            self.ris = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
-            # Remove ionic strenght for species that are ignored
-            self.ris = np.delete(self.ris, to_remove, axis=0)
+            self.species_ris = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
+            self.solid_ris = solid_not_ignored.iloc[:, 4].to_numpy(dtype="float")
+            # Remove ionic strenght for species/solids that are ignored
+            self.species_ris = np.delete(self.species_ris, species_to_remove, axis=0)
+            self.solid_ris = np.delete(self.solid_ris, solid_to_remove, axis=0)
             # If ref. ionic strength is not given for a point use the reference one
-            self.ris = np.where(self.ris == 0, data["ris"], self.ris)
+            self.species_ris = np.where(
+                self.species_ris == 0, data["ris"], self.species_ris
+            )
+            self.solid_ris = np.where(self.solid_ris == 0, data["ris"], self.solid_ris)
             # Add ref. ionic strength for components
-            self.ris = np.insert(self.ris, 0, [data["ris"] for i in range(self.nc)])
-            self.radqris = np.sqrt(self.ris)
+            self.species_ris = np.insert(
+                self.species_ris, 0, [data["ris"] for i in range(self.nc)]
+            )
+            # Calculate square root of reference ionic strength for species
+            self.radqris = np.sqrt(self.species_ris)
 
             # Load background ions concentration
             self.bs = data["cback"]
@@ -218,9 +241,9 @@ class Distribution:
             self.cg = species_not_ignored.iloc[:, 5].to_numpy(dtype="float")
             self.dg = species_not_ignored.iloc[:, 6].to_numpy(dtype="float")
             self.eg = species_not_ignored.iloc[:, 7].to_numpy(dtype="float")
-            self.cg = np.delete(self.cg, to_remove, axis=0)
-            self.dg = np.delete(self.dg, to_remove, axis=0)
-            self.eg = np.delete(self.eg, to_remove, axis=0)
+            self.cg = np.delete(self.cg, species_to_remove, axis=0)
+            self.dg = np.delete(self.dg, species_to_remove, axis=0)
+            self.eg = np.delete(self.eg, species_to_remove, axis=0)
             # Adds values for components
             self.cg = np.insert(self.cg, 0, [0 for i in range(self.nc)])
             self.dg = np.insert(self.dg, 0, [0 for i in range(self.nc)])
@@ -267,11 +290,14 @@ class Distribution:
         # As defined with the input
         cans = np.insert(self.c_tot[0], self.ind_comp, 0)
         can_to_perc = np.concatenate(
-            (cans, [cans[i] for i in self.perc_to_comp]), axis=0
+            (cans, [cans[i] for i in self.species_perc_int]), axis=0
         )
 
         adjust_factor = np.array(
-            [self.model[comp, self.nc + i] for i, comp in enumerate(self.perc_to_comp)]
+            [
+                self.model[comp, self.nc + i]
+                for i, comp in enumerate(self.species_perc_int)
+            ]
         )
         adjust_factor = np.where(adjust_factor <= 0, 1, adjust_factor)
         adjust_factor = np.concatenate(
@@ -288,7 +314,7 @@ class Distribution:
             pd.DataFrame(
                 perc_table,
                 index=self.ind_comp_logs,
-                columns=[self.species_names, self.perc_to_comp_string],
+                columns=[self.species_names, self.species_perc_str],
             )
             .rename_axis(
                 index="p[" + self.comp_names[self.ind_comp] + "]",
@@ -359,7 +385,7 @@ class Distribution:
             ).rename_axis(index="Species Names")
 
             if self.imode == 1:
-                species_info.insert(1, "Ref. I", self.ris[self.nc :])
+                species_info.insert(1, "Ref. I", self.species_ris[self.nc :])
                 species_info.insert(2, "Charge", self.species_charges[self.nc :])
                 species_info.insert(3, "C", self.cg[self.nc :])
                 species_info.insert(4, "D", self.dg[self.nc :])
@@ -600,7 +626,6 @@ class Distribution:
 
     def _damping(self, point, c, log_beta, c_tot, model, nc, ns, nf):
         logging.debug("ENTERING DAMP ROUTINE")
-        # TODO: Dampening of free concentration
 
         c_tot_calc, c_spec = self._speciesConcentration(c, model, log_beta, nc, ns, nf)
 
@@ -683,9 +708,9 @@ class Distribution:
         updated_log_beta = (
             log_beta
             - self.az * (fib2 - self.fib)
-            + self.cg * (cis - self.ris)
-            + self.dg * ((cis * radqcis) - (self.ris * self.radqris))
-            + self.eg * ((cis ** 2) - (self.ris ** 2))
+            + self.cg * (cis - self.species_ris)
+            + self.dg * ((cis * radqcis) - (self.species_ris * self.radqris))
+            + self.eg * ((cis ** 2) - (self.species_ris ** 2))
         )
 
         return updated_log_beta, cis
