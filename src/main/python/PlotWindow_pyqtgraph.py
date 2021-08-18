@@ -72,8 +72,14 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.tableView.resizeColumnToContents(0)
 
         self.graphWidget.setTitle("Distribution of Species")
-        self.graphWidget.setLabel('left', text="Concentration [mol/l]",)
-        self.graphWidget.setLabel('bottom', text="Indipendent Component [-log[A]]",)
+        self.graphWidget.setLabel(
+            "left",
+            text="Concentration [mol/l]",
+        )
+        self.graphWidget.setLabel(
+            "bottom",
+            text="Indipendent Component [-log[A]]",
+        )
 
         self.graphWidget.enableAutoRange()
 

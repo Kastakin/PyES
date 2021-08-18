@@ -18,14 +18,20 @@ class Ui_ExportWindow(object):
         ExportWindow.setMinimumSize(QtCore.QSize(498, 237))
         ExportWindow.setMaximumSize(QtCore.QSize(498, 237))
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/application-export.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(":/icons/application-export.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         ExportWindow.setWindowIcon(icon)
         self.verticalLayout = QtWidgets.QVBoxLayout(ExportWindow)
         self.verticalLayout.setObjectName("verticalLayout")
         self.export_type = QtWidgets.QTabWidget(ExportWindow)
         self.export_type.setObjectName("export_type")
         self.excel_tab = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.excel_tab.sizePolicy().hasHeightForWidth())
@@ -35,7 +41,9 @@ class Ui_ExportWindow(object):
         self.verticalLayout_2.setContentsMargins(5, 0, 5, 10)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.widget_3 = QtWidgets.QWidget(self.excel_tab)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_3.sizePolicy().hasHeightForWidth())
@@ -46,7 +54,9 @@ class Ui_ExportWindow(object):
         self.horizontalLayout.setContentsMargins(1, 5, 1, 5)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.widget_2 = QtWidgets.QWidget(self.widget_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_2.sizePolicy().hasHeightForWidth())
@@ -60,19 +70,29 @@ class Ui_ExportWindow(object):
         self.input_check_excel = QtWidgets.QCheckBox(self.widget_2)
         self.input_check_excel.setChecked(True)
         self.input_check_excel.setObjectName("input_check_excel")
-        self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.input_check_excel)
+        self.formLayout.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.input_check_excel
+        )
         self.distribution_check_excel = QtWidgets.QCheckBox(self.widget_2)
         self.distribution_check_excel.setObjectName("distribution_check_excel")
-        self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.distribution_check_excel)
+        self.formLayout.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.distribution_check_excel
+        )
         self.perc_check_excel = QtWidgets.QCheckBox(self.widget_2)
         self.perc_check_excel.setObjectName("perc_check_excel")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.perc_check_excel)
+        self.formLayout.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.perc_check_excel
+        )
         self.adjlogb_check_excel = QtWidgets.QCheckBox(self.widget_2)
         self.adjlogb_check_excel.setObjectName("adjlogb_check_excel")
-        self.formLayout.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.adjlogb_check_excel)
+        self.formLayout.setWidget(
+            4, QtWidgets.QFormLayout.LabelRole, self.adjlogb_check_excel
+        )
         self.options_label_excel = QtWidgets.QLabel(self.widget_2)
         self.options_label_excel.setObjectName("options_label_excel")
-        self.formLayout.setWidget(0, QtWidgets.QFormLayout.SpanningRole, self.options_label_excel)
+        self.formLayout.setWidget(
+            0, QtWidgets.QFormLayout.SpanningRole, self.options_label_excel
+        )
         self.horizontalLayout.addWidget(self.widget_2)
         self.verticalLayout_2.addWidget(self.widget_3)
         self.export_button_excel = QtWidgets.QPushButton(self.excel_tab)
@@ -83,7 +103,11 @@ class Ui_ExportWindow(object):
         self.export_button_excel.setObjectName("export_button_excel")
         self.verticalLayout_2.addWidget(self.export_button_excel)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/document-excel.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(
+            QtGui.QPixmap(":/icons/document-excel.png"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.export_type.addTab(self.excel_tab, icon1, "")
         self.csv_tab = QtWidgets.QWidget()
         self.csv_tab.setObjectName("csv_tab")
@@ -91,7 +115,9 @@ class Ui_ExportWindow(object):
         self.verticalLayout_3.setContentsMargins(5, 0, 5, 10)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.widget_4 = QtWidgets.QWidget(self.csv_tab)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_4.sizePolicy().hasHeightForWidth())
@@ -102,7 +128,9 @@ class Ui_ExportWindow(object):
         self.horizontalLayout_2.setContentsMargins(1, 5, 1, 5)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.widget_5 = QtWidgets.QWidget(self.widget_4)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_5.sizePolicy().hasHeightForWidth())
@@ -116,19 +144,29 @@ class Ui_ExportWindow(object):
         self.input_check_csv = QtWidgets.QCheckBox(self.widget_5)
         self.input_check_csv.setChecked(True)
         self.input_check_csv.setObjectName("input_check_csv")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.input_check_csv)
+        self.formLayout_2.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.input_check_csv
+        )
         self.distribution_check_csv = QtWidgets.QCheckBox(self.widget_5)
         self.distribution_check_csv.setObjectName("distribution_check_csv")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.distribution_check_csv)
+        self.formLayout_2.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.distribution_check_csv
+        )
         self.perc_check_csv = QtWidgets.QCheckBox(self.widget_5)
         self.perc_check_csv.setObjectName("perc_check_csv")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.perc_check_csv)
+        self.formLayout_2.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.perc_check_csv
+        )
         self.adjlogb_check_csv = QtWidgets.QCheckBox(self.widget_5)
         self.adjlogb_check_csv.setObjectName("adjlogb_check_csv")
-        self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.adjlogb_check_csv)
+        self.formLayout_2.setWidget(
+            4, QtWidgets.QFormLayout.LabelRole, self.adjlogb_check_csv
+        )
         self.options_label_csv = QtWidgets.QLabel(self.widget_5)
         self.options_label_csv.setObjectName("options_label_csv")
-        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.SpanningRole, self.options_label_csv)
+        self.formLayout_2.setWidget(
+            0, QtWidgets.QFormLayout.SpanningRole, self.options_label_csv
+        )
         self.horizontalLayout_2.addWidget(self.widget_5)
         self.verticalLayout_3.addWidget(self.widget_4)
         self.export_button_csv = QtWidgets.QPushButton(self.csv_tab)
@@ -139,7 +177,9 @@ class Ui_ExportWindow(object):
         self.export_button_csv.setObjectName("export_button_csv")
         self.verticalLayout_3.addWidget(self.export_button_csv)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/icons/table.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(
+            QtGui.QPixmap(":/icons/table.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off
+        )
         self.export_type.addTab(self.csv_tab, icon2, "")
         self.verticalLayout.addWidget(self.export_type)
 
@@ -153,17 +193,44 @@ class Ui_ExportWindow(object):
         _translate = QtCore.QCoreApplication.translate
         ExportWindow.setWindowTitle(_translate("ExportWindow", "Export Results"))
         self.input_check_excel.setText(_translate("ExportWindow", "Input info"))
-        self.distribution_check_excel.setText(_translate("ExportWindow", "Distribution"))
-        self.perc_check_excel.setText(_translate("ExportWindow", "% with respect to component"))
-        self.adjlogb_check_excel.setText(_translate("ExportWindow", "Adjusted formation constants"))
-        self.options_label_excel.setText(_translate("ExportWindow", "<html><head/><body><p><span style=\" font-weight:600;\">Options:</span></p></body></html>"))
+        self.distribution_check_excel.setText(
+            _translate("ExportWindow", "Distribution")
+        )
+        self.perc_check_excel.setText(
+            _translate("ExportWindow", "% with respect to component")
+        )
+        self.adjlogb_check_excel.setText(
+            _translate("ExportWindow", "Adjusted formation constants")
+        )
+        self.options_label_excel.setText(
+            _translate(
+                "ExportWindow",
+                '<html><head/><body><p><span style=" font-weight:600;">Options:</span></p></body></html>',
+            )
+        )
         self.export_button_excel.setText(_translate("ExportWindow", "Export"))
-        self.export_type.setTabText(self.export_type.indexOf(self.excel_tab), _translate("ExportWindow", "Excel"))
+        self.export_type.setTabText(
+            self.export_type.indexOf(self.excel_tab),
+            _translate("ExportWindow", "Excel"),
+        )
         self.input_check_csv.setText(_translate("ExportWindow", "Input info"))
         self.distribution_check_csv.setText(_translate("ExportWindow", "Distribution"))
-        self.perc_check_csv.setText(_translate("ExportWindow", "% with respect to component"))
-        self.adjlogb_check_csv.setText(_translate("ExportWindow", "Adjusted formation constants"))
-        self.options_label_csv.setText(_translate("ExportWindow", "<html><head/><body><p><span style=\" font-weight:600;\">Options:</span></p></body></html>"))
+        self.perc_check_csv.setText(
+            _translate("ExportWindow", "% with respect to component")
+        )
+        self.adjlogb_check_csv.setText(
+            _translate("ExportWindow", "Adjusted formation constants")
+        )
+        self.options_label_csv.setText(
+            _translate(
+                "ExportWindow",
+                '<html><head/><body><p><span style=" font-weight:600;">Options:</span></p></body></html>',
+            )
+        )
         self.export_button_csv.setText(_translate("ExportWindow", "Export"))
-        self.export_type.setTabText(self.export_type.indexOf(self.csv_tab), _translate("ExportWindow", "CSV"))
+        self.export_type.setTabText(
+            self.export_type.indexOf(self.csv_tab), _translate("ExportWindow", "CSV")
+        )
+
+
 import resources_rc

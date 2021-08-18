@@ -40,7 +40,9 @@ class optimizeWorker(QRunnable):
             log.setLevel(logging.DEBUG)
 
         if self.data["dmode"] == 0:
-            self.signals.log.emit(r"THE ABILITY TO SIMULATE TITRATION CURVES IS YET TO BE FULLY IMPLEMENTED")
+            self.signals.log.emit(
+                r"THE ABILITY TO SIMULATE TITRATION CURVES IS YET TO BE FULLY IMPLEMENTED"
+            )
             self.signals.log.emit(r"WE ARE SORRY FOR THE INCONVENIENCE")
             self.signals.aborted.emit("")
         #         return None
