@@ -615,7 +615,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.speciesModel.updateHeader(updated_comps)
         self.speciesModel.updateCompName(updated_comps)
+
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(self, self.solidSpeciesView, updated_comps),
+        )
         self.solidSpeciesModel.updateHeader(updated_comps)
+        self.solidSpeciesModel.updateCompName(updated_comps)
+
         self.concModel.updateIndex(updated_comps)
         indCompUpdater(self)
 
