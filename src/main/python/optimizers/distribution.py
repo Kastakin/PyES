@@ -128,38 +128,15 @@ class Distribution:
         )
         self.solid_perc_str = np.delete(self.solid_perc_str, solid_to_remove, axis=0)
 
-        # Encode the desired comp for percentages computation as its index
-        # If any of the species or solid species would use one of the ignored comps
-        # assign the index for computation as if the indipendent comp
-        # would be used instead (its percent value will be zero)
-        comp_encoder = dict(zip(self.comp_names, range(self.comp_names.shape[0])))
-        invalid_comp_encoder = dict(
-            zip(ignored_comp_names, range(len(ignored_comp_names)))
-        )
-        species_perc_int = self.species_perc_str
-        solid_perc_int = self.solid_perc_str
-        self.species_perc_str = np.concatenate(
-            (self.comp_names, self.species_perc_str), axis=0
-        )
-        for key, value in comp_encoder.items():
-            species_perc_int = np.where(
-                species_perc_int == key, value, species_perc_int
-            )
-            solid_perc_int = np.where(solid_perc_int == key, value, solid_perc_int)
-        for key, value in invalid_comp_encoder.items():
-            species_perc_int = np.where(
-                species_perc_int == key, self.ind_comp, species_perc_int
-            )
-            solid_perc_int = np.where(
-                solid_perc_int == key, self.ind_comp, solid_perc_int
-            )
-
-        self.species_perc_int = species_perc_int.astype(int)
-        self.solid_perc_int = solid_perc_int.astype(int)
-
         # Delete the columns for the coeff relative to the ignored components
         base_model = np.delete(base_model, ignored_comps, axis=0)
         solid_model = np.delete(solid_model, ignored_comps, axis=0)
+
+        # Transforms the component used to calculate percentages from string to the corresponding index
+        # If any of the species or solid species would use one of the ignored comps
+        # assign the index for computation as if the indipendent comp
+        # would be used instead (its percent value will be zero)
+        self._percEncoder(ignored_comp_names)
 
         # Assemble the model and betas matrix
         self.model = np.concatenate((comp_model, base_model), axis=1)
@@ -171,7 +148,7 @@ class Distribution:
         self.ns = base_model.shape[1]
         self.nf = solid_model.shape[1]
 
-        # Number of components and number of species has to be > 0
+        # Number of components and number of species/solids has to be > 0
         if self.nc <= 0 | (self.ns <= 0 & self.nf <= 0):
             raise Exception(
                 "Number of components and number of not ignored species should be more then zero."
@@ -714,6 +691,32 @@ class Distribution:
         )
 
         return updated_log_beta, cis
+
+    def _percEncoder(self, ignored_comp_names):
+        comp_encoder = dict(zip(self.comp_names, range(self.comp_names.shape[0])))
+        invalid_comp_encoder = dict(
+            zip(ignored_comp_names, range(len(ignored_comp_names)))
+        )
+        species_perc_int = self.species_perc_str
+        solid_perc_int = self.solid_perc_str
+        self.species_perc_str = np.concatenate(
+            (self.comp_names, self.species_perc_str), axis=0
+        )
+        for key, value in comp_encoder.items():
+            species_perc_int = np.where(
+                species_perc_int == key, value, species_perc_int
+            )
+            solid_perc_int = np.where(solid_perc_int == key, value, solid_perc_int)
+        for key, value in invalid_comp_encoder.items():
+            species_perc_int = np.where(
+                species_perc_int == key, self.ind_comp, species_perc_int
+            )
+            solid_perc_int = np.where(
+                solid_perc_int == key, self.ind_comp, solid_perc_int
+            )
+
+        self.species_perc_int = species_perc_int.astype(int)
+        self.solid_perc_int = solid_perc_int.astype(int)
 
     def _speciesNames(self, model, comps):
         """
