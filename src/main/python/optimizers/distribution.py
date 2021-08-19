@@ -500,10 +500,11 @@ class Distribution:
             )
 
             # Compute Jacobian
-            J, c = self._computeJacobian(nc, model, c_spec, c)
-            delta_c = np.linalg.solve(J, delta) * c
+            J = self._computeJacobian(nc, model, c_spec)
+            # Calculate shift to free concentration
+            # indipendent component shift is kept at 0 (not altered)
+            delta_c = np.linalg.solve(J, delta)
             delta_c = np.insert(delta_c, self.ind_comp, 0, axis=0)
-            c = np.insert(c, self.ind_comp, fixed_c, axis=0)
 
             # Positive constrain on freeC as present in STACO
             for i, shift in enumerate(delta_c):
@@ -552,25 +553,19 @@ class Distribution:
                 )
             )
 
-    def _computeJacobian(self, nc, model, c_spec, c):
+    def _computeJacobian(self, nc, model, c_spec):
         # Initiate the matrix for jacobian
         J = np.zeros(shape=(nc, nc))
 
         # Compute Jacobian
         for j in range(nc):
-            for k in range(j, nc):
-                J[j, k] = np.sum(model[j] * model[k] * c_spec)
-                J[k, j] = J[j, k]
+            for k in range(nc):
+                J[j, k] = np.sum(model[j] * model[k] * (c_spec / c_spec[k]))
 
         # Ignore row and column relative to the indipendent component
         J = np.delete(J, self.ind_comp, axis=0)
         J = np.delete(J, self.ind_comp, axis=1)
-
-        # Calculate shift to free concentration
-        # The free concentration vector is manipulated so
-        # that the same value for the indipendent component is kept
-        c = np.delete(c, self.ind_comp, axis=0)
-        return J, c
+        return J
 
     # TODO: document added functions
     def _speciesConcentration(self, c, model, log_beta, nc, ns, nf):
