@@ -166,7 +166,7 @@
                  </sizepolicy>
                 </property>
                 <property name="text">
-                 <string>N° Solid Phases</string>
+                 <string>N° Solid Species</string>
                 </property>
                </widget>
               </item>
@@ -1819,7 +1819,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>98</x>
-     <y>108</y>
+     <y>685</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -1835,7 +1835,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>108</x>
-     <y>144</y>
+     <y>744</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -1850,8 +1850,8 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>144</y>
+     <x>704</x>
+     <y>744</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
@@ -1882,8 +1882,8 @@
    <slot>indipendentUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>142</y>
+     <x>526</x>
+     <y>535</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
@@ -1898,8 +1898,8 @@
    <slot>v0Updater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>133</y>
+     <x>520</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
      <x>804</x>
@@ -1936,22 +1936,6 @@
     <hint type="destinationlabel">
      <x>1204</x>
      <y>376</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>numPhases</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>updatePhase()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>193</x>
-     <y>250</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>612</x>
-     <y>-5</y>
     </hint>
    </hints>
   </connection>
@@ -2003,6 +1987,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>numPhases</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>updateSolid()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>169</x>
+     <y>234</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>411</x>
+     <y>58</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>browseSlot()</slot>
@@ -2015,7 +2015,7 @@
   <slot>exportDist()</slot>
   <slot>plotDist()</slot>
   <slot>imodeUpdater()</slot>
-  <slot>updatePhase()</slot>
+  <slot>updateSolid()</slot>
   <slot>relErrorsUpdater()</slot>
   <slot>dmodeUpdater()</slot>
   <slot>indipendentUpdater()</slot>

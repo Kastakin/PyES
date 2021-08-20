@@ -938,10 +938,10 @@ class Ui_MainWindow(object):
             MainWindow.relErrorsUpdater
         )
         self.imode.currentIndexChanged["int"].connect(MainWindow.imodeUpdater)
-        self.numPhases.valueChanged["int"].connect(MainWindow.updatePhase)
         self.numComp.valueChanged["int"].connect(MainWindow.updateComp)
         self.numSpecies.valueChanged["int"].connect(MainWindow.updateSpecies)
         self.speciesView.clicked["QModelIndex"].connect(self.speciesView.edit)
+        self.numPhases.valueChanged["int"].connect(MainWindow.updateSolid)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -957,7 +957,7 @@ class Ui_MainWindow(object):
         )
         self.comp_label.setText(_translate("MainWindow", "N° Comp."))
         self.species_label.setText(_translate("MainWindow", "N° Species"))
-        self.phases_label.setText(_translate("MainWindow", "N° Solid Phases"))
+        self.phases_label.setText(_translate("MainWindow", "N° Solid Species"))
         self.numPhases.setStatusTip(
             _translate("MainWindow", "Number of solid phases to be considered.")
         )

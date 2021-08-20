@@ -277,7 +277,7 @@ class SpeciesModel(QAbstractTableModel):
                 [False]
                 + [""]
                 + [0.0 for x in range(6)]
-                + [0 for x in range(self.columnCount(index) - 9)]
+                + [int(0) for x in range(self.columnCount(index) - 9)]
                 + [self._data.columns[8]],
             ],
             columns=self._data.columns,
@@ -462,7 +462,7 @@ class SolidSpeciesModel(QAbstractTableModel):
                 [False]
                 + [""]
                 + [0.0 for x in range(6)]
-                + [0 for x in range(self.columnCount(index) - 9)]
+                + [int(0) for x in range(self.columnCount(index) - 9)]
                 + [self._data.columns[8]]
             ],
             columns=self._data.columns,
