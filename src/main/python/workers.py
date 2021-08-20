@@ -119,6 +119,7 @@ class optimizeWorker(QRunnable):
                 return None
 
             distribution = optimizer.distribution()
+            solid_distribution = optimizer.solidDistribution()
             percentages = optimizer.percentages()
             species_info, comp_info = optimizer.parameters()
 
@@ -132,13 +133,20 @@ class optimizeWorker(QRunnable):
 
             self.signals.log.emit("--" * 40)
 
+            if self.data["np"] > 0:
+                # Print and store solid species results
+                self.signals.log.emit(solid_distribution.to_string())
+                self.signals.result.emit(solid_distribution, "solid_distribution")
+
+                self.signals.log.emit("--" * 40)
+
             # Print and store species percentages
             self.signals.log.emit(percentages.to_string())
             self.signals.result.emit(percentages, "percentages")
 
             # If working at variable ionic strenght print and store formation constants aswell
             if self.data["imode"] == 1:
-                formation_constants = optimizer.formation_constants()
+                formation_constants = optimizer.formationConstants()
                 self.signals.log.emit("--" * 40)
                 self.signals.log.emit(formation_constants.to_string())
                 self.signals.result.emit(formation_constants, "formation_constants")
