@@ -452,7 +452,7 @@ class Distribution:
             elif point == 0:
                 c = np.multiply(self.c_tot[0], 0.01)
                 c = np.insert(c, self.ind_comp, fixed_c)
-                cp = np.array([0 for solid in range(self.nf)])
+                cp = np.zeros(self.nf)
                 logging.debug("ESTIMATED C AS FRACTION TOTAL C")
 
             logging.debug("INITIAL ESTIMATED FREE C: {}".format(c))
@@ -554,7 +554,7 @@ class Distribution:
         # Compute difference between total concentrations
         can_delta = c_tot - c_tot_calc
         saturation_index = self._saturationIndex(c, nf, solid_model, solid_log_ks)
-        solid_delta = [1 for solid in range(nf)] - saturation_index
+        solid_delta = np.ones(nf) - saturation_index
         delta = np.concatenate((can_delta, solid_delta))
 
         for iteration in range(200):
@@ -568,6 +568,7 @@ class Distribution:
             J = self._computeJacobian(
                 nc, nf, model, solid_model, c_spec, saturation_index
             )
+            logging.debug("Jacobian: {}".format(J))
             # Calculate shift to free concentration
             # indipendent component shift is kept at 0 (not altered)
             shifts = np.linalg.solve(J, delta)
@@ -579,41 +580,44 @@ class Distribution:
             )
             # Positive constrain on freeC as present in STACO
             for index, shift in enumerate(shifts[:nc]):
-                if shift <= -c[index]:
-                    logging.debug(
-                        "Positivizing Shift relative to component number {}".format(
-                            index
-                        )
-                    )
-                    factor = -0.99 * c[index] / shift
-                    shifts = factor * shifts
+                if c[index] + shift < 0:
+                    logging.debug("Invalid Shift for component {}".format(index))
+                    c[index] = c[index] / 10
+                else:
+                    # TODO: check if too big steps are to be avoided
+                    # if shift > 1e5:
+                    #     shift = 1e5
+                    # elif shift < 1e-5:
+                    #     shift = 1e-5
+                    # else:
+                    #     pass
+                    c[index] = c[index] + shift
 
             for index, shift in enumerate(shifts[nc:]):
-                if shift <= -cp[index]:
-                    logging.debug(
-                        "Positivizing Shift relative to precipitate number {}".format(
-                            index
-                        )
-                    )
-                    factor = -0.99 * cp[index] / shift
-                    shifts = factor * shifts
-
+                print(cp[index] + shift)
+                if cp[index] + shift < 0:
+                    shift = 0
+                # if saturation_index[index] < 1:
+                #     shift = 0
+                cp[index] = cp[index] + shift
             # Apply shift to free concentrations
-            c = c + shifts[:nc]
-            cp = cp + shifts[nc:]
-            logging.debug(
-                "Shifts actually applied to concentrations and precipitates: {}".format(
-                    shifts
-                )
-            )
+            # c = c + shifts[:nc]
+            # cp = cp + shifts[nc:]
+            # logging.debug(
+            #     "Shifts actually applied to concentrations and precipitates: {}".format(
+            #         shifts
+            #     )
+            # )
             logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
             logging.debug(
                 "Newton-Raphson updated precipitate concentrations: {}".format(cp)
             )
 
             # TODO: check if damping is really useful after each N-R iteration
-            # # Damp after newton-raphson iteration
-            # c, c_spec = self._damping(point, c, cp, log_beta, c_tot, model, solid_model, nc, ns, nf)
+            # Damp after newton-raphson iteration
+            c, c_spec = self._damping(
+                point, c, cp, log_beta, c_tot, model, solid_model, nc, ns, nf
+            )
 
             # Calculate total concentration given the updated free/precipitate concentration
             c_tot_calc, c_spec = self._speciesConcentration(
@@ -623,7 +627,9 @@ class Distribution:
             # Compute difference between total concentrations and convergence
             can_delta = c_tot - c_tot_calc
             saturation_index = self._saturationIndex(c, nf, solid_model, solid_log_ks)
-            solid_delta = [1 for solid in range(nf)] - saturation_index
+            solid_delta = np.ones(nf) - saturation_index
+            # print(saturation_index)
+            # print(solid_delta)
             delta = np.concatenate((can_delta, solid_delta))
 
             comp_conv_criteria = np.sum(can_delta / c_tot) ** 2
@@ -633,7 +639,7 @@ class Distribution:
                     point, iteration, comp_conv_criteria
                 )
             )
-
+            print(solid_delta, saturation_index)
             # If convergence criteria is met return the result
             if (comp_conv_criteria < 1e-16) and (all(i < 1e-16 for i in solid_delta)):
                 return c_spec, cp, log_beta, cis[0]
@@ -790,8 +796,8 @@ class Distribution:
     def _saturationIndex(self, c, nf, solid_model, solid_log_ks):
         if nf > 0:
             tiled_c = np.tile(c, [nf, 1]).T
-            saturation_index = np.prod(
-                (tiled_c ** solid_model) / (10 ** solid_log_ks), axis=0
+            saturation_index = np.prod((tiled_c ** solid_model), axis=0) / (
+                10 ** solid_log_ks
             )
             return saturation_index
         else:
