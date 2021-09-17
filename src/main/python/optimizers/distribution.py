@@ -240,7 +240,7 @@ class Distribution:
             self.eg = np.where(use_reference, reference_eg, self.eg)
 
         # Compose species names from the model
-        self.species_names = self._speciesNames(self.model, self.comp_names)
+        self.species_names = self._speciesNames()
         logging.info("--- DATA LOADED ---")
 
     def predict(self):
@@ -441,20 +441,17 @@ class Distribution:
                 c = 10 ** (-c)
                 # Free C of indipendent component is set as defined in the settings tab
                 c[self.ind_comp] = fixed_c
-
-                cp = np.zeros(self.nf)
                 logging.debug("ESTIMATED C WITH INTERPOLATION")
             elif point > 0:
                 c = results_species_conc[(point - 1)][: self.nc].copy()
                 c[self.ind_comp] = fixed_c
-
-                cp = np.zeros(self.nf)
                 logging.debug("ESTIMATED C FROM PREVIOUS POINT")
             elif point == 0:
                 c = np.multiply(self.c_tot[0], 0.01)
                 c = np.insert(c, self.ind_comp, fixed_c)
-                cp = np.zeros(self.nf)
                 logging.debug("ESTIMATED C AS FRACTION TOTAL C")
+
+            cp = np.zeros(self.nf)
 
             logging.debug("INITIAL ESTIMATED FREE C: {}".format(c))
             logging.debug("TOTAL C: {}".format(self.c_tot[point]))
@@ -470,15 +467,8 @@ class Distribution:
                 point,
                 c,
                 cp,
-                self.model,
-                self.solid_model,
-                self.log_beta_ris,
-                self.solid_log_ks,
                 self.c_tot[point],
                 fixed_c,
-                self.nc,
-                self.ns,
-                self.nf,
             )
 
             # Store concentrations before solid precipitation to estimate next points c
@@ -506,21 +496,7 @@ class Distribution:
             results_ionic_strength,
         )
 
-    def _newtonRaphson(
-        self,
-        point,
-        c,
-        cp,
-        model,
-        solid_model,
-        log_beta_ris,
-        solid_log_ks,
-        c_tot,
-        fixed_c,
-        nc,
-        ns,
-        nf,
-    ):
+    def _newtonRaphson(self, point, c, cp, c_tot, fixed_c):
         # FIXME: FOR DEBUGGING PURPOSES
         np.seterr("print")
         with_solids = False
@@ -531,7 +507,7 @@ class Distribution:
             if point == 0:
                 log_beta, _ = self._updateLogB(
                     c_tot,
-                    log_beta_ris,
+                    self.log_beta_ris,
                     self.comp_charge_no_indipendent,
                     first_guess=True,
                 )
@@ -540,40 +516,34 @@ class Distribution:
 
             logging.debug("Estimate of LogB for point {}: {}".format(point, log_beta))
 
-            c, c_spec = self._damping(
-                point, c, cp, log_beta, c_tot, model, solid_model, nc, ns, nf
+            c, c_spec = self._damping(point, c, cp, log_beta, c_tot)
+            log_beta, cis = self._updateLogB(
+                c_spec, self.log_beta_ris, self.species_charges
             )
-            log_beta, cis = self._updateLogB(c_spec, log_beta_ris, self.species_charges)
             self.previous_log_beta = log_beta
             logging.debug("Updated LogB: {}".format(log_beta))
         else:
-            log_beta = log_beta_ris
-            c, c_spec = self._damping(
-                point, c, cp, log_beta, c_tot, model, solid_model, nc, ns, nf
-            )
+            log_beta = self.log_beta_ris
+            c, c_spec = self._damping(point, c, cp, log_beta, c_tot)
             cis = [None]
 
+        log_ks = self.solid_log_ks
+
         # Calculate total concentration given the species concentration
-        c_tot_calc, c_spec = self._speciesConcentration(
-            c, cp, model, solid_model, log_beta, nc, ns, nf
+        c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
+
+        # Calculate saturation index for solid species if any
+        saturation_index = self._saturationIndex(c, log_ks)
+
+        # Check which solids are to be considered
+        shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
+            saturation_index
         )
 
-        saturation_index = self._saturationIndex(c, nf, solid_model, solid_log_ks)
-
-        cp_to_calculate = saturation_index > 1
-        cp_to_skip = ~cp_to_calculate
-        shifts_to_calculate = np.concatenate(
-            ([True for i in range(nc)], cp_to_calculate)
-        )
-        shifts_to_skip = ~shifts_to_calculate
-        shifts_to_calculate = np.delete(shifts_to_calculate, self.ind_comp, axis=0)
-        shifts_to_skip = np.delete(shifts_to_skip, self.ind_comp, axis=0)
-
-        # Compute difference between total concentrations
+        # Compute difference between total concentrations and calculated one
         delta, can_delta = self._computeDelta(
             c_tot,
             c_tot_calc,
-            nf,
             with_solids,
             saturation_index,
             cp_to_calculate=None,
@@ -588,31 +558,19 @@ class Distribution:
 
             # Compute Jacobian
             J = self._computeJacobian(
-                nc,
-                nf,
-                model,
-                solid_model,
                 c_spec,
                 saturation_index,
                 with_solids,
-                cp_to_skip,
+                shifts_to_skip[-self.nf :],
             )
             logging.debug("Jacobian: {}".format(J))
-            # Calculate shift to free concentration
-            # indipendent component shift is kept at 0 (not altered)
-            # print(with_solids)
-            # print(J.shape, delta.shape)
-            # print(J, delta)
+
+            # Solve the equations to obtain newton step
             shifts = np.linalg.solve(J, delta)
 
             if with_solids:
-                # print(with_solids)
-                # print(shifts)
-                # print(shifts_to_calculate)
-
                 actual_shifts = np.zeros(len(shifts_to_calculate))
                 actual_shifts[shifts_to_calculate] = shifts
-                # print(actual_shifts)
                 shifts = actual_shifts
 
             shifts = np.insert(shifts, self.ind_comp, 0, axis=0)
@@ -622,7 +580,7 @@ class Distribution:
                 )
             )
             # Positive constrain on freeC as present in STACO
-            for index, shift in enumerate(shifts[:nc]):
+            for index, shift in enumerate(shifts[: self.nc]):
                 if c[index] + shift < 0:
                     logging.debug("Invalid Shift for component {}".format(index))
                     c[index] = c[index] / 10
@@ -636,9 +594,7 @@ class Distribution:
                     #     pass
                     c[index] = c[index] + shift
 
-            for index, shift in enumerate(shifts[nc:]):
-                # print("cp:")
-                # print(cp[index])
+            for index, shift in enumerate(shifts[self.nc :]):
                 if cp[index] + shift < 0:
                     shift = 0
                 # TODO: Check if dissolution is possible
@@ -658,30 +614,22 @@ class Distribution:
             # )
 
             # Calculate total concentration given the updated free/precipitate concentration
-            c_tot_calc, c_spec = self._speciesConcentration(
-                c, cp, model, solid_model, log_beta, nc, ns, nf
-            )
+            c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             # Compute difference between total concentrations and convergence
-            saturation_index = self._saturationIndex(c, nf, solid_model, solid_log_ks)
+            saturation_index = self._saturationIndex(c, log_ks)
 
-            cp_to_calculate = saturation_index > 1
-            cp_to_skip = ~cp_to_calculate
-            shifts_to_calculate = np.concatenate(
-                ([True for i in range(nc)], cp_to_calculate)
+            shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
+                saturation_index
             )
-            shifts_to_skip = ~shifts_to_calculate
-            shifts_to_calculate = np.delete(shifts_to_calculate, self.ind_comp, axis=0)
-            shifts_to_skip = np.delete(shifts_to_skip, self.ind_comp, axis=0)
 
             # Compute difference between total concentrations
             delta, can_delta = self._computeDelta(
                 c_tot,
                 c_tot_calc,
-                nf,
                 with_solids,
                 saturation_index,
-                cp_to_calculate,
+                shifts_to_calculate[-self.nf :],
             )
 
             comp_conv_criteria = np.sum(can_delta / c_tot) ** 2
@@ -696,40 +644,31 @@ class Distribution:
             if not with_solids:
                 if comp_conv_criteria < 1e-16:
                     c_for_estimate = c_spec
-                    if nf > 0 and any(i > 1 for i in saturation_index):
+                    if self.nf > 0 and any(i > 1 for i in saturation_index):
                         # If so restart the iteration considering the solids and save the current free c obtained
                         iteration = 0
                         with_solids = True
-                        saturation_index = self._saturationIndex(
-                            c, nf, solid_model, solid_log_ks
-                        )
+                        saturation_index = self._saturationIndex(c, log_ks)
 
-                        cp_to_calculate = saturation_index > 1
-                        cp_to_skip = ~cp_to_calculate
-                        shifts_to_calculate = np.concatenate(
-                            ([True for i in range(nc)], cp_to_calculate)
-                        )
-                        shifts_to_skip = ~shifts_to_calculate
-                        shifts_to_calculate = np.delete(
-                            shifts_to_calculate, self.ind_comp, axis=0
-                        )
-                        shifts_to_skip = np.delete(
-                            shifts_to_skip, self.ind_comp, axis=0
-                        )
+                        (
+                            shifts_to_calculate,
+                            shifts_to_skip,
+                        ) = self._checkSolidsSaturation(saturation_index)
 
                         # Compute difference between total concentrations
                         delta, can_delta = self._computeDelta(
                             c_tot,
                             c_tot_calc,
-                            nf,
                             with_solids,
                             saturation_index,
-                            cp_to_calculate,
+                            shifts_to_calculate[-self.nf :],
                         )
                     else:
                         return c_for_estimate, c_spec, cp, log_beta, cis[0]
             else:
-                if comp_conv_criteria < 1e-16 and all(i < 1e-16 for i in delta[nc:]):
+                if comp_conv_criteria < 1e-16 and all(
+                    i < 1e-16 for i in delta[self.nc :]
+                ):
                     return c_for_estimate, c_spec, cp, log_beta, cis[0]
 
         # If during the first or second run you exceed the iteration limit report it
@@ -743,7 +682,7 @@ class Distribution:
                     if with_solids
                     else " after solids were considered."
                 )
-                if nf > 0
+                if self.nf > 0
                 else ""
             )
         )
@@ -757,24 +696,35 @@ class Distribution:
                     if with_solids
                     else " after solids were considered."
                 )
-                if nf > 0
+                if self.nf > 0
                 else ""
             )
         )
 
+    def _checkSolidsSaturation(self, saturation_index):
+        # Solid species to consider have saturation index over 1
+        cp_to_calculate = saturation_index > 1
+        cp_to_skip = ~cp_to_calculate
+
+        # For ease of calculation include components as species to consider
+        shifts_to_calculate = np.concatenate(
+            ([True for i in range(self.nc)], cp_to_calculate)
+        )
+        shifts_to_skip = ~shifts_to_calculate
+
+        # If calculating distribution of species exclude the indipendent component fro the species to consider
+        shifts_to_calculate = np.delete(shifts_to_calculate, self.ind_comp, axis=0)
+        shifts_to_skip = np.delete(shifts_to_skip, self.ind_comp, axis=0)
+
+        return shifts_to_calculate, shifts_to_skip
+
     def _computeDelta(
-        self,
-        c_tot,
-        c_tot_calc,
-        nf,
-        with_solids,
-        saturation_index,
-        cp_to_calculate,
+        self, c_tot, c_tot_calc, with_solids, saturation_index, cp_to_calculate
     ):
         can_delta = c_tot - c_tot_calc
 
         if with_solids:
-            solid_delta = np.ones(nf) - saturation_index
+            solid_delta = np.ones(self.nf) - saturation_index
             solid_delta = solid_delta[cp_to_calculate]
         else:
             solid_delta = []
@@ -783,50 +733,40 @@ class Distribution:
         # delta = can_delta
         return delta, can_delta
 
-    def _computeJacobian(
-        self, nc, nf, model, solid_model, c_spec, saturation_index, with_solids, to_skip
-    ):
+    def _computeJacobian(self, c_spec, saturation_index, with_solids, to_skip):
         if with_solids:
-            nt = nc + nf
-            to_skip = np.concatenate((np.array([False for i in range(nc)]), to_skip))
+            nt = self.nc + self.nf
+            to_skip = np.concatenate(
+                (np.array([False for i in range(self.nc)]), to_skip)
+            )
         else:
-            nt = nc
-        # print("{}NC {}NF {}NT".format(nc, nf, nt))
-        # print(model)
-        # print(solid_model)
-        # print(saturation_index)
-        # Initiate the matrix for jacobian
+            nt = self.nc
+
         J = np.zeros(shape=(nt, nt))
-        # J = np.zeros(shape=(nc, nc))
 
         # Compute Jacobian
         # Jacobian for acqueous species
-        for j in range(nc):
-            for k in range(nc):
-                J[j, k] = np.sum(model[j] * model[k] * (c_spec / c_spec[k]))
-        # print("done species")
+        for j in range(self.nc):
+            for k in range(self.nc):
+                J[j, k] = np.sum(self.model[j] * self.model[k] * (c_spec / c_spec[k]))
+
         if with_solids:
             # Jacobian for solid species
-            for j in range(nc):
-                for k in range(nc, nt):
-                    # print("computing {},{}".format(j, k))
-                    J[j, k] = solid_model[j, (k - nc)]
-            # print("done first protion solids")
+            for j in range(self.nc):
+                for k in range(self.nc, nt):
+                    J[j, k] = self.solid_model[j, (k - self.nc)]
 
-            for j in range(nc, nt):
-                for k in range(nc):
-                    # print("computing {},{}".format(j, k))
-                    J[j, k] = solid_model[k, (j - nc)] * (
-                        saturation_index[(j - nc)] / c_spec[k]
+            for j in range(self.nc, nt):
+                for k in range(self.nc):
+                    J[j, k] = self.solid_model[k, (j - self.nc)] * (
+                        saturation_index[(j - self.nc)] / c_spec[k]
                     )
-            # print("done second protion solids")
 
-            for j in range(nc, nt):
-                for k in range(nc, nt):
-                    # print("computing {},{}".format(j, k))
+            for j in range(self.nc, nt):
+                for k in range(self.nc, nt):
                     J[j, k] = 0
 
-            # TODO: remove all the column and rows where saturation index is < 1 (not needed for calculation)
+            # remove all the column and rows where saturation index is < 1 (not needed for calculation)
             J = np.delete(J, to_skip, axis=0)
             J = np.delete(J, to_skip, axis=1)
 
@@ -837,7 +777,7 @@ class Distribution:
         return J
 
     # TODO: document functions
-    def _speciesConcentration(self, c, cp, model, solid_model, log_beta, nc, ns, nf):
+    def _speciesConcentration(self, c, cp, log_beta):
         """
         Calculate species concentration it returns c_spec and c_tot_calc:
         - c_spec[0->nc] = free conc for each component.
@@ -845,18 +785,18 @@ class Distribution:
         - c_tot_calc = estimated anaytical concentration.
         """
         log_c = np.log10(c)
-        tiled_log_c = np.tile(log_c, [ns + nc, 1]).T
-        log_spec_mat = tiled_log_c * model
+        tiled_log_c = np.tile(log_c, [self.ns + self.nc, 1]).T
+        log_spec_mat = tiled_log_c * self.model
         log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
         log_c_spec = self._checkOverUnderFlow(log_c_spec)
         c_spec = 10 ** log_c_spec
         logging.debug("Species Concentrations: {}".format(c_spec))
 
-        tiled_cp = np.tile(cp, [nc, 1])
+        tiled_cp = np.tile(cp, [self.nc, 1])
 
         # Estimate total concentration given the species concentration
-        c_tot_calc = np.sum(model * np.tile(c_spec, [nc, 1]), axis=1) + (
-            np.sum(solid_model * tiled_cp, axis=1) if nf > 0 else 0
+        c_tot_calc = np.sum(self.model * np.tile(c_spec, [self.nc, 1]), axis=1) + (
+            np.sum(self.solid_model * tiled_cp, axis=1) if self.nf > 0 else 0
         )
         # Take out the analytical concentration relative to the indipendent component
         c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
@@ -872,12 +812,10 @@ class Distribution:
         c = np.where(c < (-self.epsl / d), (-self.epsl / d), c)
         return c
 
-    def _damping(self, point, c, cp, log_beta, c_tot, model, solid_model, nc, ns, nf):
+    def _damping(self, point, c, cp, log_beta, c_tot):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        c_tot_calc, c_spec = self._speciesConcentration(
-            c, cp, model, solid_model, log_beta, nc, ns, nf
-        )
+        c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
 
         ## ES42020 METHOD
 
@@ -912,16 +850,14 @@ class Distribution:
                 logging.debug("EXITING DAMP ROUTINE")
                 return c, c_spec
 
-            exp = np.max(model[j]) ** (-1 / 1)
+            exp = np.max(self.model[j]) ** (-1 / 1)
             logging.debug(
                 "Damping {} by a factor {} to the power of {}".format(j, fatt, exp)
             )
             c[j] = c[j] * fatt ** exp
             logging.debug("Damped C: {}".format(c))
 
-            c_tot_calc, c_spec = self._speciesConcentration(
-                c, cp, model, solid_model, log_beta, nc, ns, nf
-            )
+            c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if np.isnan(c_tot_calc).any():
                 raise Exception(
@@ -935,11 +871,11 @@ class Distribution:
                 damp_iteration = 0
                 jrc = 2
 
-    def _saturationIndex(self, c, nf, solid_model, solid_log_ks):
-        if nf > 0:
-            tiled_c = np.tile(c, [nf, 1]).T
-            saturation_index = np.prod((tiled_c ** solid_model), axis=0) / (
-                10 ** solid_log_ks
+    def _saturationIndex(self, c, log_ks):
+        if self.nf > 0:
+            tiled_c = np.tile(c, [self.nf, 1]).T
+            saturation_index = np.prod((tiled_c ** self.solid_model), axis=0) / (
+                10 ** log_ks
             )
             return saturation_index
         else:
@@ -1001,17 +937,17 @@ class Distribution:
         self.species_perc_int = species_perc_int.astype(int)
         self.solid_perc_int = solid_perc_int.astype(int)
 
-    def _speciesNames(self, model, comps):
+    def _speciesNames(self):
         """
         Returns species names as brute formula from comp names and coefficients
         """
-        model = model.T
+        model = self.model.T
         names = []
 
         # TODO: vectorize the operation
         for i in range(len(model)):
             names.append("")
-            for j, comp in enumerate(comps):
+            for j, comp in enumerate(self.comp_names):
                 if model[i][j] < 0:
                     names[i] = names[i] + ("(OH)")
                 else:
