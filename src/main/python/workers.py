@@ -120,7 +120,7 @@ class optimizeWorker(QRunnable):
 
             distribution = optimizer.distribution()
             solid_distribution = optimizer.solidDistribution()
-            percentages = optimizer.percentages()
+            species_percentages, solid_percentages = optimizer.percentages()
             species_info, comp_info = optimizer.parameters()
 
             # Store input info
@@ -130,31 +130,36 @@ class optimizeWorker(QRunnable):
             # Print and store species results
             self.signals.log.emit(distribution.to_string())
             self.signals.result.emit(distribution, "distribution")
+            self._divisor()
 
-            self.signals.log.emit("--" * 40)
+            # Print and store species percentages
+            self.signals.log.emit(species_percentages.to_string())
+            self.signals.result.emit(species_percentages, "species_percentages")
 
             if self.data["np"] > 0:
                 # Print and store solid species results
                 self.signals.log.emit(solid_distribution.to_string())
                 self.signals.result.emit(solid_distribution, "solid_distribution")
+                self._divisor()
 
-                self.signals.log.emit("--" * 40)
-
-            # Print and store species percentages
-            self.signals.log.emit(percentages.to_string())
-            self.signals.result.emit(percentages, "percentages")
+                # Print and store solid species percentages
+                self.signals.log.emit(solid_percentages.to_string())
+                self.signals.result.emit(solid_percentages, "solid_percentages")
 
             # If working at variable ionic strenght print and store formation constants aswell
             if self.data["imode"] == 1:
                 formation_constants = optimizer.formationConstants()
-                self.signals.log.emit("--" * 40)
+                self._divisor()
                 self.signals.log.emit(formation_constants.to_string())
                 self.signals.result.emit(formation_constants, "formation_constants")
 
-            self.signals.log.emit("--" * 40)
+            self._divisor()
             self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
 
             self.signals.log.emit("### FINISHED ###")
             self.signals.finished.emit()
 
         return None
+
+    def _divisor(self):
+        self.signals.log.emit("--" * 40)

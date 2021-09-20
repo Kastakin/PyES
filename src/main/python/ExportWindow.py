@@ -31,12 +31,14 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         """
         Export results to an excel file.
         """
-        export_path, _ = QFileDialog.getSaveFileName(
-            self, "Pick a Path", "", "Excel (*.xlsx)"
+        export_path, extension = QFileDialog.getSaveFileName(
+            self, "Pick a Path", "", "Excel 2007-365 (*.xlsx);;Excel 97-2003 (*.xls)"
         )
+        if extension.endswith(G)
 
         if export_path:
-            export_path = export_path.split(".")[0] + ".xlsx"
+            export_path = export_path.split(".")[0] + extension
+            print(export_path)
 
             with ExcelWriter(export_path) as writer:
                 wb = writer.book
