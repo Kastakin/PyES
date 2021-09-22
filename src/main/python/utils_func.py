@@ -158,9 +158,12 @@ def getColWidths(dataframe):
     return idx_max + cols_max
 
 
-def adjustWidths(ws, widths):
+def adjustColumnWidths(wb, ws_name, data):
     """
-    Given a worksheet apply the desired withs to all the columns
+    Given a worksheet apply the desired widths to all the columns
     """
+    ws = wb[ws_name]
+    widths = getColWidths(data)
+
     for i, column_width in enumerate(widths):
         ws.column_dimensions[get_column_letter(i + 1)].width = column_width

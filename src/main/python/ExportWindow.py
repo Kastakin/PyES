@@ -5,7 +5,7 @@ from pandas import ExcelWriter
 from PyQt5.QtWidgets import QFileDialog, QWidget
 
 from ui.PyES4_dataExport import Ui_ExportWindow
-from utils_func import adjustWidths, getColWidths
+from utils_func import adjustColumnWidths
 
 
 class ExportWindow(QWidget, Ui_ExportWindow):
@@ -31,31 +31,42 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         """
         Export results to an excel file.
         """
-        export_path, extension = QFileDialog.getSaveFileName(
-            self, "Pick a Path", "", "Excel 2007-365 (*.xlsx);;Excel 97-2003 (*.xls)"
+        export_path, _ = QFileDialog.getSaveFileName(
+            self, "Pick a Path", "", "Excel 2007-365 (*.xlsx)"
         )
-        if extension.endswith(G)
 
         if export_path:
-            export_path = export_path.split(".")[0] + extension
-            print(export_path)
+            export_path = export_path.split(".")[0] + ".xlsx"
 
             with ExcelWriter(export_path) as writer:
                 wb = writer.book
 
                 if self.input_check_excel.isChecked():
+                    skip_cols = 0
+
                     self.result["species_info"].to_excel(
-                        writer, sheet_name="System Info", startrow=3
+                        writer, sheet_name="Model Info", startrow=3
                     )
+                    skip_cols += self.result["species_info"].shape[1]
+
+                    if "solid_info" in self.result:
+                        self.result["solid_info"].to_excel(
+                            writer,
+                            sheet_name="Model Info",
+                            startrow=3,
+                            startcol=skip_cols + 2,
+                        )
+                        skip_cols += self.result["solid_info"].shape[1] + 2
+
                     self.result["comp_info"].to_excel(
                         writer,
-                        sheet_name="System Info",
+                        sheet_name="Model Info",
                         na_rep="---",
                         startrow=3,
-                        startcol=(self.result["species_info"].shape[1] + 3),
+                        startcol=skip_cols + 2,
                     )
 
-                    ws = wb["System Info"]
+                    ws = wb["Model Info"]
                     ws["A1"] = "File:"
                     ws["A2"] = "Date:"
                     ws.merge_cells("B1:D1")
@@ -64,22 +75,40 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                     ws["B2"] = datetime.now()
 
                 if self.distribution_check_excel.isChecked():
-                    self.result["distribution"].to_excel(
+                    self.result["species_distribution"].to_excel(
                         writer, sheet_name="Species Distribution"
                     )
-
-                    ws = wb["Species Distribution"]
-                    dist_widths = getColWidths(self.result["distribution"])
-                    adjustWidths(ws, dist_widths)
-
-                if self.perc_check_excel.isChecked():
-                    self.result["percentages"].to_excel(
-                        writer, sheet_name="Percentages"
+                    adjustColumnWidths(
+                        wb, "Species Distribution", self.result["species_distribution"]
                     )
 
-                    ws = wb["Percentages"]
-                    perc_widths = getColWidths(self.result["percentages"])
-                    adjustWidths(ws, perc_widths)
+                    if "solid_distribution" in self.result:
+                        self.result["solid_distribution"].to_excel(
+                            writer, sheet_name="Solid Distribution"
+                        )
+                        adjustColumnWidths(
+                            wb,
+                            "Solid Distribution",
+                            self.result["solid_distribution"],
+                        )
+
+                if self.perc_check_excel.isChecked():
+                    self.result["species_percentages"].to_excel(
+                        writer, sheet_name="Species Percentages"
+                    )
+
+                    adjustColumnWidths(
+                        wb, "Species Percentages", self.result["species_percentages"]
+                    )
+
+                    if "solid_percentages" in self.result:
+                        self.result["solid_percentages"].to_excel(
+                            writer, sheet_name="Solid Percentages"
+                        )
+
+                        adjustColumnWidths(
+                            wb, "Solid Percentages", self.result["solid_percentages"]
+                        )
 
                 if self.adjlogb_check_excel.isChecked():
                     self.result["formation_constants"].to_excel(
@@ -87,9 +116,25 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                         sheet_name="Adjusted Formation Constants",
                         float_format="%.3f",
                     )
-                    ws = wb["Adjusted Formation Constants"]
-                    logb_width = getColWidths(self.result["formation_constants"])
-                    adjustWidths(ws, logb_width)
+
+                    adjustColumnWidths(
+                        wb,
+                        "Adjusted Formation Constants",
+                        self.result["formation_constants"],
+                    )
+
+                    if "solubility_products" in self.result:
+                        self.result["solubility_products"].to_excel(
+                            writer,
+                            sheet_name="Adjusted Solubility Products",
+                            float_format="%.3f",
+                        )
+
+                        adjustColumnWidths(
+                            wb,
+                            "Adjusted Solubility Products",
+                            self.result["solubility_products"],
+                        )
 
     def CsvExport(self):
         """

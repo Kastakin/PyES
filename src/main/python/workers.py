@@ -118,42 +118,41 @@ class optimizeWorker(QRunnable):
                 self.signals.aborted.emit(str(e))
                 return None
 
-            distribution = optimizer.distribution()
+            species_distribution = optimizer.speciesDistribution()
             solid_distribution = optimizer.solidDistribution()
             species_percentages, solid_percentages = optimizer.percentages()
-            species_info, comp_info = optimizer.parameters()
+            species_info, solid_info, comp_info = optimizer.parameters()
 
             # Store input info
-            self.signals.result.emit(species_info, "species_info")
-            self.signals.result.emit(comp_info, "comp_info")
+            self._storeResult(species_info, "species_info")
+            self._storeResult(comp_info, "comp_info")
 
             # Print and store species results
-            self.signals.log.emit(distribution.to_string())
-            self.signals.result.emit(distribution, "distribution")
-            self._divisor()
+            self._storeResult(species_distribution, "species_distribution", log=True)
 
             # Print and store species percentages
-            self.signals.log.emit(species_percentages.to_string())
-            self.signals.result.emit(species_percentages, "species_percentages")
+            self._storeResult(species_percentages, "species_percentages", log=True)
 
             if self.data["np"] > 0:
+                # Store input info regarding solids
+                self._storeResult(solid_info, "solid_info")
                 # Print and store solid species results
-                self.signals.log.emit(solid_distribution.to_string())
-                self.signals.result.emit(solid_distribution, "solid_distribution")
-                self._divisor()
+                self._storeResult(solid_distribution, "solid_distribution", log=True)
 
                 # Print and store solid species percentages
-                self.signals.log.emit(solid_percentages.to_string())
-                self.signals.result.emit(solid_percentages, "solid_percentages")
+                self._storeResult(solid_percentages, "solid_percentages", log=True)
 
-            # If working at variable ionic strenght print and store formation constants aswell
+            # If working at variable ionic strength print and store formation constants/solubility products aswell
             if self.data["imode"] == 1:
                 formation_constants = optimizer.formationConstants()
-                self._divisor()
-                self.signals.log.emit(formation_constants.to_string())
-                self.signals.result.emit(formation_constants, "formation_constants")
+                self._storeResult(formation_constants, "formation_constants", log=True)
 
-            self._divisor()
+                if self.data["np"] > 0:
+                    solubility_products = optimizer.solubilityProducts()
+                    self._storeResult(
+                        solubility_products, "solubility_products", log=True
+                    )
+
             self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
 
             self.signals.log.emit("### FINISHED ###")
@@ -161,5 +160,8 @@ class optimizeWorker(QRunnable):
 
         return None
 
-    def _divisor(self):
-        self.signals.log.emit("--" * 40)
+    def _storeResult(self, data, name, log=False):
+        self.signals.result.emit(data, name)
+        if log == True:
+            self.signals.log.emit(data.to_string())
+            self.signals.log.emit("--" * 40)

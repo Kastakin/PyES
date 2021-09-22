@@ -758,11 +758,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ExportWindow.result = self.result
         self.ExportWindow.show()
 
-    def storeResults(self, data, location):
+    def storeResults(self, data, name):
         """
         Store result for exporting.
         """
-        self.result[location] = data
+        self.result[name] = data
 
     def plotDist(self, data):
         """
