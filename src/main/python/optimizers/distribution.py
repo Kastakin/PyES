@@ -22,6 +22,12 @@ class Distribution:
         :param data: data as given from the GUI.
         """
         logging.info("--- START DATA LOADING ---")
+        # Titration or Distribution mode
+        if data["dmode"] == 0:
+            self.distribution = False
+        else:
+            self.distribution = True
+
         # Charge values of comps
         self.comp_charge = data["compModel"]["Charge"]
         # Data relative to the species and solid species
@@ -30,28 +36,56 @@ class Distribution:
         # Data relative to comp concentrations
         self.conc_data = data["concModel"]
 
-        # Indipendent comp
-        self.ind_comp = data["ind_comp"]
-        # Initial log value
-        self.initl = data["initialLog"]
-        # Final log value
-        self.finall = data["finalLog"]
-        # log increments at each point
-        self.linc = data["logInc"]
+        if self.distribution:
+            # Indipendent comp
+            self.ind_comp = data["ind_comp"]
+            # Initial log value
+            self.initl = data["initialLog"]
+            # Final log value
+            self.finall = data["finalLog"]
+            # log increments at each point
+            self.linc = data["logInc"]
 
-        # Final log value should be higher then the initial one
-        if self.initl >= self.finall:
-            raise Exception("Initial -log[A] should be lower then final -log[A].")
+            # Final log value should be higher then the initial one
+            if self.initl >= self.finall:
+                raise Exception("Initial -log[A] should be lower then final -log[A].")
 
-        if self.linc == 0:
-            raise Exception("Increment of -log[A] should be more then zero.")
+            if self.linc == 0:
+                raise Exception("Increment of -log[A] should be more then zero.")
+            # Create two arrays (log and conc. of indipendent component)
+            self.ind_comp_logs = np.arange(
+                self.initl, (self.finall + self.linc), self.linc
+            )
+            self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
-        # Create two arrays (log and conc. of indipendent component)
-        self.ind_comp_logs = np.arange(self.initl, (self.finall + self.linc), self.linc)
-        self.ind_comp_c = 10 ** (-self.ind_comp_logs)
+            # Calculate the number of points in the interval
+            self.nop = len(self.ind_comp_c)
+        else:
+            self.c_added = self.conc_data.iloc[:, 1].copy().to_numpy(dtype="float")
+            # Initial volume
+            self.v0 = data["v0"]
+            # First titration point volume
+            self.initv = data["initv"]
+            # Volume increment at each point
+            self.vinc = data["vinc"]
+            # number of points
+            self.nop = int(data["nop"])
 
-        # Calculate the number of points in the interval
-        self.nop = len(self.ind_comp_c)
+            if self.v0 <= 0:
+                raise Exception("Initial volume can't be zero")
+
+            if self.vinc <= 0:
+                raise Exception("Volume increments should be higher then 0.")
+
+            if self.v0 > self.initv:
+                raise Exception(
+                    "Initial titration volume should be higer or equal to initial volume."
+                )
+
+            self.v_added = np.array([self.vinc * x for x in range(self.nop)])
+            v1_diff = self.initv - self.v0
+            self.v_added += v1_diff
+            self.v_tot = self.v0 + self.v_added
 
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
@@ -59,6 +93,9 @@ class Distribution:
 
         # Analytical concentration of each component (including the ones that will be ignored)
         self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+
+        if self.distribution:
+            self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
 
         # Check if thay are all zero
         if (self.c_tot == 0).all():
@@ -69,7 +106,6 @@ class Distribution:
         # Charges of components
         self.comp_charge = self.comp_charge.copy().to_numpy(dtype="int")
 
-        self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
         # Find which components have to be ignored (c0 = 0)
         ignored_comps = np.where(self.c_tot == 0)[0]
 
@@ -80,19 +116,26 @@ class Distribution:
         # get number of effective components
         self.nc = int(len(self.conc_data)) - len(ignored_comps)
 
-        # for every ignored comp which index is lower
-        # of the designated indipendent comp
-        # reduce its index by one (they "slide over")
-        self.ind_comp = self.ind_comp - (ignored_comps < self.ind_comp).sum()
-
-        # Assign the indipendent component concentration for each point
-        self.c_tot = np.tile(self.c_tot, [self.nop, 1])
+        if self.distribution:
+            # for every ignored comp which index is lower
+            # of the designated indipendent comp
+            # reduce its index by one (they "slide over")
+            self.ind_comp = self.ind_comp - (ignored_comps < self.ind_comp).sum()
+        # Assign total concentrations for each point
+        if self.distribution:
+            self.c_tot = np.tile(self.c_tot, [self.nop, 1])
+        else:
+            self.initial_c = self.c_tot
+            self.c_tot = (
+                (np.tile(self.c_tot, [self.nop, 1]) * self.v0)
+                + (np.tile(self.v_added, [self.nc, 1]).T * self.c_added)
+            ) / (np.tile(self.v_tot, [self.nc, 1]).T)
 
         # Store the stechiometric coefficients for the components
         # IMPORTANT: each component is considered as a species with logB = 0
         comp_model = np.identity(self.nc, dtype="int")
 
-        # Ignore the rows relative to the flagged as ignored species and solid species
+        # Ignore the rows relative to the flagged as ignored species and ignored solid species
         species_not_ignored = self.species_data.loc[
             self.species_data["Ignored"] == False
         ]
@@ -183,7 +226,17 @@ class Distribution:
             self.solid_radqris = np.sqrt(self.solid_ris)
 
             # Load background ions concentration
-            self.bs = data["cback"]
+            if self.distribution:
+                self.background_c = np.tile(data["cback"], self.nop)
+            else:
+                background_c0 = data["c0back"]
+                background_ct = data["ctback"]
+                self.background_c = np.array(
+                    [
+                        ((background_c0 * self.v0) + (background_ct * self.v_added))
+                        / self.v_tot
+                    ]
+                )
 
             a = data["a"]
             self.b = data["b"]
@@ -202,8 +255,12 @@ class Distribution:
 
             # Reshape charges into a column vector
             comp_charge_column = np.reshape(self.comp_charge, (self.nc, 1))
-            # Same vector except missing the charge of the indipendent component, used later in the computation
-            self.comp_charge_no_indipendent = np.delete(self.comp_charge, self.ind_comp)
+
+            if self.distribution:
+                # Same vector except missing the charge of the indipendent component, used later in the computation
+                self.comp_charge_no_indipendent = np.delete(
+                    self.comp_charge, self.ind_comp
+                )
 
             # Compute species charges
             self.species_charges = (self.model * comp_charge_column).sum(axis=0)
@@ -226,7 +283,7 @@ class Distribution:
             )
             self.solid_fib = self.solid_radqris / (1 + (self.b * self.solid_radqris))
 
-            # For both species and solids sets the Debye-Huckle parameters used to update their defining costants
+            # For both species and solids sets the Debye-Huckle parameters used to update their defining constants
             (self.species_cg, self.species_dg, self.species_eg) = self._setBHParams(
                 species_not_ignored,
                 species_to_remove,
@@ -253,35 +310,6 @@ class Distribution:
         self.solid_names = self._speciesNames(self.solid_model)
         logging.info("--- DATA LOADED ---")
 
-    def _setBHParams(self, species, to_remove, past, zast, c, d, e, solids=False):
-        # Retrive CG/DG/EG for each of the species
-        # Remove values that refers to ignored comps
-        cg = species.iloc[:, 5].to_numpy(dtype="float")
-        dg = species.iloc[:, 6].to_numpy(dtype="float")
-        eg = species.iloc[:, 7].to_numpy(dtype="float")
-        cg = np.delete(cg, to_remove, axis=0)
-        dg = np.delete(dg, to_remove, axis=0)
-        eg = np.delete(eg, to_remove, axis=0)
-
-        if not solids:
-            # If computing solution species adds values for components
-            cg = np.insert(cg, 0, [0 for i in range(self.nc)])
-            dg = np.insert(dg, 0, [0 for i in range(self.nc)])
-            eg = np.insert(eg, 0, [0 for i in range(self.nc)])
-
-        use_reference = (cg == 0) + (dg == 0) + (eg == 0)
-
-        # Compute CG/DG/EG terms of D-H
-        reference_cg = c[0] * past + c[1] * zast
-        reference_dg = d[0] * past + d[1] * zast
-        reference_eg = e[0] * past + e[1] * zast
-
-        cg = np.where(use_reference, reference_cg, cg)
-        dg = np.where(use_reference, reference_dg, dg)
-        eg = np.where(use_reference, reference_eg, eg)
-
-        return cg, dg, eg
-
     def predict(self):
         """
         Given the loaded data returns species distribution.
@@ -297,24 +325,26 @@ class Distribution:
         # Create the table containing the species/comp. concentration
         self.species_distribution = pd.DataFrame(
             species,
-            index=self.ind_comp_logs,
             columns=self.species_names,
         ).rename_axis(
-            index="p[" + self.comp_names[self.ind_comp] + "]",
             columns="Species Conc. [mol/L]",
         )
+        self.species_distribution = self._setDataframeIndex(self.species_distribution)
 
         # Create the table containing the solid species "concentration"
         self.solid_distribution = pd.DataFrame(
-            solid, index=self.ind_comp_logs, columns=self.solid_names
+            solid, columns=self.solid_names
         ).rename_axis(
-            index="p[" + self.comp_names[self.ind_comp] + "]",
             columns="Solid Conc. [mol/L]",
         )
+        self.solid_distribution = self._setDataframeIndex(self.solid_distribution)
 
         # Compute and create table with percentages of species with respect to component
         # As defined with the input
-        cans = np.insert(self.c_tot[0], self.ind_comp, 0)
+        if self.distribution:
+            cans = np.insert(self.c_tot, self.ind_comp, 0)
+        else:
+            cans = self.c_tot
 
         species_perc_table = self._computePercTable(
             cans, species, self.model, self.species_perc_int
@@ -327,28 +357,22 @@ class Distribution:
         self.species_percentages = (
             pd.DataFrame(
                 species_perc_table,
-                index=self.ind_comp_logs,
                 columns=[self.species_names, self.species_perc_str],
             )
-            .rename_axis(
-                index="p[" + self.comp_names[self.ind_comp] + "]",
-                columns=["Species", r"% relative to comp."],
-            )
+            .rename_axis(columns=["Species", r"% relative to comp."])
             .round(2)
         )
+        self.species_percentages = self._setDataframeIndex(self.species_percentages)
 
         self.solid_percentages = (
             pd.DataFrame(
                 solid_perc_table,
-                index=self.ind_comp_logs,
                 columns=[self.solid_names, self.solid_perc_str],
             )
-            .rename_axis(
-                index="p[" + self.comp_names[self.ind_comp] + "]",
-                columns=["Solids", r"% relative to comp."],
-            )
+            .rename_axis(columns=["Solids", r"% relative to comp."])
             .round(2)
         )
+        self.solid_percentages = self._setDataframeIndex(self.solid_percentages)
 
         # If working at variable ionic strength
         if self.imode == 1:
@@ -362,27 +386,22 @@ class Distribution:
             # Create table containing adjusted LogB for each point
             self.log_beta = pd.DataFrame(
                 log_b[:, self.nc :],
-                index=self.ind_comp_logs,
                 columns=self.species_names[self.nc :],
-            ).rename_axis(
-                index="p[" + self.comp_names[self.ind_comp] + "]",
-                columns="Formation Constants",
-            )
+            ).rename_axis(columns="Formation Constants")
+            self.log_beta = self._setDataframeIndex(self.log_beta)
+
             self.log_beta.insert(0, "I", ionic_strength)
             self.log_beta.set_index("I", append=True, inplace=True)
 
             # Create table containing adjusted LogKs for each point
             self.log_ks = pd.DataFrame(
                 log_ks,
-                index=self.ind_comp_logs,
                 columns=self.solid_names,
-            ).rename_axis(
-                index="p[" + self.comp_names[self.ind_comp] + "]",
-                columns="Solubility Products",
-            )
+            ).rename_axis(columns="Solubility Products")
+            self.log_ks = self._setDataframeIndex(self.log_ks)
+
             self.log_ks.insert(0, "I", ionic_strength)
             self.log_ks.set_index("I", append=True, inplace=True)
-
 
         logging.info("--- CALCULATION TERMINATED ---")
 
@@ -408,7 +427,7 @@ class Distribution:
 
     def formationConstants(self):
         """
-        Returns the table containing formation costants and the ionic strength.
+        Returns the table containing formation constants and the ionic strength.
         """
         if self.done_flag == True:
             return self.log_beta
@@ -423,7 +442,6 @@ class Distribution:
             return self.log_ks
         else:
             return False
-        
 
     def percentages(self):
         """
@@ -473,10 +491,14 @@ class Distribution:
             comp_info = pd.DataFrame(
                 {
                     "Charge": self.comp_charge,
-                    "Tot. C.": np.insert(self.c_tot[0], self.ind_comp, None),
                 },
                 index=self.species_names[: self.nc],
             ).rename_axis(index="Components Names")
+            if self.distribution:
+                comp_info["Tot. C."] = np.insert(self.c_tot[0], self.ind_comp, None)
+            else:
+                comp_info["Vessel Conc."] = self.initial_c
+                comp_info["Titrant Conc."] = self.c_added
 
             return species_info, solid_info, comp_info
         else:
@@ -499,42 +521,13 @@ class Distribution:
         for point in range(self.nop):
             logging.debug("--> OPTIMIZATION POINT: {}".format(point))
 
-            # Calculate species concentration given initial betas
-            # Initial guess of free concentration (c) is considered as follows:
-            #   - First point as a fraction of the total concentration
-            #   - Second and third points as estimate from previous point
-            #   - Subsequent points are extrapolated as follows
+            if self.distribution:
+                c, fixed_c = self._distributionGuess(point, for_estimation_c)
+            else:
+                fixed_c = None
+                c = self._titrationGuess(point, for_estimation_c)
 
-            fixed_c = self.ind_comp_c[point]
-
-            if point > 2:
-                lp1 = -np.log10(for_estimation_c[(point - 1)][: self.nc])
-                lp2 = -np.log10(for_estimation_c[(point - 2)][: self.nc])
-                lp3 = -np.log10(for_estimation_c[(point - 3)][: self.nc])
-
-                # If two subsequent points present the same concentration
-                # avoid the issue by using simply the previous point concentration
-                c = np.where(lp2 == lp3, lp1, (lp1 + ((lp1 - lp2) ** 2) / (lp2 - lp3)))
-                # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
-                c = self._checkOverUnderFlow(c, d=2)
-
-                if (c < 0).any():
-                    c = lp1
-
-                # Convert logs back to concentrations
-                c = 10 ** (-c)
-                # Free C of indipendent component is set as defined in the settings tab
-                c[self.ind_comp] = fixed_c
-                logging.debug("ESTIMATED C WITH INTERPOLATION")
-            elif point > 0:
-                c = results_species_conc[(point - 1)][: self.nc].copy()
-                c[self.ind_comp] = fixed_c
-                logging.debug("ESTIMATED C FROM PREVIOUS POINT")
-            elif point == 0:
-                c = np.multiply(self.c_tot[0], 0.01)
-                c = np.insert(c, self.ind_comp, fixed_c)
-                logging.debug("ESTIMATED C AS FRACTION TOTAL C")
-
+            # Initial guess for solids conentrations should always be zero
             cp = np.zeros(self.nf)
 
             logging.debug("INITIAL ESTIMATED FREE C: {}".format(c))
@@ -594,11 +587,12 @@ class Distribution:
         # If working with variable ionic strength ompute initial guess for species concentration
         if self.imode == 1:
             if point == 0:
-                log_beta, log_ks, _ = self._updateCostants(
+                log_beta, log_ks, _ = self._updateConstants(
                     c_tot,
                     self.log_beta_ris,
                     self.solid_log_ks,
-                    self.comp_charge_no_indipendent,
+                    self.comp_charge,
+                    point,
                     first_guess=True,
                 )
             else:
@@ -607,10 +601,14 @@ class Distribution:
 
             logging.debug("Estimate of LogB for point {}: {}".format(point, log_beta))
 
-            c, c_spec = self._damping(point, c, cp, log_beta, c_tot)
+            c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
 
-            log_beta, log_ks, cis = self._updateCostants(
-                c_spec, self.log_beta_ris, self.solid_log_ks, self.species_charges
+            log_beta, log_ks, cis = self._updateConstants(
+                c_spec,
+                self.log_beta_ris,
+                self.solid_log_ks,
+                self.species_charges,
+                point,
             )
 
             self.previous_log_beta = log_beta
@@ -619,7 +617,7 @@ class Distribution:
         else:
             log_beta = self.log_beta_ris
             log_ks = self.solid_log_ks
-            c, c_spec = self._damping(point, c, cp, log_beta, c_tot)
+            c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
             cis = [None]
 
         # Calculate total concentration given the species concentration
@@ -656,7 +654,6 @@ class Distribution:
                 with_solids,
                 shifts_to_skip[-self.nf :],
             )
-            logging.debug("Jacobian: {}".format(J))
 
             # Solve the equations to obtain newton step
             shifts = np.linalg.solve(J, delta)
@@ -666,7 +663,8 @@ class Distribution:
                 actual_shifts[shifts_to_calculate] = shifts
                 shifts = actual_shifts
 
-            shifts = np.insert(shifts, self.ind_comp, 0, axis=0)
+            if self.distribution:
+                shifts = np.insert(shifts, self.ind_comp, 0, axis=0)
             logging.debug(
                 "Shifts to be applied to concentrations and precipitates: {}".format(
                     shifts
@@ -675,7 +673,9 @@ class Distribution:
             # Positive constrain on freeC as present in STACO
             for index, shift in enumerate(shifts[: self.nc]):
                 if c[index] + shift < 0:
-                    logging.debug("Invalid Shift for component {}".format(index))
+                    logging.debug(
+                        "Invalid Shift encountered for component {}".format(index)
+                    )
                     c[index] = c[index] / 10
                 else:
                     # TODO: check if too big steps are to be avoided
@@ -805,9 +805,10 @@ class Distribution:
         )
         shifts_to_skip = ~shifts_to_calculate
 
-        # If calculating distribution of species exclude the indipendent component fro the species to consider
-        shifts_to_calculate = np.delete(shifts_to_calculate, self.ind_comp, axis=0)
-        shifts_to_skip = np.delete(shifts_to_skip, self.ind_comp, axis=0)
+        if self.distribution:
+            # If calculating distribution of species exclude the indipendent component from the species to consider
+            shifts_to_calculate = np.delete(shifts_to_calculate, self.ind_comp, axis=0)
+            shifts_to_skip = np.delete(shifts_to_skip, self.ind_comp, axis=0)
 
         return shifts_to_calculate, shifts_to_skip
 
@@ -863,10 +864,12 @@ class Distribution:
             J = np.delete(J, to_skip, axis=0)
             J = np.delete(J, to_skip, axis=1)
 
-        # Ignore row and column relative to the indipendent component
-        J = np.delete(J, self.ind_comp, axis=0)
-        J = np.delete(J, self.ind_comp, axis=1)
-        # print("done with jacobian")
+        if self.distribution:
+            # Ignore row and column relative to the indipendent component
+            J = np.delete(J, self.ind_comp, axis=0)
+            J = np.delete(J, self.ind_comp, axis=1)
+
+        logging.debug("Jacobian: {}".format(J))
         return J
 
     # TODO: document functions
@@ -891,11 +894,99 @@ class Distribution:
         c_tot_calc = np.sum(self.model * np.tile(c_spec, [self.nc, 1]), axis=1) + (
             np.sum(self.solid_model * tiled_cp, axis=1) if self.nf > 0 else 0
         )
-        # Take out the analytical concentration relative to the indipendent component
-        c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
+
+        if self.distribution:
+            # Take out the analytical concentration relative to the indipendent component
+            c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
+
         logging.debug("Calculated Total Concentration: {}".format(c_tot_calc))
 
         return c_tot_calc, c_spec
+
+    def _distributionGuess(self, point, for_estimation_c):
+        """
+        Return an initial guess for the first newton raphson iteration when dealing with distributions of species
+        """
+        fixed_c = self.ind_comp_c[point]
+        # Initial guess of free concentration (c) is considered as follows:
+        #   - First point as a fraction of the total concentration
+        #   - Second and third points as estimate from previous point
+        #   - Subsequent points are extrapolated as follows
+        if point > 2:
+            lp1 = -np.log10(for_estimation_c[(point - 1)][: self.nc])
+            lp2 = -np.log10(for_estimation_c[(point - 2)][: self.nc])
+            lp3 = -np.log10(for_estimation_c[(point - 3)][: self.nc])
+
+            # If two subsequent points present the same concentration
+            # avoid the issue by using simply the previous point concentration
+            c = np.where(lp2 == lp3, lp1, (lp1 + ((lp1 - lp2) ** 2) / (lp2 - lp3)))
+            # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
+            c = self._checkOverUnderFlow(c, d=2)
+
+            if (c < 0).any():
+                c = lp1
+
+            # Convert logs back to concentrations
+            c = 10 ** (-c)
+            # Free C of indipendent component is set as defined in the settings tab
+            c[self.ind_comp] = fixed_c
+            logging.debug("ESTIMATED C WITH INTERPOLATION")
+        elif point > 0:
+            c = for_estimation_c[(point - 1)][: self.nc].copy()
+            c[self.ind_comp] = fixed_c
+            logging.debug("ESTIMATED C FROM PREVIOUS POINT")
+        elif point == 0:
+            c = np.multiply(self.c_tot[0], 0.01)
+            c = np.insert(c, self.ind_comp, fixed_c)
+            logging.debug("ESTIMATED C AS FRACTION TOTAL C")
+        return c, fixed_c
+
+    def _titrationGuess(self, point, for_estimation_c):
+        """
+        Return an initial guess for the first newton raphson iteration when dealing with simulated titrations
+        """
+        # Initial guess of free concentration (c) is considered as follows:
+        #   - First point as a fraction of the total concentration
+        #   - Second and third points as estimate from previous point
+        #   - Subsequent points are extrapolated as follows
+        if point > 2:
+            v = self.v_added[point]
+            v1 = self.v_added[(point - 1)]
+            v2 = self.v_added[(point - 2)]
+            v3 = self.v_added[(point - 3)]
+            lp1 = -np.log10(for_estimation_c[(point - 1)][: self.nc])
+            lp2 = -np.log10(for_estimation_c[(point - 2)][: self.nc])
+            lp3 = -np.log10(for_estimation_c[(point - 3)][: self.nc])
+
+            # If two subsequent points present the same concentration
+            # avoid the issue by using simply the previous point concentration
+            c = np.where(
+                lp2 == lp3,
+                lp1,
+                (
+                    lp1
+                    + (((lp1 - lp2) / (v1 - v2)) ** 2)
+                    * ((v2 - v3) / (lp2 - lp3))
+                    * (v - v1)
+                ),
+            )
+            # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
+            c = self._checkOverUnderFlow(c, d=2)
+
+            if (c < 0).any():
+                c = lp1
+
+            # Convert logs back to concentrations
+            c = 10 ** (-c)
+            logging.debug("ESTIMATED C WITH INTERPOLATION")
+        elif point > 0:
+            c = for_estimation_c[(point - 1)][: self.nc]
+            logging.debug("ESTIMATED C FROM PREVIOUS POINT")
+        elif point == 0:
+            c = np.multiply(self.c_tot[0], 0.01)
+            logging.debug("ESTIMATED C AS FRACTION TOTAL C")
+
+        return c
 
     def _checkOverUnderFlow(self, c, d=1):
         """
@@ -905,64 +996,147 @@ class Distribution:
         c = np.where(c < (-self.epsl / d), (-self.epsl / d), c)
         return c
 
-    def _damping(self, point, c, cp, log_beta, c_tot):
+    def _setBHParams(self, species, to_remove, past, zast, c, d, e, solids=False):
+        # Retrive CG/DG/EG for each of the species
+        # Remove values that refers to ignored comps
+        cg = species.iloc[:, 5].to_numpy(dtype="float")
+        dg = species.iloc[:, 6].to_numpy(dtype="float")
+        eg = species.iloc[:, 7].to_numpy(dtype="float")
+        cg = np.delete(cg, to_remove, axis=0)
+        dg = np.delete(dg, to_remove, axis=0)
+        eg = np.delete(eg, to_remove, axis=0)
+
+        if not solids:
+            # If computing solution species adds values for components
+            cg = np.insert(cg, 0, [0 for i in range(self.nc)])
+            dg = np.insert(dg, 0, [0 for i in range(self.nc)])
+            eg = np.insert(eg, 0, [0 for i in range(self.nc)])
+
+        use_reference = (cg == 0) + (dg == 0) + (eg == 0)
+
+        # Compute CG/DG/EG terms of D-H
+        reference_cg = c[0] * past + c[1] * zast
+        reference_dg = d[0] * past + d[1] * zast
+        reference_eg = e[0] * past + e[1] * zast
+
+        cg = np.where(use_reference, reference_cg, cg)
+        dg = np.where(use_reference, reference_dg, dg)
+        eg = np.where(use_reference, reference_eg, eg)
+
+        return cg, dg, eg
+
+    def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
+        model = self.model
+        nc = self.nc
+        if self.distribution:
+            nc -= 1
+            model = np.delete(model, self.ind_comp, axis=0)
+            model = np.delete(model, self.ind_comp, axis=1)
 
-        ## ES42020 METHOD
+        a0 = np.max(model, axis=1)
 
-        clim1 = np.abs(c_tot) / 4
-        clim2 = np.abs(c_tot) * 4
+        iteration = 0
+        while iteration < 200:
+            _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
-        damp_iteration = 0
-        jrc = 1
-        # TODO: this subroutine could be vectorized to make it faster
-        while damp_iteration < 200:
-            fmin = 1
-            fmax = 1
-            for i, calc_c in enumerate(c_tot_calc):
-                if abs(calc_c) < (clim1[i] / jrc) or abs(calc_c) > (clim2[i] / jrc):
-                    fatt = abs(c_tot[i] / calc_c)
-                    if fatt < fmin:
-                        m1 = i
-                        fmin = fatt
-                    elif fatt > fmax:
-                        m2 = i
-                        fmax = fatt
-                    else:
-                        pass
+            if self.distribution:
+                c_spec = np.delete(c_spec, self.ind_comp)
 
-            if fmin != 1:
-                fatt = fmin
-                j = m1
-            elif fmax != 1:
-                fatt = fmax
-                j = m2
-            else:
+            c_times_model = np.tile(c_spec, [nc, 1]) * np.abs(model)
+
+            sum_reac = np.where(model > 0, c_times_model, 0).sum(axis=1) + np.where(
+                c_tot < 0, np.abs(c_tot), 0
+            )
+            sum_prod = np.where(model < 0, c_times_model, 0).sum(axis=1) + np.where(
+                c_tot >= 0, c_tot, 0
+            )
+
+            conv_criteria = np.abs(sum_reac - sum_prod)
+            print(conv_criteria)
+
+            if all(i < 1e-2 for i in conv_criteria):
                 logging.debug("EXITING DAMP ROUTINE")
+                if self.distribution:
+                    c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
                 return c, c_spec
 
-            exp = np.max(self.model[j]) ** (-1 / 1)
-            logging.debug(
-                "Damping {} by a factor {} to the power of {}".format(j, fatt, exp)
+            coeff = 0.9 - np.where(
+                (sum_reac > sum_prod), (sum_prod / sum_reac), (sum_reac / sum_prod)
             )
-            c[j] = c[j] * fatt ** exp
-            logging.debug("Damped C: {}".format(c))
 
-            c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
+            if self.distribution:
+                c = np.delete(c, self.ind_comp)
+            c = coeff * c * (sum_prod / sum_reac) ** (1 / a0) + (1 - coeff) * c
+            if self.distribution:
+                c = np.insert(c, self.ind_comp, fixed_c)
 
-            if np.isnan(c_tot_calc).any():
-                raise Exception(
-                    "Damping routine got invalid values: {} at point {}".format(
-                        c, point
-                    )
-                )
+            iteration += 1
 
-            damp_iteration += 1
-            if (damp_iteration == 200) & (jrc == 1):
-                damp_iteration = 0
-                jrc = 2
+        raise Exception(
+            "Dampening routine couldn't find a solution at point {}".format(point)
+        )
+
+    # def _old_damping(self, point, c, cp, log_beta, c_tot):
+    #     logging.debug("ENTERING DAMP ROUTINE")
+
+    #     c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
+
+    #     ## ES42020 METHOD
+
+    #     clim1 = np.abs(c_tot) / 4
+    #     clim2 = np.abs(c_tot) * 4
+
+    #     damp_iteration = 0
+    #     jrc = 1
+    #     # TODO: this subroutine could be vectorized to make it faster
+    #     while damp_iteration < 200:
+    #         fmin = 1
+    #         fmax = 1
+    #         for i, calc_c in enumerate(c_tot_calc):
+    #             if abs(calc_c) < (clim1[i] / jrc) or abs(calc_c) > (clim2[i] / jrc):
+    #                 fatt = abs(c_tot[i] / calc_c)
+    #                 if fatt < fmin:
+    #                     m1 = i
+    #                     fmin = fatt
+    #                 elif fatt > fmax:
+    #                     m2 = i
+    #                     fmax = fatt
+    #                 else:
+    #                     pass
+
+    #         if fmin != 1:
+    #             fatt = fmin
+    #             j = m1
+    #         elif fmax != 1:
+    #             fatt = fmax
+    #             j = m2
+    #         else:
+    #             logging.debug("EXITING DAMP ROUTINE")
+    #             return c, c_spec
+
+    #         exp = np.max(self.model[j]) ** (-1 / 1)
+    #         logging.debug(
+    #             "Damping {} by a factor {} to the power of {}".format(c[j], fatt, exp)
+    #         )
+
+    #         c[j] = c[j] * (fatt ** exp)
+    #         logging.debug("Damped C: {}".format(c))
+
+    #         c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
+
+    #         if np.isnan(c_tot_calc).any():
+    #             raise Exception(
+    #                 "Damping routine got invalid values: {} at point {}".format(
+    #                     c, point
+    #                 )
+    #             )
+
+    #         damp_iteration += 1
+    #         if (damp_iteration == 200) & (jrc == 1):
+    #             damp_iteration = 0
+    #             jrc = 2
 
     def _saturationIndex(self, c, log_ks):
         if self.nf > 0:
@@ -974,19 +1148,22 @@ class Distribution:
         else:
             return np.array([])
 
-    def _ionicStr(self, c, charges, first_guess):
+    def _ionicStr(self, c, charges, point, first_guess):
         """
         Calculate ionic strength given concentrations of species and their charges.
         """
         if first_guess:
-            I = ((c * (charges ** 2)).sum() / 2) + self.bs
+            I = ((c * (charges ** 2)).sum() / 2) + self.background_c[point]
         else:
-            I = ((c * (charges ** 2)).sum() + self.bs) / 2
+            I = ((c * (charges ** 2)).sum() + self.background_c[point]) / 2
 
         return I
 
-    def _updateCostants(self, c, log_beta, log_ks, charges, first_guess=False):
-        cis = self._ionicStr(c, charges, first_guess)
+    def _updateConstants(self, c, log_beta, log_ks, charges, point, first_guess=False):
+        if first_guess and self.distribution:
+            c = np.insert(c, self.ind_comp, 0, axis=0)
+
+        cis = self._ionicStr(c, charges, point, first_guess)
         logging.debug(
             "Current I: {}".format(cis) + ("\tFIRST GUESS" if first_guess else "")
         )
@@ -1015,7 +1192,7 @@ class Distribution:
         log_beta,
     ):
         """
-        Update formation costants of species given the current
+        Update formation constants of species given the current
         """
         cis = np.tile(cis, self.nc + self.ns)
         radqcis = np.sqrt(cis)
@@ -1032,7 +1209,7 @@ class Distribution:
         return updated_log_beta
 
     def _computePercTable(self, cans, calculated_c, model, percent_to, solids=False):
-        can_to_perc = [cans[index] for index in percent_to]
+        can_to_perc = np.array([[point[index] for index in percent_to] for point in cans])
         if not solids:
             can_to_perc = np.concatenate((cans, can_to_perc), axis=0)
 
@@ -1104,3 +1281,15 @@ class Distribution:
                     pass
 
         return names
+
+    def _setDataframeIndex(self, dataframe):
+        if self.distribution:
+            dataframe = dataframe.set_index(self.ind_comp_logs).rename_axis(
+                index="p[" + self.comp_names[self.ind_comp] + "]",
+            )
+        else:
+            dataframe = dataframe.set_index(self.v_added).rename_axis(
+                index="Added Volume",
+            )
+
+        return dataframe
