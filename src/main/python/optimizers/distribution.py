@@ -342,7 +342,7 @@ class Distribution:
         # Compute and create table with percentages of species with respect to component
         # As defined with the input
         if self.distribution:
-            cans = np.insert(self.c_tot, self.ind_comp, 0)
+            cans = np.insert(self.c_tot, self.ind_comp, 0, axis=1)
         else:
             cans = self.c_tot
 
@@ -1028,6 +1028,7 @@ class Distribution:
     def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
+        epsilon = (2.5e-1 if point > 0 else 1e-9)
         model = self.model
         nc = self.nc
         if self.distribution:
@@ -1037,8 +1038,9 @@ class Distribution:
 
         a0 = np.max(model, axis=1)
 
+
         iteration = 0
-        while iteration < 200:
+        while True:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if self.distribution:
@@ -1053,17 +1055,24 @@ class Distribution:
                 c_tot >= 0, c_tot, 0
             )
 
-            conv_criteria = np.abs(sum_reac - sum_prod)
-            print(conv_criteria)
+            conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
+            # print("sum_r: ", sum_reac)
+            # print("sum_p: ", sum_prod)
 
-            if all(i < 1e-2 for i in conv_criteria):
+            # print("conv: ", conv_criteria)
+
+            if all(i < epsilon for i in conv_criteria):
                 logging.debug("EXITING DAMP ROUTINE")
                 if self.distribution:
                     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
                 return c, c_spec
 
-            coeff = 0.9 - np.where(
-                (sum_reac > sum_prod), (sum_prod / sum_reac), (sum_reac / sum_prod)
+            coeff = (
+                0.9
+                - np.where(
+                    (sum_reac > sum_prod), (sum_prod / sum_reac), (sum_reac / sum_prod)
+                )
+                * 0.8
             )
 
             if self.distribution:
@@ -1209,10 +1218,15 @@ class Distribution:
         return updated_log_beta
 
     def _computePercTable(self, cans, calculated_c, model, percent_to, solids=False):
-        can_to_perc = np.array([[point[index] for index in percent_to] for point in cans])
-        if not solids:
-            can_to_perc = np.concatenate((cans, can_to_perc), axis=0)
+        can_to_perc = np.array(
+            [
+                [cans[point, index] for index in percent_to]
+                for point in range(cans.shape[0])
+            ]
+        )
 
+        if not solids:
+            can_to_perc = np.concatenate((cans, can_to_perc), axis=1)
         adjust_factor = np.array(
             [
                 model[component, index + (self.nc if not solids else 0)]
