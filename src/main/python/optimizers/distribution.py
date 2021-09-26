@@ -63,11 +63,11 @@ class Distribution:
         else:
             self.c_added = self.conc_data.iloc[:, 1].copy().to_numpy(dtype="float")
             # Initial volume
-            self.v0 = data["v0"]
+            self.v0 = data["v0"] * 1e-3
             # First titration point volume
-            self.initv = data["initv"]
+            self.initv = data["initv"] * 1e-3
             # Volume increment at each point
-            self.vinc = data["vinc"]
+            self.vinc = data["vinc"] * 1e-3
             # number of points
             self.nop = int(data["nop"])
 
@@ -1087,66 +1087,6 @@ class Distribution:
             "Dampening routine couldn't find a solution at point {}".format(point)
         )
 
-    # def _old_damping(self, point, c, cp, log_beta, c_tot):
-    #     logging.debug("ENTERING DAMP ROUTINE")
-
-    #     c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
-
-    #     ## ES42020 METHOD
-
-    #     clim1 = np.abs(c_tot) / 4
-    #     clim2 = np.abs(c_tot) * 4
-
-    #     damp_iteration = 0
-    #     jrc = 1
-    #     # TODO: this subroutine could be vectorized to make it faster
-    #     while damp_iteration < 200:
-    #         fmin = 1
-    #         fmax = 1
-    #         for i, calc_c in enumerate(c_tot_calc):
-    #             if abs(calc_c) < (clim1[i] / jrc) or abs(calc_c) > (clim2[i] / jrc):
-    #                 fatt = abs(c_tot[i] / calc_c)
-    #                 if fatt < fmin:
-    #                     m1 = i
-    #                     fmin = fatt
-    #                 elif fatt > fmax:
-    #                     m2 = i
-    #                     fmax = fatt
-    #                 else:
-    #                     pass
-
-    #         if fmin != 1:
-    #             fatt = fmin
-    #             j = m1
-    #         elif fmax != 1:
-    #             fatt = fmax
-    #             j = m2
-    #         else:
-    #             logging.debug("EXITING DAMP ROUTINE")
-    #             return c, c_spec
-
-    #         exp = np.max(self.model[j]) ** (-1 / 1)
-    #         logging.debug(
-    #             "Damping {} by a factor {} to the power of {}".format(c[j], fatt, exp)
-    #         )
-
-    #         c[j] = c[j] * (fatt ** exp)
-    #         logging.debug("Damped C: {}".format(c))
-
-    #         c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
-
-    #         if np.isnan(c_tot_calc).any():
-    #             raise Exception(
-    #                 "Damping routine got invalid values: {} at point {}".format(
-    #                     c, point
-    #                 )
-    #             )
-
-    #         damp_iteration += 1
-    #         if (damp_iteration == 200) & (jrc == 1):
-    #             damp_iteration = 0
-    #             jrc = 2
-
     def _saturationIndex(self, c, log_ks):
         if self.nf > 0:
             tiled_c = np.tile(c, [self.nf, 1]).T
@@ -1303,7 +1243,7 @@ class Distribution:
             )
         else:
             dataframe = dataframe.set_index(self.v_added).rename_axis(
-                index="Added Volume",
+                index="Added Volume [l]",
             )
 
         return dataframe
