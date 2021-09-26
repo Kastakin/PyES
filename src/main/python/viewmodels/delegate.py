@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QApplication,
     QStyleOptionComboBox,
-    QAbstractItemDelegate
+    QAbstractItemDelegate,
 )
 
 

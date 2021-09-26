@@ -43,10 +43,12 @@ def returnDataDict(self, saving=True):
     if saving:
         data_models = {
             "compModel": self.compModel._data.to_dict(),
-            "speciesModel": self.speciesModel._data.to_dict(),
-            "solidSpeciesModel": self.solidSpeciesModel._data.to_dict(),
             "concModel": self.concModel._data.to_dict(),
         }
+        if self.numSpecies.value() > 0:
+            data_models["speciesModel"] = self.speciesModel._data.to_dict()
+        if self.numPhases.value() > 0:
+            data_models["solidSpeciesModel"] = self.solidSpeciesModel._data.to_dict()
     else:
         data_models = {
             "compModel": self.compModel._data,
@@ -110,16 +112,18 @@ def cleanData():
         ],
     )
     solid_species_data = pd.DataFrame(
-        [[False] + [0.0 for x in range(6)] + [0]],
+        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
         columns=[
             "Ignored",
-            "LogKs",
+            "Name",
+            "LogB",
             "Sigma",
             "Ref. Ionic Str.",
-            "CGF",
-            "DGF",
-            "EGF",
+            "CG",
+            "DG",
+            "EG",
             "COMP1",
+            "Comp. %",
         ],
     ).drop(0)
 
@@ -154,9 +158,12 @@ def getColWidths(dataframe):
     return idx_max + cols_max
 
 
-def adjustWidths(ws, widths):
+def adjustColumnWidths(wb, ws_name, data):
     """
-    Given a worksheet apply the desired withs to all the columns
+    Given a worksheet apply the desired widths to all the columns
     """
+    ws = wb[ws_name]
+    widths = getColWidths(data)
+
     for i, column_width in enumerate(widths):
         ws.column_dimensions[get_column_letter(i + 1)].width = column_width

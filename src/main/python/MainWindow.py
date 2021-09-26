@@ -110,6 +110,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesView.setItemDelegateForColumn(
             0, CheckBoxDelegate(self.solidSpeciesView)
         )
+        # assign combobox delegate to last column
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
         solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
@@ -381,11 +388,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 ind_comp = 0
 
             indCompUpdater(self)
+            updated_comps = self.compModel._data["Name"].tolist()
+            self.speciesModel.updateHeader(updated_comps)
+            self.speciesModel.updateCompName(updated_comps)
+            self.solidSpeciesModel.updateHeader(updated_comps)
+            self.solidSpeciesModel.updateCompName(updated_comps)
             self.indComp.setCurrentIndex(ind_comp)
             self.speciesView.setItemDelegateForColumn(
                 self.speciesModel.columnCount() - 1,
                 ComboBoxDelegate(
                     self, self.speciesView, self.compModel._data["Name"].tolist()
+                ),
+            )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
                 ),
             )
 
@@ -516,8 +534,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self, self.speciesView, self.compModel._data["Name"].tolist()
                 ),
             )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1, None
+            )
             self.solidSpeciesModel.insertColumns(
-                self.solidSpeciesModel.columnCount(), added_rows
+                self.solidSpeciesModel.columnCount() - 1, added_rows
+            )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+                ),
             )
             self.concModel.insertRows(self.concModel.rowCount(), added_rows)
         elif self.compModel.rowCount() > rows:
@@ -535,8 +562,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self, self.speciesView, self.compModel._data["Name"].tolist()
                 ),
             )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1, None
+            )
             self.solidSpeciesModel.removeColumns(
                 self.solidSpeciesModel.columnCount(), removed_rows
+            )
+            self.solidSpeciesView.setItemDelegateForColumn(
+                self.solidSpeciesModel.columnCount() - 1,
+                ComboBoxDelegate(
+                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+                ),
             )
             self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
         else:
@@ -557,7 +593,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    def updatePhase(self, s):
+    def updateSolid(self, s):
         """
         Handles the updating solid species model due to changes in the number of solid phases present.
         """
@@ -590,7 +626,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.speciesModel.updateHeader(updated_comps)
         self.speciesModel.updateCompName(updated_comps)
+
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(self, self.solidSpeciesView, updated_comps),
+        )
         self.solidSpeciesModel.updateHeader(updated_comps)
+        self.solidSpeciesModel.updateCompName(updated_comps)
+
         self.concModel.updateIndex(updated_comps)
         indCompUpdater(self)
 
@@ -614,7 +657,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         worker = optimizeWorker(data_list, debug)
 
         # Conncect worker signals to slots
-        worker.signals.finished.connect(self.worker_complete)
+        worker.signals.finished.connect(self.workerComplete)
         worker.signals.result.connect(self.storeResults)
         worker.signals.log.connect(self.logger)
         worker.signals.aborted.connect(self.aborted)
@@ -622,7 +665,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Execute
         self.threadpool.start(worker)
 
-    def worker_complete(self):
+    def workerComplete(self):
         self.calcButton.setEnabled(True)
         self.plotDistButton.setEnabled(True)
         self.exportButton.setEnabled(True)
@@ -673,7 +716,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback_label.setEnabled(True)
 
             self.speciesView.model().setColumnReadOnly(range(4, 8), False)
-            self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), False)
+            self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), False)
 
         else:
             self.refIonicStr.setEnabled(False)
@@ -703,7 +746,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback_label.setEnabled(False)
 
             self.speciesView.model().setColumnReadOnly(range(4, 8), True)
-            self.solidSpeciesView.model().setColumnReadOnly(range(3, 7), True)
+            self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), True)
 
     def exportDist(self):
         """
@@ -715,11 +758,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ExportWindow.result = self.result
         self.ExportWindow.show()
 
-    def storeResults(self, data, location):
+    def storeResults(self, data, name):
         """
         Store result for exporting.
         """
-        self.result[location] = data
+        self.result[name] = data
 
     def plotDist(self, data):
         """
@@ -752,6 +795,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
         self.previousIndComp = self.indComp.currentIndex()
         self.dmode1_concView.model().setRowReadOnly([comp], True)
+        self.initialLog_label.setText(
+            "Initial -log[{}]:".format(self.indComp.currentText())
+        )
+        self.finalLog_label.setText(
+            "Final -log[{}]:".format(self.indComp.currentText())
+        )
+        self.logInc_label.setText(
+            "-log[{}] Increment:".format(self.indComp.currentText())
+        )
 
     def relErrorsUpdater(self, mode):
         """

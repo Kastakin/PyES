@@ -39,112 +39,84 @@ class optimizeWorker(QRunnable):
             log.addHandler(filehandler)
             log.setLevel(logging.DEBUG)
 
+    
+        optimizer = Distribution()
+        # Start timer to time entire process
+        start_time = time.time()
+
+        self.signals.log.emit(r"### Beginning Optimization ###")
+        self.signals.log.emit(r"Loading data...")
+
+        # load the data into the optimizer, catch errors that might invalidate the output
+        try:
+            optimizer.fit(self.data)
+        except Exception as e:
+            self.signals.aborted.emit(str(e))
+            return None
+
+        self.signals.log.emit(r"DATA LOADED!")
         if self.data["dmode"] == 0:
-            self.signals.log.emit(r"THE ABILITY TO SIMULATE TITRATION CURVES IS YET TO BE FULLY IMPLEMENTED")
-            self.signals.log.emit(r"WE ARE SORRY FOR THE INCONVENIENCE")
-            self.signals.aborted.emit("")
-        #         return None
-        #     ## TITRATION MODE ##
-        #     # TODO: Error handling is still a bit weak, need testing
-        #     optimizer = Titration()
-        #     # Start timer to time entire process
-        #     start_time = time.time()
-
-        #     self.signals.log.emit(r"### Beginning Optimization ###")
-        #     self.signals.log.emit(r"Loading data...")
-
-        #     # load the data into the optimizer, catch errors that might invalidate the output
-        #     try:
-        #         optimizer.fit(self.data)
-        #     except Exception as e:
-        #         self.signals.aborted.emit(str(e))
-        #         return None
-
-        #     self.signals.log.emit(r"DATA LOADED!")
-        #     self.signals.log.emit(r"Simulating titration curve...")
-        #     start_time = time.time()
-        #     self.signals.log.emit("--" * 40)
-
-        #     # predict species distribution
-        #     try:
-        #         optimizer.predict()
-        #         # Calculate elapsed time between start to finish
-        #         elapsed_time = round((time.time() - start_time), 5)
-        #     except Exception as e:
-        #         self.signals.aborted.emit(str(e))
-        #         return None
-
-        #     distribution = optimizer.distribution()
-
-        #     # Print in the logging form and store species distribution
-        #     self.signals.log.emit(distribution.to_string())
-        #     self.signals.result.emit(distribution, "distribution")
-
-        #     self.signals.log.emit("--" * 40)
-        #     self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
-
-        #     self.signals.log.emit("### FINISHED ###")
-        #     self.signals.finished.emit()
-        else:
-            ## DISTRIBUTION MODE ##
-            # TODO: Error handling is still a bit weak, need testing
-            optimizer = Distribution()
-            # Start timer to time entire process
+            self.signals.log.emit(r"Calculatind species concentration for the simulated titration...")
             start_time = time.time()
-
-            self.signals.log.emit(r"### Beginning Optimization ###")
-            self.signals.log.emit(r"Loading data...")
-
-            # load the data into the optimizer, catch errors that might invalidate the output
-            try:
-                optimizer.fit(self.data)
-            except Exception as e:
-                self.signals.aborted.emit(str(e))
-                return None
-
-            self.signals.log.emit(r"DATA LOADED!")
+            self.signals.log.emit("--" * 40)
+        else:
             self.signals.log.emit(r"Calculating distribution of the species...")
             start_time = time.time()
             self.signals.log.emit("--" * 40)
 
-            # predict species distribution
-            try:
-                optimizer.predict()
-                # Calculate elapsed time between start to finish
-                elapsed_time = round((time.time() - start_time), 5)
-            except Exception as e:
-                self.signals.aborted.emit(str(e))
-                return None
+        # predict species distribution
+        try:
+            optimizer.predict()
+            # Calculate elapsed time between start to finish
+            elapsed_time = round((time.time() - start_time), 5)
+        except Exception as e:
+            self.signals.aborted.emit(str(e))
+            return None
 
-            distribution = optimizer.distribution()
-            percentages = optimizer.percentages()
-            species_info, comp_info = optimizer.parameters()
+        species_distribution = optimizer.speciesDistribution()
+        solid_distribution = optimizer.solidDistribution()
+        species_percentages, solid_percentages = optimizer.percentages()
+        species_info, solid_info, comp_info = optimizer.parameters()
 
-            # Store input info
-            self.signals.result.emit(species_info, "species_info")
-            self.signals.result.emit(comp_info, "comp_info")
+        # Store input info
+        self._storeResult(species_info, "species_info")
+        self._storeResult(comp_info, "comp_info")
 
-            # Print and store species results
-            self.signals.log.emit(distribution.to_string())
-            self.signals.result.emit(distribution, "distribution")
+        # Print and store species results
+        self._storeResult(species_distribution, "species_distribution", log=True)
 
-            self.signals.log.emit("--" * 40)
+        # Print and store species percentages
+        self._storeResult(species_percentages, "species_percentages", log=True)
 
-            # Print and store species percentages
-            self.signals.log.emit(percentages.to_string())
-            self.signals.result.emit(percentages, "percentages")
+        if self.data["np"] > 0:
+            # Store input info regarding solids
+            self._storeResult(solid_info, "solid_info")
+            # Print and store solid species results
+            self._storeResult(solid_distribution, "solid_distribution", log=True)
 
-            # If working at variable ionic strenght print and store formation constants aswell
-            if self.data["imode"] == 1:
-                formation_constants = optimizer.formation_constants()
-                self.signals.log.emit("--" * 40)
-                self.signals.log.emit(formation_constants.to_string())
-                self.signals.result.emit(formation_constants, "formation_constants")
+            # Print and store solid species percentages
+            self._storeResult(solid_percentages, "solid_percentages", log=True)
 
-            self.signals.log.emit("--" * 40)
-            self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
+        # If working at variable ionic strength print and store formation constants/solubility products aswell
+        if self.data["imode"] == 1:
+            formation_constants = optimizer.formationConstants()
+            self._storeResult(formation_constants, "formation_constants", log=True)
 
-            self.signals.log.emit("### FINISHED ###")
-            self.signals.finished.emit()
+            if self.data["np"] > 0:
+                solubility_products = optimizer.solubilityProducts()
+                self._storeResult(
+                    solubility_products, "solubility_products", log=True
+                )
+
+        self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
+
+        self.signals.log.emit("### FINISHED ###")
+        self.signals.finished.emit()
 
         return None
+
+    def _storeResult(self, data, name, log=False):
+        self.signals.result.emit(data, name)
+        if log == True:
+            self.signals.log.emit(data.to_string())
+            self.signals.log.emit("--" * 40)

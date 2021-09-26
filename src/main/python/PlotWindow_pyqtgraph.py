@@ -38,9 +38,16 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         super().__init__()
         self.setupUi(self)
 
-        # Inherit the species distribution from the primary window
-        self.result = parent.result["distribution"]
+        # Inherit the required informations from the primary window
+        if parent.dmode.currentIndex() == 0:
+            self.distribution = False
+        else:
+            self.distribution = True
+
+        self.result = parent.result["species_distribution"]
         self.comps = parent.result["comp_info"]
+        if self.distribution:
+            self.indipendent_comp_name = parent.indComp.currentText()
         self.comp_names = list(self.comps.index)
 
         # Get values for the x from the index
@@ -72,8 +79,21 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.tableView.resizeColumnToContents(0)
 
         self.graphWidget.setTitle("Distribution of Species")
-        self.graphWidget.setLabel('left', text="Concentration [mol/l]",)
-        self.graphWidget.setLabel('bottom', text="Indipendent Component [-log[A]]",)
+        
+        self.graphWidget.setLabel(
+            "left",
+            text="Concentration [mol/l]",
+        )
+        if self.distribution:
+            self.graphWidget.setLabel(
+                "bottom",
+                text="Indipendent Component [-log[{}]]".format(self.indipendent_comp_name),
+            )
+        else:
+            self.graphWidget.setLabel(
+                "bottom",
+                text="Volume of Titrant [l]",
+            )
 
         self.graphWidget.enableAutoRange()
 

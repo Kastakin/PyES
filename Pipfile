@@ -16,3 +16,4 @@ python_version = "3.6"
 [dev-packages]
 bump2version = "*"
 black = "*"
+rope = "*"
