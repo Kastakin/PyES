@@ -36,7 +36,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         )
 
         if export_path:
-            export_path = export_path.split(".")[0] + ".xlsx"
+            export_path = export_path + ".xlsx"
 
             with ExcelWriter(export_path) as writer:
                 wb = writer.book
@@ -146,14 +146,33 @@ class ExportWindow(QWidget, Ui_ExportWindow):
             base_name = os.path.join(folder_path, self.project_name)
             if self.input_check_csv.isChecked():
                 self.result["species_info"].to_csv(base_name + "_species.csv")
-
                 self.result["comp_info"].to_csv(base_name + "_comp.csv")
 
+                if "solid_info" in self.result:
+                    self.result["solid_info"].to_csv(base_name + "_solid.csv")
+
             if self.distribution_check_csv.isChecked():
-                self.result["distribution"].to_csv(base_name + "_distribution.csv")
+                self.result["species_distribution"].to_csv(
+                    base_name + "_species_distribution.csv"
+                )
+
+                if "solid_distribution" in self.result:
+                    self.result["solid_distribution"].to_csv(
+                        base_name + "_solid_distribution.csv"
+                    )
 
             if self.perc_check_csv.isChecked():
-                self.result["percentages"].to_csv(base_name + "_percentages.csv")
+                self.result["species_percentages"].to_csv(
+                    base_name + "_species_percentages.csv"
+                )
+
+                if "solid_percentages" in self.result:
+                    self.result["solid_percentages"].to_csv(
+                        base_name + "_solid_percentages.csv"
+                    )
 
             if self.adjlogb_check_csv.isChecked():
                 self.result["formation_constants"].to_csv(base_name + "_logb.csv")
+
+                if "solubility_products" in self.result:
+                    self.result["solubility_products"].to_csv(base_name + "_logks.csv")
