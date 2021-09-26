@@ -795,6 +795,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
         self.previousIndComp = self.indComp.currentIndex()
         self.dmode1_concView.model().setRowReadOnly([comp], True)
+        self.initialLog_label.setText(
+            "Initial -log[{}]:".format(self.indComp.currentText())
+        )
+        self.finalLog_label.setText(
+            "Final -log[{}]:".format(self.indComp.currentText())
+        )
+        self.logInc_label.setText(
+            "-log[{}] Increment:".format(self.indComp.currentText())
+        )
 
     def relErrorsUpdater(self, mode):
         """
