@@ -677,6 +677,8 @@ class Distribution:
                         "Invalid Shift encountered for component {}".format(index)
                     )
                     c[index] = c[index] / 10
+                elif c[index] + shift == 0:
+                    c[index] = 1e-20
                 else:
                     # TODO: check if too big steps are to be avoided
                     # if shift > 1e5:
