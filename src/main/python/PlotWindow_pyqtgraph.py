@@ -44,14 +44,25 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         else:
             self.distribution = True
 
-        self.result = parent.result["species_distribution"]
+        if "solid_distribution" in parent.result:
+            self.with_solids = True
+        else:
+            self.with_solids = False
+
+        self.conc_species_result = parent.result["species_distribution"]
+        self.perc_species_result = parent.result["species_percentages"]
+
+        if self.with_solids:
+            self.conc_solid_result = parent.result["solid_distribution"]
+            self.perc_solid_result = parent.result["solid_percentages"]
+
         self.comps = parent.result["comp_info"]
         if self.distribution:
             self.indipendent_comp_name = parent.indComp.currentText()
         self.comp_names = list(self.comps.index)
 
         # Get values for the x from the index
-        self.x = self.result.index.get_level_values(0)
+        self.conc_x = self.conc_species_result.index.get_level_values(0)
 
         # Store a reference to lines on the plot, and items in our
         # data viewer we can update rather than redraw.
@@ -59,46 +70,57 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self._data_colors = dict()
         self._data_visible = []
 
-        # Initialize a Model for species
-        self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(["Species"])
-        self.model.itemChanged.connect(self.check_checked_state)
+        # Initialize a Model for species_conc
+        self.conc_model = QStandardItemModel()
+        self.conc_model.setHorizontalHeaderLabels(["Species"])
+        self.conc_model.itemChanged.connect(self.check_checked_state)
 
-        self.tableView.setModel(self.model)
+        self.conc_tableView.setModel(self.conc_model)
 
         # Each colum holds a checkbox and the species name
-        for column in self.result.columns:
+        for column in self.conc_species_result.columns:
             item = QStandardItem()
             item.setText(column)
             item.setForeground(QBrush(QColor(self.get_species_color(column))))
             item.setColumnCount(2)
             item.setCheckable(True)
-            self.model.appendRow([item])
+            self.conc_model.appendRow([item])
+
+        if self.with_solids:
+            for column in self.conc_solid_result.columns:
+                item = QStandardItem()
+                item.setText(column + "_(s)")
+                item.setForeground(QBrush(QColor(self.get_species_color(column))))
+                item.setColumnCount(2)
+                item.setCheckable(True)
+                self.conc_model.appendRow([item])
 
         # Resize column to newly added species
-        self.tableView.resizeColumnToContents(0)
+        self.conc_tableView.resizeColumnToContents(0)
 
-        self.graphWidget.setTitle("Distribution of Species")
-        
-        self.graphWidget.setLabel(
+        self.conc_graph.setTitle("Distribution of Species")
+
+        self.conc_graph.setLabel(
             "left",
             text="Concentration [mol/l]",
         )
         if self.distribution:
-            self.graphWidget.setLabel(
+            self.conc_graph.setLabel(
                 "bottom",
-                text="Indipendent Component [-log[{}]]".format(self.indipendent_comp_name),
+                text="Indipendent Component [-log[{}]]".format(
+                    self.indipendent_comp_name
+                ),
             )
         else:
-            self.graphWidget.setLabel(
+            self.conc_graph.setLabel(
                 "bottom",
                 text="Volume of Titrant [l]",
             )
 
-        self.graphWidget.enableAutoRange()
+        self.conc_graph.enableAutoRange()
 
-        self.legend = pg.LegendItem()
-        self.legend.setParentItem((self.graphWidget.graphicsItem()))
+        self.conc_legend = pg.LegendItem()
+        self.conc_legend.setParentItem((self.conc_graph.graphicsItem()))
 
     def check_checked_state(self, i):
         if not i.isCheckable():  # Skip data columns.
