@@ -936,7 +936,7 @@ class Distribution:
             c[self.ind_comp] = fixed_c
             logging.debug("ESTIMATED C FROM PREVIOUS POINT")
         elif point == 0:
-            c = np.multiply(self.c_tot[0], 0.01)
+            c = np.multiply(self.c_tot[0], 0.001)
             c = np.insert(c, self.ind_comp, fixed_c)
             logging.debug("ESTIMATED C AS FRACTION TOTAL C")
         return c, fixed_c
@@ -983,7 +983,7 @@ class Distribution:
             c = for_estimation_c[(point - 1)][: self.nc]
             logging.debug("ESTIMATED C FROM PREVIOUS POINT")
         elif point == 0:
-            c = np.multiply(self.c_tot[0], 0.01)
+            c = np.multiply(self.c_tot[0], 0.001)
             logging.debug("ESTIMATED C AS FRACTION TOTAL C")
 
         return c
@@ -1036,29 +1036,30 @@ class Distribution:
             model = np.delete(model, self.ind_comp, axis=0)
             model = np.delete(model, self.ind_comp, axis=1)
 
+        coeff = np.array([0 for i in range(nc)])
         a0 = np.max(model, axis=1)
 
 
         iteration = 0
-        while True:
+        while iteration < 10000:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if self.distribution:
                 c_spec = np.delete(c_spec, self.ind_comp)
 
-            c_times_model = np.tile(c_spec, [nc, 1]) * np.abs(model)
+            c_times_model = np.tile(c_spec, [nc, 1]) * model
 
             sum_reac = np.where(model > 0, c_times_model, 0).sum(axis=1) + np.where(
                 c_tot < 0, np.abs(c_tot), 0
             )
-            sum_prod = np.where(model < 0, c_times_model, 0).sum(axis=1) + np.where(
-                c_tot >= 0, c_tot, 0
-            )
+            sum_prod = np.where(
+                c_tot >= 0, c_tot, 0) - np.where(model < 0, c_times_model, 0).sum(axis=1)
+            
 
             conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
             # print("sum_r: ", sum_reac)
             # print("sum_p: ", sum_prod)
-
+            # print(point, iteration)
             # print("conv: ", conv_criteria)
 
             if all(i < epsilon for i in conv_criteria):
@@ -1067,13 +1068,17 @@ class Distribution:
                     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
                 return c, c_spec
 
-            coeff = (
-                0.9
+            new_coeff = (
+                0.1
                 - np.where(
                     (sum_reac > sum_prod), (sum_prod / sum_reac), (sum_reac / sum_prod)
                 )
-                * 0.8
+                * 0.08
             )
+
+            if iteration == 0:
+                coeff = new_coeff
+            coeff = np.where(new_coeff > coeff, new_coeff, coeff)
 
             if self.distribution:
                 c = np.delete(c, self.ind_comp)
@@ -1083,6 +1088,9 @@ class Distribution:
 
             iteration += 1
 
+        # if self.distribution:
+        #     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
+        # return c, c_spec
         raise Exception(
             "Dampening routine couldn't find a solution at point {}".format(point)
         )
