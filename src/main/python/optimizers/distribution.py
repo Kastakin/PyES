@@ -1049,9 +1049,9 @@ class Distribution:
             sum_reac = np.where(model > 0, c_times_model, 0).sum(axis=1) + np.where(
                 c_tot < 0, np.abs(c_tot), 0
             )
-            sum_prod = np.where(
-                c_tot >= 0, c_tot, 0) - np.where(model < 0, c_times_model, 0).sum(axis=1)
-            
+            sum_prod = np.where(c_tot >= 0, c_tot, 0) - np.where(
+                model < 0, c_times_model, 0
+            ).sum(axis=1)
 
             conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
             # print("sum_r: ", sum_reac)
