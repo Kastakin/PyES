@@ -232,10 +232,8 @@ class Distribution:
                 background_c0 = data["c0back"]
                 background_ct = data["ctback"]
                 self.background_c = np.array(
-                    [
-                        ((background_c0 * self.v0) + (background_ct * self.v_added))
-                        / self.v_tot
-                    ]
+                    ((background_c0 * self.v0) + (background_ct * self.v_added))
+                    / self.v_tot
                 )
 
             a = data["a"]
