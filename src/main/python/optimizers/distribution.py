@@ -714,10 +714,6 @@ class Distribution:
             # Compute difference between total concentrations and convergence
             saturation_index = self._saturationIndex(c, log_ks)
 
-            shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
-                saturation_index
-            )
-
             # Compute difference between total concentrations
             delta, can_delta = self._computeDelta(
                 c_tot,
