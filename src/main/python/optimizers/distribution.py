@@ -773,9 +773,9 @@ class Distribution:
             )
             + (
                 (
-                    " before solids were considered."
+                    " after solids were considered."
                     if with_solids
-                    else " after solids were considered."
+                    else " before solids were considered."
                 )
                 if self.nf > 0
                 else ""
@@ -787,9 +787,9 @@ class Distribution:
             )
             + (
                 (
-                    " before solids were considered."
+                    " after solids were considered."
                     if with_solids
-                    else " after solids were considered."
+                    else " before solids were considered."
                 )
                 if self.nf > 0
                 else ""
