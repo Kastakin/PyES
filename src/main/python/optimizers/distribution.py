@@ -1095,7 +1095,7 @@ class Distribution:
     def _saturationIndex(self, c, log_ks):
         if self.nf > 0:
             tiled_c = np.tile(c, [self.nf, 1]).T
-            saturation_index = np.prod((tiled_c ** self.solid_model), axis=0) / (
+            saturation_index = np.prod(tiled_c ** self.solid_model, axis=0) / (
                 10 ** log_ks
             )
             return saturation_index
