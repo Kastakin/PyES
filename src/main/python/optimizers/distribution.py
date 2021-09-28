@@ -1041,7 +1041,6 @@ class Distribution:
         coeff = np.array([0 for i in range(nc)])
         a0 = np.max(model, axis=1)
 
-
         iteration = 0
         while iteration < 10000:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
@@ -1128,7 +1127,6 @@ class Distribution:
         )
         updated_log_b = self._updateLogB(cis, log_beta)
         updated_log_ks = self._updateLogKs(cis, log_ks)
-
         return updated_log_b, updated_log_ks, cis
 
     def _updateLogKs(self, cis, log_ks):
@@ -1145,11 +1143,7 @@ class Distribution:
 
         return updated_log_ks
 
-    def _updateLogB(
-        self,
-        cis,
-        log_beta,
-    ):
+    def _updateLogB(self, cis, log_beta):
         """
         Update formation constants of species given the current
         """
