@@ -56,7 +56,7 @@ class optimizeWorker(QRunnable):
 
         self.signals.log.emit(r"DATA LOADED!")
         if self.data["dmode"] == 0:
-            self.signals.log.emit(r"Calculatind species concentration for the simulated titration...")
+            self.signals.log.emit(r"Calculating species concentration for the simulated titration...")
             start_time = time.time()
             self.signals.log.emit("--" * 40)
         else:
