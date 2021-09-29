@@ -578,7 +578,7 @@ class Distribution:
 
     def _newtonRaphson(self, point, c, cp, c_tot, fixed_c):
         # FIXME: FOR DEBUGGING PURPOSES
-        np.seterr("print")
+        # np.seterr("print")
         with_solids = False
         iteration = 0
 
@@ -1052,10 +1052,6 @@ class Distribution:
             ).sum(axis=1)
 
             conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
-            # print("sum_r: ", sum_reac)
-            # print("sum_p: ", sum_prod)
-            # print(point, iteration)
-            # print("conv: ", conv_criteria)
 
             if all(i < epsilon for i in conv_criteria):
                 logging.debug("EXITING DAMP ROUTINE")
