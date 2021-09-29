@@ -1024,7 +1024,7 @@ class Distribution:
     def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        epsilon = 1e-2 if point > 0 else 1e-9
+        epsilon = 2.5e-1 if point > 0 else 1e-9
         model = self.model
         nc = self.nc
         if self.distribution:
