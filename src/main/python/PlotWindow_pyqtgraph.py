@@ -1,7 +1,7 @@
 import sys
 from itertools import cycle
-from re import match
 
+import pandas as pd
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
@@ -49,12 +49,26 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         else:
             self.with_solids = False
 
-        self.conc_species_result = parent.result["species_distribution"]
-        self.perc_species_result = parent.result["species_percentages"]
+        conc_species_result = parent.result["species_distribution"]
+        perc_species_result = parent.result["species_percentages"]
+        perc_species_result.columns = conc_species_result.columns
 
         if self.with_solids:
-            self.conc_solid_result = parent.result["solid_distribution"]
-            self.perc_solid_result = parent.result["solid_percentages"]
+            conc_solid_result = parent.result["solid_distribution"]
+            conc_solid_result.columns = [
+                column + "_(s)" for column in conc_solid_result.columns
+            ]
+            perc_solid_result = parent.result["solid_percentages"]
+            perc_solid_result.columns = conc_solid_result.columns
+            self.conc_result = pd.concat(
+                (conc_species_result, conc_solid_result), axis=1
+            )
+            self.perc_result = pd.concat(
+                (perc_species_result, perc_solid_result), axis=1
+            )
+        else:
+            self.conc_result = conc_species_result
+            self.perc_result = perc_species_result
 
         self.comps = parent.result["comp_info"]
         if self.distribution:
@@ -62,7 +76,7 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.comp_names = list(self.comps.index)
 
         # Get values for the x from the index
-        self.conc_x = self.conc_species_result.index.get_level_values(0)
+        self.x = conc_species_result.index.get_level_values(0)
 
         # Store a reference to lines on the plot, and items in our
         # data viewer we can update rather than redraw.
@@ -71,41 +85,122 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self._data_visible = []
 
         # Initialize a Model for species_conc
-        self.conc_model = QStandardItemModel()
-        self.conc_model.setHorizontalHeaderLabels(["Species"])
-        self.conc_model.itemChanged.connect(self.check_checked_state)
+        self.model = QStandardItemModel()
+        self.model.setHorizontalHeaderLabels(["Species"])
+        self.model.itemChanged.connect(self.check_checked_state)
 
-        self.conc_tableView.setModel(self.conc_model)
+        self.tableView.setModel(self.model)
 
         # Each colum holds a checkbox and the species name
-        for column in self.conc_species_result.columns:
+        for column in conc_species_result.columns:
             item = QStandardItem()
             item.setText(column)
             item.setForeground(QBrush(QColor(self.get_species_color(column))))
             item.setColumnCount(2)
             item.setCheckable(True)
-            self.conc_model.appendRow([item])
+            self.model.appendRow([item])
 
         if self.with_solids:
-            for column in self.conc_solid_result.columns:
+            for column in conc_solid_result.columns:
                 item = QStandardItem()
-                item.setText(column + "_(s)")
+                item.setText(column)
                 item.setForeground(QBrush(QColor(self.get_species_color(column))))
                 item.setColumnCount(2)
                 item.setCheckable(True)
-                self.conc_model.appendRow([item])
+                self.model.appendRow([item])
 
         # Resize column to newly added species
-        self.conc_tableView.resizeColumnToContents(0)
+        self.tableView.resizeColumnToContents(0)
 
+        self._initGraphs()
+
+    def check_checked_state(self, i):
+        if not i.isCheckable():  # Skip data columns.
+            return
+
+        name = i.text()
+        checked = i.checkState() == Qt.Checked
+
+        if name in self._data_visible:
+            if not checked:
+                self._data_visible.remove(name)
+                self.redraw()
+                if self._data_visible == []:
+                    self._resetGraphs()
+
+        else:
+            if checked:
+                self._data_visible.append(name)
+                self.redraw()
+
+    def get_species_color(self, species):
+        if species not in self._data_colors:
+            self._data_colors[species] = next(BREWER12PAIRED)
+
+        return self._data_colors[species]
+
+    def redraw(self):
+        conc_y_min, conc_y_max = 0, sys.maxsize
+        perc_y_min, perc_y_max = 0, sys.maxsize
+        x_min, x_max = min(self.x), max(self.x)
+
+        for name in self.conc_result.columns:
+            line_style = Qt.DashLine if name.endswith("(s)") else Qt.SolidLine
+            values = [
+                self.conc_result[name].to_numpy(dtype=float),
+                self.perc_result[name].to_numpy(dtype=float),
+            ]
+            if name in self._data_visible:
+                if name not in self._data_lines:
+                    self._addPlotLines(values, name, line_style)
+                else:
+                    for i, plot in enumerate(self._data_lines[name]):
+                        plot.setData(self.x, values[i])
+
+                conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
+                    conc_y_max, *values[0]
+                )
+                perc_y_min, perc_y_max = min(perc_y_min, *values[1]), max(
+                    perc_y_max, *values[1]
+                )
+            else:
+                if name in self._data_lines:
+                    self._removePlotLines(name)
+
+        self.conc_graph.setLimits(
+            yMin=conc_y_min * 0.5,
+            yMax=conc_y_max * 1.1,
+            xMin=x_min - 0.25,
+            xMax=x_max + 0.25,
+        )
+        self.perc_graph.setLimits(
+            yMin=perc_y_min * 0.5,
+            yMax=perc_y_max * 1.1,
+            xMin=x_min - 0.25,
+            xMax=x_max + 0.25,
+        )
+
+    def _initGraphs(self):
         self.conc_graph.setTitle("Distribution of Species")
-
         self.conc_graph.setLabel(
             "left",
             text="Concentration [mol/l]",
         )
+
+        self.perc_graph.setTitle("Relative Percentage")
+        self.perc_graph.setLabel(
+            "left",
+            text="Percentage %",
+        )
+
         if self.distribution:
             self.conc_graph.setLabel(
+                "bottom",
+                text="Indipendent Component [-log[{}]]".format(
+                    self.indipendent_comp_name
+                ),
+            )
+            self.perc_graph.setLabel(
                 "bottom",
                 text="Indipendent Component [-log[{}]]".format(
                     self.indipendent_comp_name
@@ -116,66 +211,46 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 "bottom",
                 text="Volume of Titrant [l]",
             )
+            self.perc_graph.setLabel(
+                "bottom",
+                text="Volume of Titrant [l]",
+            )
 
         self.conc_graph.enableAutoRange()
+        self.perc_graph.enableAutoRange()
 
-        self.conc_legend = pg.LegendItem()
-        self.conc_legend.setParentItem((self.conc_graph.graphicsItem()))
+        self._createLegend()
 
-    def check_checked_state(self, i):
-        if not i.isCheckable():  # Skip data columns.
-            return
+    def _removePlotLines(self, name):
+        self._removeLegendItem(name)
+        for plot in self._data_lines[name]:
+            plot.clear()
+        self._data_lines.pop(name)
 
-        species = i.text()
-        checked = i.checkState() == Qt.Checked
+    def _addPlotLines(self, values, name, line_style):
+        self._data_lines[name] = [
+            self.conc_graph.plot(
+                self.x,
+                values[0],
+                pen=pg.mkPen(self.get_species_color(name), width=2, style=line_style),
+                name=name,
+            ),
+            self.perc_graph.plot(
+                self.x,
+                values[1],
+                pen=pg.mkPen(self.get_species_color(name), width=2, style=line_style),
+                name=name,
+            ),
+        ]
+        self._addLegendItem(name)
 
-        if species in self._data_visible:
-            if not checked:
-                self._data_visible.remove(species)
-                self.redraw()
-                if self._data_visible == []:
-                    self.graphWidget.clear()
-                    self.legend = pg.LegendItem()
-                self.legend.setParentItem((self.graphWidget.graphicsItem()))
-        else:
-            if checked:
-                self._data_visible.append(species)
-                self.redraw()
+    def _addLegendItem(self, name):
+        self.conc_legend.addItem(self._data_lines[name][0], name)
+        self.perc_legend.addItem(self._data_lines[name][1], name)
 
-    def get_species_color(self, species):
-        if species not in self._data_colors:
-            self._data_colors[species] = next(BREWER12PAIRED)
-
-        return self._data_colors[species]
-
-    def redraw(self):
-        y_min, y_max = sys.maxsize, 0
-        x_min, x_max = min(self.x), max(self.x)
-
-        for species in self.result.columns:
-            values = self.result[species].to_numpy(dtype=float)
-            if species in self._data_visible:
-                if species not in self._data_lines:
-                    self._data_lines[species] = self.graphWidget.plot(
-                        self.x,
-                        values,
-                        pen=pg.mkPen(self.get_species_color(species), width=2),
-                        name=species,
-                    )
-                    self.legend.addItem(self._data_lines[species], species)
-                else:
-                    self._data_lines[species].setData(self.x, values)
-
-                y_min, y_max = min(y_min, *values), max(y_max, *values)
-            else:
-                if species in self._data_lines:
-                    self.legend.removeItem(self._data_lines[species])
-                    self._data_lines[species].clear()
-                    self._data_lines.pop(species)
-
-        self.graphWidget.setLimits(
-            yMin=y_min * 0.5, yMax=y_max * 1.1, xMin=x_min - 0.25, xMax=x_max + 0.25
-        )
+    def _removeLegendItem(self, name):
+        self.conc_legend.removeItem(self._data_lines[name][0])
+        self.perc_legend.removeItem(self._data_lines[name][1])
 
     def selectAll(self):
         """
@@ -208,3 +283,17 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 item = self.model.item(row)
                 if choice in item.text():
                     item.setCheckState(Qt.Checked)
+
+    def _createLegend(self):
+        self.conc_legend = pg.LegendItem()
+        self.perc_legend = pg.LegendItem()
+        self.conc_legend.setParentItem((self.conc_graph.graphicsItem()))
+        self.perc_legend.setParentItem((self.perc_graph.graphicsItem()))
+
+    def _resetGraphs(self):
+        self.conc_graph.clear()
+        self.perc_graph.clear()
+        self.conc_legend = pg.LegendItem()
+        self.perc_legend = pg.LegendItem()
+        self.conc_legend.setParentItem((self.conc_graph.graphicsItem()))
+        self.perc_legend.setParentItem((self.perc_graph.graphicsItem()))
