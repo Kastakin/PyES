@@ -249,7 +249,7 @@ class Distribution:
 
             # Compute p* for alla the species
             species_past = self.model.sum(axis=0) - 1
-            solid_past = self.solid_model.sum(axis=0) - 1
+            solid_past = self.solid_model.sum(axis=0)
 
             # Reshape charges into a column vector
             comp_charge_column = np.reshape(self.comp_charge, (self.nc, 1))
@@ -268,9 +268,7 @@ class Distribution:
             species_zast = (self.model * (comp_charge_column ** 2)).sum(axis=0) - (
                 self.species_charges
             ) ** 2
-            solid_zast = (self.solid_model * (comp_charge_column ** 2)).sum(axis=0) - (
-                self.solid_charges
-            ) ** 2
+            solid_zast = (self.solid_model * (comp_charge_column ** 2)).sum(axis=0)
 
             # Compute A/B term of D-H equation
             self.species_az = a * species_zast
@@ -1125,10 +1123,10 @@ class Distribution:
         fib2 = radqcis / (1 + (self.b * radqcis))
         updated_log_ks = (
             log_ks
-            - self.solid_az * (fib2 - self.solid_fib)
-            + self.solid_cg * (cis - self.solid_ris)
-            + self.solid_dg * ((cis * radqcis) - (self.solid_ris * self.solid_radqris))
-            + self.solid_eg * ((cis ** 2) - (self.solid_ris ** 2))
+            + self.solid_az * (fib2 - self.solid_fib)
+            - self.solid_cg * (cis - self.solid_ris)
+            - self.solid_dg * ((cis * radqcis) - (self.solid_ris * self.solid_radqris))
+            - self.solid_eg * ((cis ** 2) - (self.solid_ris ** 2))
         )
 
         return updated_log_ks
