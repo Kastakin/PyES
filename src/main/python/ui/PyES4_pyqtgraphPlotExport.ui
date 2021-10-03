@@ -15,6 +15,18 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>5</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
+     <number>2</number>
+    </property>
     <item>
      <widget class="QWidget" name="widget" native="true">
       <property name="sizePolicy">
@@ -95,7 +107,79 @@
      </widget>
     </item>
     <item>
-     <widget class="PlotWidget" name="graphWidget" native="true"/>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="conc_tab">
+       <attribute name="title">
+        <string>Concentrations</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="leftMargin">
+         <number>1</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>1</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item>
+         <widget class="PlotWidget" name="conc_graph" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="perc_tab">
+       <attribute name="title">
+        <string>Percentages</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="leftMargin">
+         <number>1</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>1</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item>
+         <widget class="QWidget" name="widget_3" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="PlotWidget" name="perc_graph" native="true"/>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -111,34 +195,34 @@
  <resources/>
  <connections>
   <connection>
-   <sender>select_all</sender>
-   <signal>clicked()</signal>
-   <receiver>PlotWindow</receiver>
-   <slot>selectAll()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>59</x>
-     <y>547</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>457</x>
-     <y>428</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>deselect_all</sender>
    <signal>clicked()</signal>
    <receiver>PlotWindow</receiver>
    <slot>deselectAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>192</x>
-     <y>550</y>
+     <x>200</x>
+     <y>544</y>
     </hint>
     <hint type="destinationlabel">
-     <x>457</x>
-     <y>334</y>
+     <x>-2</x>
+     <y>542</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>select_all</sender>
+   <signal>clicked()</signal>
+   <receiver>PlotWindow</receiver>
+   <slot>selectAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>61</x>
+     <y>544</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>566</y>
     </hint>
    </hints>
   </connection>
@@ -149,12 +233,12 @@
    <slot>filterSpecies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>123</x>
-     <y>578</y>
+     <x>148</x>
+     <y>599</y>
     </hint>
     <hint type="destinationlabel">
-     <x>457</x>
-     <y>192</y>
+     <x>-3</x>
+     <y>449</y>
     </hint>
    </hints>
   </connection>

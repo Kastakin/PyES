@@ -232,10 +232,8 @@ class Distribution:
                 background_c0 = data["c0back"]
                 background_ct = data["ctback"]
                 self.background_c = np.array(
-                    [
-                        ((background_c0 * self.v0) + (background_ct * self.v_added))
-                        / self.v_tot
-                    ]
+                    ((background_c0 * self.v0) + (background_ct * self.v_added))
+                    / self.v_tot
                 )
 
             a = data["a"]
@@ -251,7 +249,7 @@ class Distribution:
 
             # Compute p* for alla the species
             species_past = self.model.sum(axis=0) - 1
-            solid_past = self.solid_model.sum(axis=0) - 1
+            solid_past = self.solid_model.sum(axis=0)
 
             # Reshape charges into a column vector
             comp_charge_column = np.reshape(self.comp_charge, (self.nc, 1))
@@ -270,9 +268,7 @@ class Distribution:
             species_zast = (self.model * (comp_charge_column ** 2)).sum(axis=0) - (
                 self.species_charges
             ) ** 2
-            solid_zast = (self.solid_model * (comp_charge_column ** 2)).sum(axis=0) - (
-                self.solid_charges
-            ) ** 2
+            solid_zast = (self.solid_model * (comp_charge_column ** 2)).sum(axis=0)
 
             # Compute A/B term of D-H equation
             self.species_az = a * species_zast
@@ -580,7 +576,7 @@ class Distribution:
 
     def _newtonRaphson(self, point, c, cp, c_tot, fixed_c):
         # FIXME: FOR DEBUGGING PURPOSES
-        np.seterr("print")
+        # np.seterr("print")
         with_solids = False
         iteration = 0
 
@@ -677,6 +673,8 @@ class Distribution:
                         "Invalid Shift encountered for component {}".format(index)
                     )
                     c[index] = c[index] / 10
+                elif c[index] + shift == 0:
+                    c[index] = 1e-20
                 else:
                     # TODO: check if too big steps are to be avoided
                     # if shift > 1e5:
@@ -711,10 +709,6 @@ class Distribution:
 
             # Compute difference between total concentrations and convergence
             saturation_index = self._saturationIndex(c, log_ks)
-
-            shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
-                saturation_index
-            )
 
             # Compute difference between total concentrations
             delta, can_delta = self._computeDelta(
@@ -771,9 +765,9 @@ class Distribution:
             )
             + (
                 (
-                    " before solids were considered."
+                    " after solids were considered."
                     if with_solids
-                    else " after solids were considered."
+                    else " before solids were considered."
                 )
                 if self.nf > 0
                 else ""
@@ -785,9 +779,9 @@ class Distribution:
             )
             + (
                 (
-                    " before solids were considered."
+                    " after solids were considered."
                     if with_solids
-                    else " after solids were considered."
+                    else " before solids were considered."
                 )
                 if self.nf > 0
                 else ""
@@ -936,7 +930,7 @@ class Distribution:
             c[self.ind_comp] = fixed_c
             logging.debug("ESTIMATED C FROM PREVIOUS POINT")
         elif point == 0:
-            c = np.multiply(self.c_tot[0], 0.01)
+            c = np.multiply(self.c_tot[0], 0.001)
             c = np.insert(c, self.ind_comp, fixed_c)
             logging.debug("ESTIMATED C AS FRACTION TOTAL C")
         return c, fixed_c
@@ -983,7 +977,7 @@ class Distribution:
             c = for_estimation_c[(point - 1)][: self.nc]
             logging.debug("ESTIMATED C FROM PREVIOUS POINT")
         elif point == 0:
-            c = np.multiply(self.c_tot[0], 0.01)
+            c = np.multiply(self.c_tot[0], 0.001)
             logging.debug("ESTIMATED C AS FRACTION TOTAL C")
 
         return c
@@ -1028,7 +1022,7 @@ class Distribution:
     def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        epsilon = (2.5e-1 if point > 0 else 1e-9)
+        epsilon = 2.5e-1 if point > 0 else 1e-9
         model = self.model
         nc = self.nc
         if self.distribution:
@@ -1036,30 +1030,26 @@ class Distribution:
             model = np.delete(model, self.ind_comp, axis=0)
             model = np.delete(model, self.ind_comp, axis=1)
 
+        coeff = np.array([0 for i in range(nc)])
         a0 = np.max(model, axis=1)
 
-
         iteration = 0
-        while True:
+        while iteration < 10000:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if self.distribution:
                 c_spec = np.delete(c_spec, self.ind_comp)
 
-            c_times_model = np.tile(c_spec, [nc, 1]) * np.abs(model)
+            c_times_model = np.tile(c_spec, [nc, 1]) * model
 
             sum_reac = np.where(model > 0, c_times_model, 0).sum(axis=1) + np.where(
                 c_tot < 0, np.abs(c_tot), 0
             )
-            sum_prod = np.where(model < 0, c_times_model, 0).sum(axis=1) + np.where(
-                c_tot >= 0, c_tot, 0
-            )
+            sum_prod = np.where(c_tot >= 0, c_tot, 0) - np.where(
+                model < 0, c_times_model, 0
+            ).sum(axis=1)
 
             conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
-            # print("sum_r: ", sum_reac)
-            # print("sum_p: ", sum_prod)
-
-            # print("conv: ", conv_criteria)
 
             if all(i < epsilon for i in conv_criteria):
                 logging.debug("EXITING DAMP ROUTINE")
@@ -1067,13 +1057,17 @@ class Distribution:
                     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
                 return c, c_spec
 
-            coeff = (
-                0.9
+            new_coeff = (
+                0.1
                 - np.where(
                     (sum_reac > sum_prod), (sum_prod / sum_reac), (sum_reac / sum_prod)
                 )
-                * 0.8
+                * 0.08
             )
+
+            if iteration == 0:
+                coeff = new_coeff
+            coeff = np.where(new_coeff > coeff, new_coeff, coeff)
 
             if self.distribution:
                 c = np.delete(c, self.ind_comp)
@@ -1083,6 +1077,9 @@ class Distribution:
 
             iteration += 1
 
+        # if self.distribution:
+        #     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
+        # return c, c_spec
         raise Exception(
             "Dampening routine couldn't find a solution at point {}".format(point)
         )
@@ -1090,7 +1087,7 @@ class Distribution:
     def _saturationIndex(self, c, log_ks):
         if self.nf > 0:
             tiled_c = np.tile(c, [self.nf, 1]).T
-            saturation_index = np.prod((tiled_c ** self.solid_model), axis=0) / (
+            saturation_index = np.prod(tiled_c ** self.solid_model, axis=0) / (
                 10 ** log_ks
             )
             return saturation_index
@@ -1118,7 +1115,6 @@ class Distribution:
         )
         updated_log_b = self._updateLogB(cis, log_beta)
         updated_log_ks = self._updateLogKs(cis, log_ks)
-
         return updated_log_b, updated_log_ks, cis
 
     def _updateLogKs(self, cis, log_ks):
@@ -1127,19 +1123,15 @@ class Distribution:
         fib2 = radqcis / (1 + (self.b * radqcis))
         updated_log_ks = (
             log_ks
-            - self.solid_az * (fib2 - self.solid_fib)
-            + self.solid_cg * (cis - self.solid_ris)
-            + self.solid_dg * ((cis * radqcis) - (self.solid_ris * self.solid_radqris))
-            + self.solid_eg * ((cis ** 2) - (self.solid_ris ** 2))
+            + self.solid_az * (fib2 - self.solid_fib)
+            - self.solid_cg * (cis - self.solid_ris)
+            - self.solid_dg * ((cis * radqcis) - (self.solid_ris * self.solid_radqris))
+            - self.solid_eg * ((cis ** 2) - (self.solid_ris ** 2))
         )
 
         return updated_log_ks
 
-    def _updateLogB(
-        self,
-        cis,
-        log_beta,
-    ):
+    def _updateLogB(self, cis, log_beta):
         """
         Update formation constants of species given the current
         """

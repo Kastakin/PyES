@@ -31,14 +31,16 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         """
         Export results to an excel file.
         """
-        export_path, _ = QFileDialog.getSaveFileName(
+        output_path, _ = QFileDialog.getSaveFileName(
             self, "Pick a Path", "", "Excel 2007-365 (*.xlsx)"
         )
 
-        if export_path:
-            export_path = export_path + ".xlsx"
+        if output_path:
+            output_path = output_path.split(".")[0]
+            if not (output_path.endswith(".xlsx")):
+                output_path += ".xlsx"
 
-            with ExcelWriter(export_path) as writer:
+            with ExcelWriter(output_path, engine="openpyxl") as writer:
                 wb = writer.book
 
                 if self.input_check_excel.isChecked():
@@ -143,7 +145,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         folder_path = QFileDialog.getExistingDirectory(self, "Select a Folder")
 
         if folder_path:
-            base_name = os.path.join(folder_path, self.project_name)
+            base_name = folder_path + "/" + self.project_name
             if self.input_check_csv.isChecked():
                 self.result["species_info"].to_csv(base_name + "_species.csv")
                 self.result["comp_info"].to_csv(base_name + "_comp.csv")

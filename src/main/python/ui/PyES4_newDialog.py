@@ -15,9 +15,7 @@ class Ui_dialogNew(object):
     def setupUi(self, dialogNew):
         dialogNew.setObjectName("dialogNew")
         dialogNew.resize(367, 99)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(dialogNew.sizePolicy().hasHeightForWidth())
@@ -28,9 +26,7 @@ class Ui_dialogNew(object):
         self.verticalLayout.setContentsMargins(5, 5, 5, 5)
         self.verticalLayout.setObjectName("verticalLayout")
         self.label = QtWidgets.QLabel(dialogNew)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
@@ -38,9 +34,7 @@ class Ui_dialogNew(object):
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
         self.label_2 = QtWidgets.QLabel(dialogNew)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_2.sizePolicy().hasHeightForWidth())
@@ -49,9 +43,7 @@ class Ui_dialogNew(object):
         self.verticalLayout.addWidget(self.label_2)
         self.buttonBox = QtWidgets.QDialogButtonBox(dialogNew)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(
-            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok
-        )
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
@@ -63,14 +55,6 @@ class Ui_dialogNew(object):
     def retranslateUi(self, dialogNew):
         _translate = QtCore.QCoreApplication.translate
         dialogNew.setWindowTitle(_translate("dialogNew", "New"))
-        self.label.setText(
-            _translate("dialogNew", "Do you want to create a new blank project?")
-        )
-        self.label_2.setText(
-            _translate(
-                "dialogNew", "Any unsaved changes to the current one will be lost."
-            )
-        )
-
-
+        self.label.setText(_translate("dialogNew", "Do you want to create a new blank project?"))
+        self.label_2.setText(_translate("dialogNew", "Any unsaved changes to the current one will be lost."))
 import resources_rc
