@@ -218,7 +218,6 @@ class Distribution:
                 self.conc_sigma = np.tile(self.conc_sigma, [self.nop, 1]) + (
                     np.tile(conc_added_sigma_base, [self.nop, 1]) * self.v_added
                 )
-            print(self.conc_sigma)
             log_beta_sigma = species_not_ignored.iloc[:, 3].to_numpy(dtype="float")
             log_ks_sigma = solid_not_ignored.iloc[:, 3].to_numpy(dtype="float")
 
@@ -343,7 +342,15 @@ class Distribution:
         # Calculate species distribution
         # Return formatted species distribution as a nice table
         logging.info("--- BEGINNING CALCULATION --- ")
-        species, solid, log_b, log_ks, ionic_strength = self._compute()
+        (
+            species,
+            solid,
+            species_sigma,
+            solid_sigma,
+            log_b,
+            log_ks,
+            ionic_strength,
+        ) = self._compute()
 
         # Set the flag to signal a completed run
         self.done_flag = True
@@ -352,17 +359,13 @@ class Distribution:
         self.species_distribution = pd.DataFrame(
             species,
             columns=self.species_names,
-        ).rename_axis(
-            columns="Species Conc. [mol/L]",
-        )
+        ).rename_axis(columns="Species Conc. [mol/L]")
         self.species_distribution = self._setDataframeIndex(self.species_distribution)
 
         # Create the table containing the solid species "concentration"
         self.solid_distribution = pd.DataFrame(
             solid, columns=self.solid_names
-        ).rename_axis(
-            columns="Solid Conc. [mol/L]",
-        )
+        ).rename_axis(columns="Solid Conc. [mol/L]")
         self.solid_distribution = self._setDataframeIndex(self.solid_distribution)
 
         # Compute and create table with percentages of species with respect to component
@@ -399,6 +402,17 @@ class Distribution:
             .round(2)
         )
         self.solid_percentages = self._setDataframeIndex(self.solid_percentages)
+
+        # For error propagation create the corresponding tables
+        self.species_sigma = pd.DataFrame(
+            species_sigma, columns=self.species_names
+        ).rename_axis(columns="Species Std. Dev. [mol/L]")
+        self.species_sigma = self._setDataframeIndex(self.species_sigma)
+
+        self.solid_sigma = pd.DataFrame(
+            solid_sigma, columns=self.solid_names
+        ).rename_axis(columns="Solid Std. Dev. [mol/L]")
+        self.solid_sigma = self._setDataframeIndex(self.solid_sigma)
 
         # If working at variable ionic strength
         if self.imode == 1:
@@ -478,6 +492,15 @@ class Distribution:
         else:
             return False
 
+    def sigmas(self):
+        """
+        Return percentages of species with respect to the desired component.
+        """
+        if self.done_flag == True:
+            return self.species_sigma, self.solid_sigma
+        else:
+            return False
+
     def parameters(self):
         """
         Returns relevant data that was used for the computation
@@ -539,6 +562,8 @@ class Distribution:
         for_estimation_c = []
         results_species_conc = []
         results_solid_conc = []
+        results_species_sigma = []
+        results_solid_sigma = []
         results_log_b = []
         results_log_ks = []
         results_ionic_strength = []
@@ -575,22 +600,33 @@ class Distribution:
                 fixed_c,
             )
 
+            if self.errors:
+                species_sigma, solid_sigma = self._computeErrors(
+                    species_conc_calc, log_b, point
+                )
+            else:
+                species_sigma = np.array([None for i in range(self.nc + self.ns)])
+                solid_sigma = np.array([None for i in range(self.nf)])
+
             # Store concentrations before solid precipitation to estimate next points c
             for_estimation_c.append(c_for_estimation)
-            # Store calculated species concentration into a vector
+            # Store calculated species/solid concentration into a vector
             results_species_conc.append(species_conc_calc)
-            # Store calculated solid species
             results_solid_conc.append(solid_conc_calc)
+            # Store uncertainty for calculated values
+            results_species_sigma.append(species_sigma)
+            results_solid_sigma.append(solid_sigma)
             # Store calculated ionic strength
             results_ionic_strength.append(ionic_strength)
-            # Store calculated LogB
+            # Store calculated LogB/LogKs
             results_log_b.append(log_b)
-            # Store calculated LogKps
             results_log_ks.append(log_ks)
 
         # Stack calculated species concentration/logB/ionic strength in tabular fashion
         results_species_conc = np.stack(results_species_conc)
         results_solid_conc = np.stack(results_solid_conc)
+        results_species_sigma = np.stack(results_species_sigma)
+        results_solid_sigma = np.stack(results_solid_sigma)
         results_log_b = np.stack(results_log_b)
         results_log_ks = np.stack(results_log_ks)
         results_ionic_strength = np.stack(results_ionic_strength)
@@ -599,6 +635,8 @@ class Distribution:
         return (
             results_species_conc,
             results_solid_conc,
+            results_species_sigma,
+            results_solid_sigma,
             results_log_b,
             results_log_ks,
             results_ionic_strength,
@@ -781,13 +819,11 @@ class Distribution:
                             shifts_to_calculate[-self.nf :],
                         )
                     else:
-                        species_sigma, solid_sigma = self._computeErrors(c_spec, log_beta, point)
                         return c_for_estimate, c_spec, cp, log_beta, log_ks, cis
             else:
                 if comp_conv_criteria < 1e-16 and all(
                     i < 1e-16 for i in delta[self.nc :]
                 ):
-                    species_sigma, solid_sigma = self._computeErrors(c_spec, log_beta, point)
                     return c_for_estimate, c_spec, cp, log_beta, log_ks, cis
 
         # If during the first or second run you exceed the iteration limit report it
@@ -1290,16 +1326,20 @@ class Distribution:
                     * der_free_tot[:, r]
                 )
 
-        sigma_comp = np.sqrt(
+        comp_sigma = np.sqrt(
             ((der_free_beta ** 2) * self.beta_sigma ** 2).sum(axis=1)
             + ((der_free_tot ** 2) * self.conc_sigma[point] ** 2).sum(axis=1)
         )
 
-        sigma_species = np.sqrt(
+        species_sigma = np.sqrt(
             ((der_spec_beta ** 2) * self.beta_sigma ** 2).sum(axis=1)
             + ((der_spec_tot ** 2) * self.conc_sigma[point] ** 2).sum(axis=1)
         )
-        sigma = np.concatenate((sigma_comp, sigma_species))
+        species_sigma = np.concatenate((comp_sigma, species_sigma))
+        # FIXME: we need to implement propagation error for solid concentrations
+        solid_sigma = np.array([None for i in range(self.nf)])
+
+        return species_sigma, solid_sigma
 
     def _speciesNames(self, model):
         """

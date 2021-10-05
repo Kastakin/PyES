@@ -75,6 +75,7 @@ class optimizeWorker(QRunnable):
 
         species_distribution = optimizer.speciesDistribution()
         solid_distribution = optimizer.solidDistribution()
+        species_sigma, solid_sigma = optimizer.sigmas()
         species_percentages, solid_percentages = optimizer.percentages()
         species_info, solid_info, comp_info = optimizer.parameters()
 
@@ -88,6 +89,10 @@ class optimizeWorker(QRunnable):
         # Print and store species percentages
         self._storeResult(species_percentages, "species_percentages", log=True)
 
+        if self.data["emode"] == 0:
+            self._storeResult(species_sigma, "species_sigma", log=True)
+
+
         if self.data["np"] > 0:
             # Store input info regarding solids
             self._storeResult(solid_info, "solid_info")
@@ -96,6 +101,10 @@ class optimizeWorker(QRunnable):
 
             # Print and store solid species percentages
             self._storeResult(solid_percentages, "solid_percentages", log=True)
+
+            if self.data["emode"] == 0:
+                self._storeResult(solid_sigma, "solid_sigma", log=True)
+
 
         # If working at variable ionic strength print and store formation constants/solubility products aswell
         if self.data["imode"] == 1:
