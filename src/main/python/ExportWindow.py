@@ -21,6 +21,12 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         else:
             self.project_name = os.path.splitext(os.path.basename(self.path))[0]
 
+        if "species_sigma" not in self.result:
+            self.errors_check_excel.setChecked(False)
+            self.errors_check_excel.setEnabled(False)
+            self.errors_check_csv.setChecked(False)
+            self.errors_check_csv.setEnabled(False)
+
         if "formation_constants" not in self.result:
             self.adjlogb_check_excel.setChecked(False)
             self.adjlogb_check_excel.setEnabled(False)
@@ -84,6 +90,15 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                         wb, "Species Distribution", self.result["species_distribution"]
                     )
 
+                    if self.errors_check_excel.isChecked():
+                        self.result["species_sigma"].to_excel(
+                            writer, sheet_name="Species SD"
+                        )
+
+                        adjustColumnWidths(
+                            wb, "Species SD", self.result["species_sigma"]
+                        )
+
                     if "solid_distribution" in self.result:
                         self.result["solid_distribution"].to_excel(
                             writer, sheet_name="Solid Distribution"
@@ -93,6 +108,15 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                             "Solid Distribution",
                             self.result["solid_distribution"],
                         )
+
+                        if self.errors_check_excel.isChecked():
+                            self.result["solid_sigma"].to_excel(
+                                writer, sheet_name="Solid SD"
+                            )
+
+                            adjustColumnWidths(
+                                wb, "Solid SD", self.result["solid_sigma"]
+                            )
 
                 if self.perc_check_excel.isChecked():
                     self.result["species_percentages"].to_excel(
@@ -178,3 +202,9 @@ class ExportWindow(QWidget, Ui_ExportWindow):
 
                 if "solubility_products" in self.result:
                     self.result["solubility_products"].to_csv(base_name + "_logks.csv")
+
+            if self.errors_check_csv.isChecked():
+                self.result["species_sigma"].to_csv(base_name + "_species_SD.csv")
+
+                if "solid_sigma" in self.result:
+                    self.result["solid_sigma"].to_csv(base_name + "_solid_SD.csv")
