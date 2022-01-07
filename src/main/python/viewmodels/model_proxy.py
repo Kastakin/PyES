@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QIdentityProxyModel, Qt
+from PySide6.QtCore import QIdentityProxyModel, Qt
 
 
 class ProxyModel(QIdentityProxyModel):

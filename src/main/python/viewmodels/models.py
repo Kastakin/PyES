@@ -4,8 +4,8 @@
 import re
 
 import pandas as pd
-from PyQt5.QtCore import QAbstractTableModel, QModelIndex, Qt, QVariant
-from PyQt5.QtGui import QColorConstants
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PySide6.QtGui import QColorConstants
 from utils_func import getName
 
 
@@ -162,9 +162,9 @@ class SpeciesModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             if index.column() != 0:
-                return QVariant("{}".format(value))
+                return str("{}".format(value))
             else:
-                return QVariant(value)
+                return bool(value)
 
         if role == Qt.BackgroundRole:
             if (index.column() >= 8) & (index.column() < self.columnCount() - 1):
@@ -347,9 +347,9 @@ class SolidSpeciesModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             if index.column() != 0:
-                return QVariant("{}".format(value))
+                return str("{}".format(value))
             else:
-                return QVariant(value)
+                return bool(value)
 
         if role == Qt.BackgroundRole:
             if (index.column() >= 8) & (index.column() < self.columnCount() - 1):

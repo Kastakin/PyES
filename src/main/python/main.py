@@ -1,7 +1,7 @@
 import sys
 
-from fbs_runtime.application_context import cached_property
-from fbs_runtime.application_context.PyQt5 import ApplicationContext
+from ppg_runtime.application_context import cached_property
+from ppg_runtime.application_context.PySide6 import ApplicationContext
 
 from MainWindow import MainWindow
 
@@ -9,7 +9,7 @@ from MainWindow import MainWindow
 class AppContext(ApplicationContext):
     def run(self):
         self.main_window.showMaximized()
-        return self.app.exec_()
+        return self.app.exec()
 
     @cached_property
     def app(self):

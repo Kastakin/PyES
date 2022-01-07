@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.10]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -47,8 +47,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/PyES4.deb
-          asset_name: PyES4-${{ github.ref }}.deb
+          file: target/PyES.deb
+          asset_name: PyES-${{ github.ref }}.deb
           tag: ${{ github.ref }}
           overwrite: true
 
@@ -57,7 +57,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.10]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -77,8 +77,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/PyES4.dmg
-          asset_name: PyES4-${{ github.ref }}.dmg
+          file: target/PyES.dmg
+          asset_name: PyES-${{ github.ref }}.dmg
           tag: ${{ github.ref }}
           overwrite: true
 
@@ -87,7 +87,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.10]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -107,7 +107,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/PyES4Setup.exe
-          asset_name: PyES4-${{ github.ref }}.exe
+          file: target/PyESSetup.exe
+          asset_name: PyES-${{ github.ref }}.exe
           tag: ${{ github.ref }}
           overwrite: true

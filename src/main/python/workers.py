@@ -2,7 +2,7 @@ import logging
 import time
 from datetime import datetime
 
-from PyQt5.QtCore import QObject, QRunnable, pyqtSignal, pyqtSlot
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 
 from optimizers.distribution import Distribution
 from optimizers.titration import Titration
@@ -10,10 +10,10 @@ from optimizers.titration import Titration
 
 # Main optimization routine worker and signals
 class optimizeSignal(QObject):
-    log = pyqtSignal(str)
-    aborted = pyqtSignal(str)
-    finished = pyqtSignal()
-    result = pyqtSignal(object, str)
+    log = Signal(str)
+    aborted = Signal(str)
+    finished = Signal()
+    result = Signal(object, str)
 
 
 class optimizeWorker(QRunnable):
@@ -23,7 +23,7 @@ class optimizeWorker(QRunnable):
         self.data = data_list
         self.debug = debug
 
-    @pyqtSlot()
+    @Slot()
     def run(self):
         # If run with debug enabled create the logging istance
         if self.debug:

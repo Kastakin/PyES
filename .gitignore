@@ -149,12 +149,6 @@ dmypy.json
 .vscode/extensions.json
 *.code-workspace
 
-### utility scripts used for some automation ###
-compile_ui.sh
-iconCreator.py
-
 ### Other files ###
-dist.svg
-dist.png
 /mockup
 /logs

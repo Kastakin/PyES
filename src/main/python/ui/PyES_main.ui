@@ -372,9 +372,6 @@
                  </item>
                  <item row="1" column="1">
                   <widget class="QComboBox" name="relErrorMode">
-                   <property name="currentIndex">
-                    <number>1</number>
-                   </property>
                    <item>
                     <property name="text">
                      <string>Yes</string>
@@ -720,7 +717,7 @@
               <enum>QAbstractScrollArea::AdjustIgnored</enum>
              </property>
              <property name="editTriggers">
-              <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+              <set>QAbstractItemView::AllEditTriggers</set>
              </property>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
@@ -1819,7 +1816,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>98</x>
-     <y>685</y>
+     <y>108</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -1835,7 +1832,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>108</x>
-     <y>744</y>
+     <y>144</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -1850,8 +1847,8 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>704</x>
-     <y>744</y>
+     <x>108</x>
+     <y>144</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
@@ -1882,8 +1879,8 @@
    <slot>indipendentUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>526</x>
-     <y>535</y>
+     <x>108</x>
+     <y>142</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
@@ -1898,8 +1895,8 @@
    <slot>v0Updater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>520</x>
-     <y>224</y>
+     <x>108</x>
+     <y>133</y>
     </hint>
     <hint type="destinationlabel">
      <x>804</x>

@@ -1,6 +1,8 @@
 {
-  "app_name": "PyES4",
+  "app_name": "PyES",
   "author": "Lorenzo Castellino",
   "main_module": "src/main/python/main.py",
-  "version": "0.2.3"
+  "version": "0.2.3", 
+  "extra_pyinstaller_args": ["--exclude-module", "PySide6.QtQml","--exclude-module", "_bootlocale" ]
+
 }

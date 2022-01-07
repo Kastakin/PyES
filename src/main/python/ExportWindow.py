@@ -2,9 +2,9 @@ import os
 from datetime import datetime
 
 from pandas import ExcelWriter
-from PyQt5.QtWidgets import QFileDialog, QWidget
+from PySide6.QtWidgets import QFileDialog, QWidget
 
-from ui.PyES4_dataExport import Ui_ExportWindow
+from ui.PyES_dataExport import Ui_ExportWindow
 from utils_func import adjustColumnWidths
 
 
