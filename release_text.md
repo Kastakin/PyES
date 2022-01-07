@@ -1,4 +1,4 @@
-# PyES Version 0.2.3
+# PyES Version 0.2.4
 
 Moved to new software stack:
 * [Custom PPG](https://github.com/runesc/PPG) instead of [fbs](https://github.com/mherrmann/fbs) to allow the use of newer Python and library versions;
