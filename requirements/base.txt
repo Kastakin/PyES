@@ -9,7 +9,7 @@ pefile==2021.9.3; sys_platform == "win32" and python_version >= "3.6" and python
 ppg @ git+ssh://git@github.com/Kastakin/ppg.git@main
 pyinstaller-hooks-contrib==2021.4; python_version >= "3.6"
 pyinstaller==4.5.1; python_version >= "3.6"
-pyqtgraph==0.12.3; python_version >= "3.7"
+pyqtgraph @ git+ssh://git@github.com/pyqtgraph/pyqtgraph.git@master ; python_version >= "3.7"
 pyside6==6.2.2.1; python_version >= "3.6" and python_version < "3.11"
 python-dateutil==2.8.2; python_full_version >= "3.7.1"
 pytz==2021.3; python_full_version >= "3.7.1"
