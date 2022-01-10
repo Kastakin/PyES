@@ -173,9 +173,16 @@ description = "Scientific Graphics and GUI Library for Python"
 category = "main"
 optional = false
 python-versions = ">=3.7"
+develop = false
 
 [package.dependencies]
 numpy = ">=1.17.0"
+
+[package.source]
+type = "git"
+url = "git@github.com:pyqtgraph/pyqtgraph.git"
+reference = "master"
+resolved_reference = "ac3887abfca4e529aac44f022f8e40556a2587b0"
 
 [[package]]
 name = "pyside6"
@@ -286,7 +293,7 @@ python-versions = ">=3.5"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "42bcc081863b8769ef39b5e1dc40f798bd4f0deb66c3ebecaeae76a991568572"
+content-hash = "815dae2dfccf856669ce33e25b72b1c7dfb355ec25bfd51f00a159e844ab1c92"
 
 [metadata.files]
 altgraph = [
@@ -391,10 +398,7 @@ pyinstaller-hooks-contrib = [
     {file = "pyinstaller-hooks-contrib-2021.4.tar.gz", hash = "sha256:775b52200b39e12c95cc24f809eb050a97110fee819d178ebfde214f0f51e5f4"},
     {file = "pyinstaller_hooks_contrib-2021.4-py2.py3-none-any.whl", hash = "sha256:60a57e4057fa2183bbaa81f10401a27eb7dd701ef8a11b287bb6345b571f94e7"},
 ]
-pyqtgraph = [
-    {file = "pyqtgraph-0.12.3-py3-none-any.whl", hash = "sha256:06997eaae40bfa2b870647f98384a63b12f75118303b674337a080f8eb9a0030"},
-    {file = "pyqtgraph-0.12.3.tar.gz", hash = "sha256:f1dfee710fa5e9abaaf3d4dff0116659e6c7b4e7b514870c5cddad268a753d74"},
-]
+pyqtgraph = []
 pyside6 = [
     {file = "PySide6-6.2.2.1-6.2.2-cp36.cp37.cp38.cp39.cp310-abi3-macosx_10_14_universal2.whl", hash = "sha256:f9fa755b30bd8098ba3734a8a7e7664b9bf6bf53d7c0462c7e9657f8a8d3392f"},
     {file = "PySide6-6.2.2.1-6.2.2-cp36.cp37.cp38.cp39.cp310-abi3-manylinux1_x86_64.whl", hash = "sha256:5d35206897edc00bfab3c67dcf180e45406a93c8694e68c12364c3f9e370dfc6"},
