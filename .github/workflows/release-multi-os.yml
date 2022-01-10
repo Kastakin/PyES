@@ -39,10 +39,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
-      - name: Run fbs
+      - name: Run ppg
         run: |
-          fbs freeze
-          fbs installer
+          ppg freeze
+          ppg installer
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -69,10 +69,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
-      - name: Run fbs
+      - name: Run ppg
         run: |
-          fbs freeze
-          fbs installer
+          ppg freeze
+          ppg installer
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -99,10 +99,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
-      - name: Run fbs and freeze application
+      - name: Run ppg
         run: |
-          fbs freeze
-          fbs installer
+          ppg freeze
+          ppg installer
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
