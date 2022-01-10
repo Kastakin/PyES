@@ -1322,8 +1322,8 @@ class Distribution:
                     model[:, i] * (c_spec[i] / free_c) * der_free_tot[:, r]
                 )
 
-        if point == 0:
-            print(-model)
+        # if point == 0:
+            # print(-model)
 
             # print(((der_free_beta ** 2) * (self.beta_sigma ** 2)).shape)
             # print(((der_free_tot ** 2) * (self.conc_sigma[point] ** 2)).shape)

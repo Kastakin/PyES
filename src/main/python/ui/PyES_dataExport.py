@@ -19,7 +19,6 @@ class Ui_ExportWindow(object):
             ExportWindow.setObjectName(u"ExportWindow")
         ExportWindow.resize(498, 237)
         ExportWindow.setMinimumSize(QSize(498, 237))
-        ExportWindow.setMaximumSize(QSize(498, 237))
         icon = QIcon()
         icon.addFile(u":/icons/application-export.png", QSize(), QIcon.Normal, QIcon.Off)
         ExportWindow.setWindowIcon(icon)
@@ -76,12 +75,17 @@ class Ui_ExportWindow(object):
         self.adjlogb_check_excel = QCheckBox(self.widget_2)
         self.adjlogb_check_excel.setObjectName(u"adjlogb_check_excel")
 
-        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.adjlogb_check_excel)
+        self.formLayout.setWidget(5, QFormLayout.LabelRole, self.adjlogb_check_excel)
 
         self.options_label_excel = QLabel(self.widget_2)
         self.options_label_excel.setObjectName(u"options_label_excel")
 
         self.formLayout.setWidget(0, QFormLayout.SpanningRole, self.options_label_excel)
+
+        self.errors_check_excel = QCheckBox(self.widget_2)
+        self.errors_check_excel.setObjectName(u"errors_check_excel")
+
+        self.formLayout.setWidget(4, QFormLayout.LabelRole, self.errors_check_excel)
 
 
         self.horizontalLayout.addWidget(self.widget_2)
@@ -141,12 +145,17 @@ class Ui_ExportWindow(object):
         self.adjlogb_check_csv = QCheckBox(self.widget_5)
         self.adjlogb_check_csv.setObjectName(u"adjlogb_check_csv")
 
-        self.formLayout_2.setWidget(4, QFormLayout.LabelRole, self.adjlogb_check_csv)
+        self.formLayout_2.setWidget(5, QFormLayout.LabelRole, self.adjlogb_check_csv)
 
         self.options_label_csv = QLabel(self.widget_5)
         self.options_label_csv.setObjectName(u"options_label_csv")
 
         self.formLayout_2.setWidget(0, QFormLayout.SpanningRole, self.options_label_csv)
+
+        self.errors_check_csv = QCheckBox(self.widget_5)
+        self.errors_check_csv.setObjectName(u"errors_check_csv")
+
+        self.formLayout_2.setWidget(4, QFormLayout.LabelRole, self.errors_check_csv)
 
 
         self.horizontalLayout_2.addWidget(self.widget_5)
@@ -188,6 +197,7 @@ class Ui_ExportWindow(object):
         self.perc_check_excel.setText(QCoreApplication.translate("ExportWindow", u"% with respect to component", None))
         self.adjlogb_check_excel.setText(QCoreApplication.translate("ExportWindow", u"Adjusted formation constants", None))
         self.options_label_excel.setText(QCoreApplication.translate("ExportWindow", u"<html><head/><body><p><span style=\" font-weight:600;\">Options:</span></p></body></html>", None))
+        self.errors_check_excel.setText(QCoreApplication.translate("ExportWindow", u"Std. Deviation of concentration", None))
         self.export_button_excel.setText(QCoreApplication.translate("ExportWindow", u"Export", None))
         self.export_type.setTabText(self.export_type.indexOf(self.excel_tab), QCoreApplication.translate("ExportWindow", u"Excel", None))
         self.input_check_csv.setText(QCoreApplication.translate("ExportWindow", u"Input info", None))
@@ -195,6 +205,7 @@ class Ui_ExportWindow(object):
         self.perc_check_csv.setText(QCoreApplication.translate("ExportWindow", u"% with respect to component", None))
         self.adjlogb_check_csv.setText(QCoreApplication.translate("ExportWindow", u"Adjusted formation constants", None))
         self.options_label_csv.setText(QCoreApplication.translate("ExportWindow", u"<html><head/><body><p><span style=\" font-weight:600;\">Options:</span></p></body></html>", None))
+        self.errors_check_csv.setText(QCoreApplication.translate("ExportWindow", u"Std. Deviation of concentration", None))
         self.export_button_csv.setText(QCoreApplication.translate("ExportWindow", u"Export", None))
         self.export_type.setTabText(self.export_type.indexOf(self.csv_tab), QCoreApplication.translate("ExportWindow", u"CSV", None))
     # retranslateUi
