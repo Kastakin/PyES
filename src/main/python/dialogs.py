@@ -1,10 +1,10 @@
 # This file handles the creation of all the custom dialogs
 # used by the software
 
-from PyQt5.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox
 
-from ui.PyES4_about import Ui_dialogAbout
-from ui.PyES4_newDialog import Ui_dialogNew
+from ui.PyES_about import Ui_dialogAbout
+from ui.PyES_newDialog import Ui_dialogNew
 
 
 class newDialog(QDialog):
@@ -34,5 +34,5 @@ class wrongFileDialog(QMessageBox):
         """
         super().__init__(parent)
         self.setWindowTitle("Error")
-        self.setText("The file you tried to open is not a valid PyBSTAC project file")
+        self.setText("The file you tried to open is not a valid PyES project file")
         self.setIcon(QMessageBox.Warning)

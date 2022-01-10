@@ -1,14 +1,14 @@
 import json
 
 import pandas as pd
-from PyQt5.QtCore import QThreadPool, QUrl
-from PyQt5.QtGui import QDesktopServices
-from PyQt5.QtWidgets import QFileDialog, QHeaderView, QMainWindow
+from PySide6.QtCore import QThreadPool, QUrl
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 
 from dialogs import aboutDialog, newDialog, wrongFileDialog
 from ExportWindow import ExportWindow
 from PlotWindow_pyqtgraph import PlotWindow
-from ui.PyES4_main import Ui_MainWindow
+from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
 from viewmodels.model_proxy import ProxyModel
@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # Set window title and project path as defaults
-        self.setWindowTitle("PyES4 - New Project")
+        self.setWindowTitle("PyES - New Project")
         self.project_path = None
 
         # Setup for secondary windows
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
         solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
-
+        
         # Interface is populated with empty basic data
         self.resetFields()
 
@@ -127,7 +127,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         indCompUpdater(self)
 
         # declare the checkline used to validate project files
-        self.check_line = {"check": "PyES4 project file --- DO NOT MODIFY THIS LINE!"}
+        self.check_line = {"check": "PyES project file --- DO NOT MODIFY THIS LINE!"}
 
     def file_new(self):
         """
@@ -137,7 +137,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if dialog.exec_():
             self.resetFields()
             self.project_path = None
-            self.setWindowTitle("PyES4 - New Project")
+            self.setWindowTitle("PyES - New Project")
 
             # Resets results
             self.result = {}
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.project_path = output_path
 
             # Set window title accordingly
-            self.setWindowTitle("PyES4 - " + self.project_path)
+            self.setWindowTitle("PyES - " + self.project_path)
 
             # dictionary that holds all the relevant data locations
             data_list = returnDataDict(self)
@@ -222,7 +222,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Get file path from the open project file
             self.project_path = input_path
             # Set window title accordingly
-            self.setWindowTitle("PyES4 - " + self.project_path)
+            self.setWindowTitle("PyES - " + self.project_path)
 
             # Disable results windows
             if self.PlotWindow:
@@ -423,16 +423,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         url = QUrl("https://www.google.com/")
         QDesktopServices.openUrl(url)
 
-    def loadCurve(self):
-        dialog = loadCurveDialog(self)
-        if dialog.exec_():
-            vcol = dialog.settings["vcol"]
-            ecol = dialog.settings["ecol"]
-            titr_curve = dialog.previewModel._data[[vcol, ecol]]
-            titr_curve.columns = ["Volume", "Potential"]
-            self.titrModel._data = titr_curve
-            self.titrModel.layoutChanged.emit()
-
     def resetFields(self):
         """
         Initializes the input fields as new "empty" values
@@ -454,7 +444,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Reset rel. error settings
         self.relErrorMode.setCurrentIndex(1)
-        self.relErrorsUpdater(1)
+        
 
         # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)
@@ -513,6 +503,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             indCompUpdater(self)
         except:
             pass
+
 
     def updateComp(self, rows):
         """
@@ -816,6 +807,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
         else:
+            # print(self.speciesView.model())
+            # print(self.solidSpeciesView.model())
             self.speciesView.model().setColumnReadOnly([3], True)
             self.solidSpeciesView.model().setColumnReadOnly([3], True)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], True)

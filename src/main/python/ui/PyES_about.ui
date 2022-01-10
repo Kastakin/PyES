@@ -41,7 +41,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PyES4 is a sotware created by the chemistry department of the University of Turin.&lt;/p&gt;&lt;p&gt;Heavly inspired by previous work of Professor Sammartano of the University of Messina, PyES4 aims to empower researchers with the ability to easly compute species distribution and simulate titration curves even for complex systems.&lt;/p&gt;&lt;p&gt;PyBSTAC is licensed under GPL3 and its source code is aviable on its entirety on &lt;a href=&quot;https://github.com/Kastakin/PyES4&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PyES is a sotware created by the chemistry department of the University of Turin.&lt;/p&gt;&lt;p&gt;Heavly inspired by previous work of Professor Sammartano of the University of Messina, PyES aims to empower researchers with the ability to easly compute species distribution and simulate titration curves even for complex systems.&lt;/p&gt;&lt;p&gt;PyES is licensed under GPL3 and its source code is aviable on its entirety on &lt;a href=&quot;https://github.com/Kastakin/PyES&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

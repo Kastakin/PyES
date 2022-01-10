@@ -3,11 +3,11 @@ from itertools import cycle
 
 import pandas as pd
 import pyqtgraph as pg
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import QInputDialog, QMainWindow
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import QInputDialog, QMainWindow
 
-from ui.PyES4_pyqtgraphPlotExport import Ui_PlotWindow
+from ui.PyES_pyqtgraphPlotExport import Ui_PlotWindow
 
 # Setup white background and black axis for the plot
 # THIS NEEDS TO BE DONE BOFORE LOADING THE UI FILE
