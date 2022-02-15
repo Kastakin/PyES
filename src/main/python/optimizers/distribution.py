@@ -295,10 +295,10 @@ class Distribution:
             self.solid_charges = (self.solid_model * comp_charge_column).sum(axis=0)
 
             # Compute z* for all the species
-            species_zast = (self.model * (comp_charge_column ** 2)).sum(axis=0) - (
+            species_zast = (self.model * (comp_charge_column**2)).sum(axis=0) - (
                 self.species_charges
             ) ** 2
-            solid_zast = (self.solid_model * (comp_charge_column ** 2)).sum(axis=0)
+            solid_zast = (self.solid_model * (comp_charge_column**2)).sum(axis=0)
 
             # Compute A/B term of D-H equation
             self.species_az = a * species_zast
@@ -689,7 +689,7 @@ class Distribution:
         c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
 
         # Calculate saturation index for solid species if any
-        saturation_index = self._saturationIndex(c, log_ks)
+        saturation_index = self._getSaturationIndex(c, log_ks)
 
         # Check which solids are to be considered
         shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
@@ -705,7 +705,7 @@ class Distribution:
             cp_to_calculate=None,
         )
 
-        while iteration < 200:
+        while iteration < 2000:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION {} ON POINT {}".format(
                     iteration, point
@@ -735,32 +735,45 @@ class Distribution:
                     shifts
                 )
             )
-            # Positive constrain on freeC as present in STACO
-            for index, shift in enumerate(shifts[: self.nc]):
-                if c[index] + shift < 0:
-                    logging.debug(
-                        "Invalid Shift encountered for component {}".format(index)
-                    )
-                    c[index] = c[index] / 10
-                elif c[index] + shift == 0:
-                    c[index] = 1e-20
-                else:
-                    # TODO: check if too big steps are to be avoided
-                    # if shift > 1e5:
-                    #     shift = 1e5
-                    # elif shift < 1e-5:
-                    #     shift = 1e-5
-                    # else:
-                    #     pass
-                    c[index] = c[index] + shift
 
-            for index, shift in enumerate(shifts[self.nc :]):
-                if cp[index] + shift < 0:
-                    shift = 0
-                # TODO: Check if dissolution is possible
-                # if saturation_index[index] < 1:
-                #     shift = 0
-                cp[index] = cp[index] + shift
+            if with_solids:
+                one_over_del = np.maximum(1, -shifts / (0.5 * np.append(c, cp)))
+            else:
+                one_over_del = np.maximum(1, -shifts / (0.5 * c))
+            rev_del = 1 / one_over_del
+
+
+            c = c + rev_del[: self.nc] * shifts[: self.nc]
+            if with_solids:
+                cp = cp + rev_del[self.nc :] * shifts[self.nc :]
+
+
+            # # Positive constrain on freeC as present in STACO
+            # for index, shift in enumerate(shifts[: self.nc]):
+            #     if c[index] + shift < 0:
+            #         logging.debug(
+            #             "Invalid Shift encountered for component {}".format(index)
+            #         )
+            #         c[index] = c[index] / 10
+            #     elif c[index] + shift == 0:
+            #         c[index] = 1e-20
+            #     else:
+            #         # TODO: check if too big steps are to be avoided
+            #         # if shift > 1e5:
+            #         #     shift = 1e5
+            #         # elif shift < 1e-5:
+            #         #     shift = 1e-5
+            #         # else:
+            #         #     pass
+            #         c[index] = c[index] + shift
+
+            # for index, shift in enumerate(shifts[self.nc :]):
+            #     if cp[index] + shift < 0:
+            #         shift = 0
+            #     # TODO: Check if dissolution is possible
+            #     # if saturation_index[index] < 1:
+            #     #     shift = 0
+            #     cp[index] = cp[index] + shift
 
             logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
             logging.debug(
@@ -777,7 +790,7 @@ class Distribution:
             c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             # Compute difference between total concentrations and convergence
-            saturation_index = self._saturationIndex(c, log_ks)
+            saturation_index = self._getSaturationIndex(c, log_ks)
 
             # Compute difference between total concentrations
             delta, can_delta = self._computeDelta(
@@ -804,7 +817,7 @@ class Distribution:
                         # If so restart the iteration considering the solids and save the current free c obtained
                         iteration = 0
                         with_solids = True
-                        saturation_index = self._saturationIndex(c, log_ks)
+                        saturation_index = self._getSaturationIndex(c, log_ks)
 
                         (
                             shifts_to_calculate,
@@ -948,7 +961,7 @@ class Distribution:
         log_spec_mat = tiled_log_c * self.model
         log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
         log_c_spec = self._checkOverUnderFlow(log_c_spec)
-        c_spec = 10 ** log_c_spec
+        c_spec = 10**log_c_spec
         logging.debug("Species Concentrations: {}".format(c_spec))
 
         tiled_cp = np.tile(cp, [self.nc, 1])
@@ -1153,11 +1166,11 @@ class Distribution:
             "Dampening routine couldn't find a solution at point {}".format(point)
         )
 
-    def _saturationIndex(self, c, log_ks):
+    def _getSaturationIndex(self, c, log_ks):
         if self.nf > 0:
             tiled_c = np.tile(c, [self.nf, 1]).T
-            saturation_index = np.prod(tiled_c ** self.solid_model, axis=0) / (
-                10 ** log_ks
+            saturation_index = np.prod(tiled_c**self.solid_model, axis=0) / (
+                10**log_ks
             )
             return saturation_index
         else:
@@ -1168,9 +1181,9 @@ class Distribution:
         Calculate ionic strength given concentrations of species and their charges.
         """
         if first_guess:
-            I = ((c * (charges ** 2)).sum() / 2) + self.background_c[point]
+            I = ((c * (charges**2)).sum() / 2) + self.background_c[point]
         else:
-            I = ((c * (charges ** 2)).sum() + self.background_c[point]) / 2
+            I = ((c * (charges**2)).sum() + self.background_c[point]) / 2
 
         return I
 
@@ -1195,7 +1208,7 @@ class Distribution:
             + self.solid_az * (fib2 - self.solid_fib)
             - self.solid_cg * (cis - self.solid_ris)
             - self.solid_dg * ((cis * radqcis) - (self.solid_ris * self.solid_radqris))
-            - self.solid_eg * ((cis ** 2) - (self.solid_ris ** 2))
+            - self.solid_eg * ((cis**2) - (self.solid_ris**2))
         )
 
         return updated_log_ks
@@ -1213,7 +1226,7 @@ class Distribution:
             + self.species_cg * (cis - self.species_ris)
             + self.species_dg
             * ((cis * radqcis) - (self.species_ris * self.species_radqris))
-            + self.species_eg * ((cis ** 2) - (self.species_ris ** 2))
+            + self.species_eg * ((cis**2) - (self.species_ris**2))
         )
 
         return updated_log_beta
@@ -1323,19 +1336,19 @@ class Distribution:
                 )
 
         # if point == 0:
-            # print(-model)
+        # print(-model)
 
-            # print(((der_free_beta ** 2) * (self.beta_sigma ** 2)).shape)
-            # print(((der_free_tot ** 2) * (self.conc_sigma[point] ** 2)).shape)
+        # print(((der_free_beta ** 2) * (self.beta_sigma ** 2)).shape)
+        # print(((der_free_tot ** 2) * (self.conc_sigma[point] ** 2)).shape)
 
         comp_sigma = np.sqrt(
-            ((der_free_beta ** 2) * (self.beta_sigma ** 2)).sum(axis=1)
-            + ((der_free_tot ** 2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
+            ((der_free_beta**2) * (self.beta_sigma**2)).sum(axis=1)
+            + ((der_free_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
         )
 
         species_sigma = np.sqrt(
-            ((der_spec_beta ** 2) * (self.beta_sigma ** 2)).sum(axis=1)
-            + ((der_spec_tot ** 2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
+            ((der_spec_beta**2) * (self.beta_sigma**2)).sum(axis=1)
+            + ((der_spec_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
         )
         species_sigma = np.concatenate((comp_sigma, species_sigma))
         # FIXME: we need to implement propagation error for solid concentrations
