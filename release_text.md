@@ -1,6 +1,4 @@
 # PyES Version 0.2.4
 
-Moved to new software stack:
-* [Custom PPG](https://github.com/runesc/PPG) instead of [fbs](https://github.com/mherrmann/fbs) to allow the use of newer Python and library versions;
-* [PySide6](https://doc.qt.io/qtforpython/quickstart.html) over PyQt5;
-* Moved the virtualenv handling to [Poetry](https://python-poetry.org/)
+* Solids are now computed sequentially
+* Invalid shifts are corrected as suggested in [Bethke, 1996](https://www.cambridge.org/core/journals/mineralogical-magazine/article/abs/c-m-bethke-geochemical-reaction-modeling-new-york-oxford-oxford-university-press-1996-xvii-397-pp-price-3795-isbn-0195094751/AA8A9567BE561FACFEC9D5B2202DF73A)
