@@ -587,7 +587,6 @@ class Distribution:
 
             # Calculate species concnetration or each curve point
             (
-                c_for_estimation,
                 species_conc_calc,
                 solid_conc_calc,
                 log_b,
@@ -601,6 +600,26 @@ class Distribution:
                 fixed_c,
             )
 
+            # Store concentrations before solid precipitation to estimate next points c
+            for_estimation_c.append(species_conc_calc)
+
+            for solid in range(self.nf):
+                saturation_index = self._getSaturationIndex(
+                    species_conc_calc[: self.nc], log_ks
+                )
+                if any(i > 1 for i in saturation_index):
+                    (
+                        species_conc_calc,
+                        solid_conc_calc,
+                        log_b,
+                        log_ks,
+                        ionic_strength,
+                    ) = self._newtonRaphson(
+                        point, c, cp, self.c_tot[point], fixed_c, with_solids=True
+                    )
+                else:
+                    break
+
             if self.errors:
                 species_sigma, solid_sigma = self._computeErrors(
                     species_conc_calc, log_b, point
@@ -609,8 +628,6 @@ class Distribution:
                 species_sigma = np.array([None for i in range(self.nc + self.ns)])
                 solid_sigma = np.array([None for i in range(self.nf)])
 
-            # Store concentrations before solid precipitation to estimate next points c
-            for_estimation_c.append(c_for_estimation)
             # Store calculated species/solid concentration into a vector
             results_species_conc.append(species_conc_calc)
             results_solid_conc.append(solid_conc_calc)
@@ -643,10 +660,9 @@ class Distribution:
             results_ionic_strength,
         )
 
-    def _newtonRaphson(self, point, c, cp, c_tot, fixed_c):
+    def _newtonRaphson(self, point, c, cp, c_tot, fixed_c, with_solids=False):
         # FIXME: FOR DEBUGGING PURPOSES
         # np.seterr("print")
-        with_solids = False
         iteration = 0
 
         # If working with variable ionic strength ompute initial guess for species concentration
@@ -697,15 +713,15 @@ class Distribution:
         )
 
         # Compute difference between total concentrations and calculated one
-        delta, can_delta = self._computeDelta(
+        delta, can_delta, solid_delta = self._computeDelta(
             c_tot,
             c_tot_calc,
             with_solids,
             saturation_index,
-            cp_to_calculate=None,
+            shifts_to_calculate[-self.nf :],
         )
 
-        while iteration < 2000:
+        while iteration < 200:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION {} ON POINT {}".format(
                     iteration, point
@@ -737,54 +753,22 @@ class Distribution:
             )
 
             if with_solids:
-                one_over_del = np.maximum(1, -shifts / (0.5 * np.append(c, cp)))
+                one_over_del = -shifts / (0.5 * np.append(c, cp))
             else:
-                one_over_del = np.maximum(1, -shifts / (0.5 * c))
+                one_over_del = -shifts / (0.5 * c)
+
+            one_over_del = np.where(one_over_del > 1, one_over_del, 1)
             rev_del = 1 / one_over_del
 
-
             c = c + rev_del[: self.nc] * shifts[: self.nc]
+
             if with_solids:
                 cp = cp + rev_del[self.nc :] * shifts[self.nc :]
-
-
-            # # Positive constrain on freeC as present in STACO
-            # for index, shift in enumerate(shifts[: self.nc]):
-            #     if c[index] + shift < 0:
-            #         logging.debug(
-            #             "Invalid Shift encountered for component {}".format(index)
-            #         )
-            #         c[index] = c[index] / 10
-            #     elif c[index] + shift == 0:
-            #         c[index] = 1e-20
-            #     else:
-            #         # TODO: check if too big steps are to be avoided
-            #         # if shift > 1e5:
-            #         #     shift = 1e5
-            #         # elif shift < 1e-5:
-            #         #     shift = 1e-5
-            #         # else:
-            #         #     pass
-            #         c[index] = c[index] + shift
-
-            # for index, shift in enumerate(shifts[self.nc :]):
-            #     if cp[index] + shift < 0:
-            #         shift = 0
-            #     # TODO: Check if dissolution is possible
-            #     # if saturation_index[index] < 1:
-            #     #     shift = 0
-            #     cp[index] = cp[index] + shift
 
             logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
             logging.debug(
                 "Newton-Raphson updated precipitate concentrations: {}".format(cp)
             )
-
-            # TODO: check if damping is really useful after each N-R iteration
-            # Damp after newton-raphson iteration
-            # c, c_spec = self._damping(
-            #     point, c, cp, log_beta, c_tot, model, solid_model, nc, ns, nf
-            # )
 
             # Calculate total concentration given the updated free/precipitate concentration
             c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
@@ -793,7 +777,7 @@ class Distribution:
             saturation_index = self._getSaturationIndex(c, log_ks)
 
             # Compute difference between total concentrations
-            delta, can_delta = self._computeDelta(
+            delta, can_delta, solid_delta = self._computeDelta(
                 c_tot,
                 c_tot_calc,
                 with_solids,
@@ -810,35 +794,14 @@ class Distribution:
             )
             iteration += 1
             # If convergence criteria is met return check if any solid has to be considered
-            if not with_solids:
-                if comp_conv_criteria < 1e-16:
-                    c_for_estimate = c_spec
-                    if self.nf > 0 and any(i > 1 for i in saturation_index):
-                        # If so restart the iteration considering the solids and save the current free c obtained
-                        iteration = 0
-                        with_solids = True
-                        saturation_index = self._getSaturationIndex(c, log_ks)
-
-                        (
-                            shifts_to_calculate,
-                            shifts_to_skip,
-                        ) = self._checkSolidsSaturation(saturation_index)
-
-                        # Compute difference between total concentrations
-                        delta, can_delta = self._computeDelta(
-                            c_tot,
-                            c_tot_calc,
-                            with_solids,
-                            saturation_index,
-                            shifts_to_calculate[-self.nf :],
-                        )
-                    else:
-                        return c_for_estimate, c_spec, cp, log_beta, log_ks, cis
-            else:
+            if with_solids:
                 if comp_conv_criteria < 1e-16 and all(
-                    i < 1e-16 for i in delta[self.nc :]
+                    abs(i) <= 1e-9 for i in solid_delta
                 ):
-                    return c_for_estimate, c_spec, cp, log_beta, log_ks, cis
+                    return c_spec, cp, log_beta, log_ks, cis
+            else:
+                if comp_conv_criteria < 1e-16:
+                    return c_spec, cp, log_beta, log_ks, cis
 
         # If during the first or second run you exceed the iteration limit report it
         logging.error(
@@ -872,8 +835,12 @@ class Distribution:
 
     def _checkSolidsSaturation(self, saturation_index):
         # Solid species to consider have saturation index over 1
-        cp_to_calculate = saturation_index > 1
-        cp_to_skip = ~cp_to_calculate
+        # cp_to_calculate = saturation_index > 1
+        cp_to_calculate = np.where(
+            (saturation_index == np.max(saturation_index)) & (saturation_index > 1),
+            True,
+            False,
+        )
 
         # For ease of calculation include components as species to consider
         shifts_to_calculate = np.concatenate(
@@ -901,7 +868,7 @@ class Distribution:
 
         delta = np.concatenate((can_delta, solid_delta))
         # delta = can_delta
-        return delta, can_delta
+        return delta, can_delta, solid_delta
 
     def _computeJacobian(self, c_spec, saturation_index, with_solids, to_skip):
         if with_solids:
@@ -1334,12 +1301,6 @@ class Distribution:
                 der_spec_tot[i, r] = np.sum(
                     model[:, i] * (c_spec[i] / free_c) * der_free_tot[:, r]
                 )
-
-        # if point == 0:
-        # print(-model)
-
-        # print(((der_free_beta ** 2) * (self.beta_sigma ** 2)).shape)
-        # print(((der_free_tot ** 2) * (self.conc_sigma[point] ** 2)).shape)
 
         comp_sigma = np.sqrt(
             ((der_free_beta**2) * (self.beta_sigma**2)).sum(axis=1)
