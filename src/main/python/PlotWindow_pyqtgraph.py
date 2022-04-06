@@ -37,7 +37,6 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
     def __init__(self, parent):
         super().__init__()
         self.setupUi(self)
-
         # Inherit the required informations from the primary window
         if parent.dmode.currentIndex() == 0:
             self.distribution = False

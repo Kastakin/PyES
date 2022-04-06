@@ -711,7 +711,6 @@ class Distribution:
         shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
             saturation_index
         )
-
         # Compute difference between total concentrations and calculated one
         delta, can_delta, solid_delta = self._computeDelta(
             c_tot,
@@ -836,23 +835,24 @@ class Distribution:
     def _checkSolidsSaturation(self, saturation_index):
         # Solid species to consider have saturation index over 1
         # cp_to_calculate = saturation_index > 1
-        cp_to_calculate = np.where(
-            (saturation_index == np.max(saturation_index)) & (saturation_index > 1),
-            True,
-            False,
-        )
+        if saturation_index.size != 0:
+            cp_to_calculate = np.where(
+                (saturation_index == np.max(saturation_index)) & (saturation_index > 1),
+                True,
+                False,
+            )
+            shifts_to_calculate = np.concatenate(
+                ([True for i in range(self.nc)], cp_to_calculate)
+            )
+        else:
+            shifts_to_calculate = np.array([True for i in range(self.nc)])
 
-        # For ease of calculation include components as species to consider
-        shifts_to_calculate = np.concatenate(
-            ([True for i in range(self.nc)], cp_to_calculate)
-        )
         shifts_to_skip = ~shifts_to_calculate
 
         if self.distribution:
             # If calculating distribution of species exclude the indipendent component from the species to consider
             shifts_to_calculate = np.delete(shifts_to_calculate, self.ind_comp, axis=0)
             shifts_to_skip = np.delete(shifts_to_skip, self.ind_comp, axis=0)
-
         return shifts_to_calculate, shifts_to_skip
 
     def _computeDelta(
