@@ -119,7 +119,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
         solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
-        
+
         # Interface is populated with empty basic data
         self.resetFields()
 
@@ -217,6 +217,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dialog.exec_()
                 return False
 
+            self.resetFields()
             # Resets results
             self.result = {}
             # Get file path from the open project file
@@ -356,7 +357,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except:
                 self.cback.setValue(0)
 
-            # TODO: Find a way to handle missing model data
             try:
                 self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
                 self.compModel._data.index = range(jsdata["nc"])
@@ -444,7 +444,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Reset rel. error settings
         self.relErrorMode.setCurrentIndex(1)
-        
+
 
         # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)
