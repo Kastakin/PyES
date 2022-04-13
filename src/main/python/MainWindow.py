@@ -1,13 +1,12 @@
 import json
 
 import pandas as pd
+from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
+from ExportWindow import ExportWindow
+from PlotWindow_pyqtgraph import PlotWindow
 from PySide6.QtCore import QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow
-
-from dialogs import AboutDialog, NewDialog, WrongFileDialog
-from ExportWindow import ExportWindow
-from PlotWindow_pyqtgraph import PlotWindow
 from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
@@ -134,7 +133,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Display a prompt asking if you want to create a new project
         """
         dialog = NewDialog(self)
-        if dialog.exec_():
+        if dialog.exec():
             self.resetFields()
             self.project_path = None
             self.setWindowTitle("PyES - New Project")
@@ -161,7 +160,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Display about dialog
         """
         dialog = AboutDialog(self)
-        dialog.exec_()
+        dialog.exec()
 
     def file_save(self):
         """
@@ -214,7 +213,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # The loaded file has to be a valid project file, discard it if not
             if jsdata["check"] != self.check_line["check"]:
                 dialog = WrongFileDialog(self)
-                dialog.exec_()
+                dialog.exec()
                 return False
 
             self.resetFields()
@@ -445,7 +444,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Reset rel. error settings
         self.relErrorMode.setCurrentIndex(1)
 
-
         # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)
         self.refIonicStr.setValue(0)
@@ -503,7 +501,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             indCompUpdater(self)
         except:
             pass
-
 
     def updateComp(self, rows):
         """
@@ -662,6 +659,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.exportButton.setEnabled(True)
         self.actionExport_Results.setEnabled(True)
         self.actionPlot_Results.setEnabled(True)
+        info_dialog = CompletedCalculation(succesful=True)
+        info_dialog.exec()
 
     def aborted(self, error):
         self.consoleOutput.append("### ERROR ###")
@@ -669,6 +668,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.consoleOutput.append("### ABORTED ###")
 
         self.calcButton.setEnabled(True)
+        info_dialog = CompletedCalculation(succesful=False)
+        info_dialog.exec()
 
     def logger(self, log):
         self.consoleOutput.append(log)
