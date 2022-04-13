@@ -47,13 +47,12 @@ class TitrationComponentsModel(QAbstractTableModel):
         """Insert a row into the model."""
         self.beginInsertRows(index, position, position + rows - 1)
 
-        for row in range(rows):
-            empty_row = pd.DataFrame(
-                [[0.0 for x in range(4)]],
-                columns=["C0", "CT", "Sigma C0", "Sigma CT"],
-                index=["COMP" + str(position + row + 1)],
-            )
-            self._data = self._data.append(empty_row, ignore_index=False)
+        empty_rows = pd.DataFrame(
+            [[0.0 for x in range(4)] for row in range(rows)],
+            columns=["C0", "CT", "Sigma C0", "Sigma CT"],
+            index=["COMP" + str(position + row + 1) for row in range(rows)],
+        )
+        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
 
         self.endInsertRows()
         self.layoutChanged.emit()
@@ -120,15 +119,14 @@ class ComponentsModel(QAbstractTableModel):
         """Insert a row into the model."""
         self.beginInsertRows(index, position, position + rows - 1)
 
-        for row in range(rows):
-            empty_row = pd.DataFrame(
-                [["COMP" + str(position + row + 1)] + [0]],
-                columns=[
-                    "Name",
-                    "Charge",
-                ],
-            )
-            self._data = self._data.append(empty_row, ignore_index=True)
+        empty_rows = pd.DataFrame(
+            [["COMP" + str(position + row + 1)] + [0] for row in range(rows)],
+            columns=[
+                "Name",
+                "Charge",
+            ],
+        )
+        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
 
         self.endInsertRows()
         self.layoutChanged.emit()
@@ -272,19 +270,20 @@ class SpeciesModel(QAbstractTableModel):
         """Insert a row into the model."""
         self.beginInsertRows(index, position, position + rows - 1)
 
-        empty_row = pd.DataFrame(
+        empty_rows = pd.DataFrame(
             [
                 [False]
                 + [""]
                 + [0.0 for x in range(6)]
                 + [int(0) for x in range(self.columnCount(index) - 9)]
-                + [self._data.columns[8]],
+                + [self._data.columns[8]]
+                for row in range(rows)
             ],
             columns=self._data.columns,
         )
 
-        for row in range(rows):
-            self._data = self._data.append(empty_row, ignore_index=True)
+        # for row in range(rows):
+        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
 
         self.endInsertRows()
         self.layoutChanged.emit()
@@ -457,19 +456,19 @@ class SolidSpeciesModel(QAbstractTableModel):
         """Insert a row into the model."""
         self.beginInsertRows(index, position, position + rows - 1)
 
-        empty_row = pd.DataFrame(
+        empty_rows = pd.DataFrame(
             [
                 [False]
                 + [""]
                 + [0.0 for x in range(6)]
                 + [int(0) for x in range(self.columnCount(index) - 9)]
                 + [self._data.columns[8]]
+                for row in range(rows)
             ],
             columns=self._data.columns,
         )
 
-        for row in range(rows):
-            self._data = self._data.append(empty_row, ignore_index=True)
+        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
 
         self.endInsertRows()
         self.layoutChanged.emit()
