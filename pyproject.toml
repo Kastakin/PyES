@@ -17,6 +17,7 @@ pyqtgraph = {git = "git@github.com:pyqtgraph/pyqtgraph.git"}
 tbump = "^6.7.0"
 isort = "^5.10.1"
 black = "^22.3.0"
+pre-commit = "^2.18.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
