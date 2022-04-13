@@ -1,4 +1,6 @@
 import json
+import os
+from pathlib import Path
 
 import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Initiate settings context
         self.settings = QSettings()
+        self.settings.setValue("path/default", str(Path.home()))
 
         self.restoreGeometry(self.settings.value("mainwindow/geometry", QByteArray()))
 
@@ -177,7 +180,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
         else:
             output_path, _ = QFileDialog.getSaveFileName(
-                self, "Save Project", "", "JSON (*.json)"
+                self,
+                "Save Project",
+                self.settings.value("path/default"),
+                "JSON (*.json)",
             )
 
         if output_path:
@@ -203,9 +209,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Load a previously saved project
         """
-        input_path, _ = QFileDialog.getOpenFileName(
-            self, "Open Project", "~", "JSON (*.json)"
-        )
+        if self.project_path:
+            input_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Open Project",
+                os.path.dirname(self.project_path),
+                "JSON (*.json)",
+            )
+        else:
+            input_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Open Project",
+                self.settings.value("path/default"),
+                "JSON (*.json)",
+            )
 
         if input_path:
             with open(
