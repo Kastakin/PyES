@@ -5,7 +5,7 @@ from PySide6.QtCore import QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 
-from dialogs import aboutDialog, newDialog, wrongFileDialog
+from dialogs import AboutDialog, NewDialog, WrongFileDialog
 from ExportWindow import ExportWindow
 from PlotWindow_pyqtgraph import PlotWindow
 from ui.PyES_main import Ui_MainWindow
@@ -133,7 +133,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display a prompt asking if you want to create a new project
         """
-        dialog = newDialog(self)
+        dialog = NewDialog(self)
         if dialog.exec_():
             self.resetFields()
             self.project_path = None
@@ -160,7 +160,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display about dialog
         """
-        dialog = aboutDialog(self)
+        dialog = AboutDialog(self)
         dialog.exec_()
 
     def file_save(self):
@@ -213,7 +213,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # TODO: better and more robust validation of project files
             # The loaded file has to be a valid project file, discard it if not
             if jsdata["check"] != self.check_line["check"]:
-                dialog = wrongFileDialog(self)
+                dialog = WrongFileDialog(self)
                 dialog.exec_()
                 return False
 

@@ -7,7 +7,7 @@ from ui.PyES_about import Ui_dialogAbout
 from ui.PyES_newDialog import Ui_dialogNew
 
 
-class newDialog(QDialog):
+class NewDialog(QDialog):
     def __init__(self, parent=None):
         """
         Dialog asking if you want to save before initializing new project.
@@ -17,7 +17,7 @@ class newDialog(QDialog):
         self.ui.setupUi(self)
 
 
-class aboutDialog(QDialog):
+class AboutDialog(QDialog):
     def __init__(self, parent=None):
         """
         Dialog reporting info about the program and liceses involved in its creation.
@@ -27,7 +27,7 @@ class aboutDialog(QDialog):
         self.ui.setupUi(self)
 
 
-class wrongFileDialog(QMessageBox):
+class WrongFileDialog(QMessageBox):
     def __init__(self, parent=None):
         """
         Dialog signaling that the selected file is not a valid project file.
