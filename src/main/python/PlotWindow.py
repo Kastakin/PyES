@@ -194,13 +194,13 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         if self.distribution:
             self.conc_graph.setLabel(
                 "bottom",
-                text="Indipendent Component [-log[{}]]".format(
+                text="Indipendent Component -log[{}]".format(
                     self.indipendent_comp_name
                 ),
             )
             self.perc_graph.setLabel(
                 "bottom",
-                text="Indipendent Component [-log[{}]]".format(
+                text="Indipendent Component -log[{}]".format(
                     self.indipendent_comp_name
                 ),
             )
