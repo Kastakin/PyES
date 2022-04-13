@@ -5,10 +5,9 @@ from pathlib import Path
 import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
 from ExportWindow import ExportWindow
-from PlotWindow_pyqtgraph import PlotWindow
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView, QMainWindow
+from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QWidget
 from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
@@ -20,6 +19,8 @@ from viewmodels.models import (
     TitrationComponentsModel,
 )
 from workers import optimizeWorker
+
+from main.python.PlotWindow import PlotWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):

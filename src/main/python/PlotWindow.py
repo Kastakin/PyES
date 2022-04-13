@@ -6,7 +6,6 @@ import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QInputDialog, QMainWindow
-
 from ui.PyES_pyqtgraphPlotExport import Ui_PlotWindow
 
 # Setup white background and black axis for the plot
