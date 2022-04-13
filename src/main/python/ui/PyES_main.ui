@@ -1190,7 +1190,7 @@
                     <bool>false</bool>
                    </property>
                    <property name="statusTip">
-                    <string>Initial concentration of beckground ions in titration vessel.</string>
+                    <string>Initial concentration of background ions in titration vessel.</string>
                    </property>
                    <property name="suffix">
                     <string> mol/l</string>

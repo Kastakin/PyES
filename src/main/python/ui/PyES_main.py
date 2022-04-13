@@ -1241,7 +1241,7 @@ class Ui_MainWindow(object):
         self.c0back.setStatusTip(
             QCoreApplication.translate(
                 "MainWindow",
-                "Initial concentration of beckground ions in titration vessel.",
+                "Initial concentration of background ions in titration vessel.",
                 None,
             )
         )
