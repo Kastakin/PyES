@@ -10,7 +10,7 @@ from utils_func import getName
 
 
 class TitrationComponentsModel(QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data: pd.DataFrame):
         super().__init__()
         self._data = data
 
@@ -78,7 +78,7 @@ class TitrationComponentsModel(QAbstractTableModel):
 
 
 class ComponentsModel(QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data: pd.DataFrame):
         super().__init__()
         self._data = data
 
@@ -152,7 +152,7 @@ class ComponentsModel(QAbstractTableModel):
 
 
 class SpeciesModel(QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data: pd.DataFrame):
         super().__init__()
         self._data = data
 
@@ -338,7 +338,7 @@ class SpeciesModel(QAbstractTableModel):
 
 
 class SolidSpeciesModel(QAbstractTableModel):
-    def __init__(self, data):
+    def __init__(self, data: pd.DataFrame):
         super().__init__()
         self._data = data
 

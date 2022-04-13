@@ -8,7 +8,7 @@ from ExportWindow import ExportWindow
 from PlotWindow_pyqtgraph import PlotWindow
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow
+from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView, QMainWindow
 from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
@@ -43,6 +43,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Setup for secondary windows
         self.PlotWindow = None
         self.ExportWindow = None
+
+        self.imode_fields: list[QWidget] = [
+            self.refIonicStr,
+            self.refIonicStr_label,
+            self.A,
+            self.A_label,
+            self.B,
+            self.B_label,
+            self.c0,
+            self.c0_label,
+            self.c1,
+            self.c1_label,
+            self.d0,
+            self.d0_label,
+            self.d1,
+            self.d1_label,
+            self.e0,
+            self.e0_label,
+            self.e1,
+            self.e1_label,
+            self.c0back,
+            self.c0back_label,
+            self.ctback,
+            self.ctback_label,
+            self.cback,
+            self.cback_label,
+        ]
 
         # Generate clean data for tableviews
         (
@@ -703,61 +730,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         fields in the modelviews
         """
         if imode == 1:
-            self.refIonicStr.setEnabled(True)
-            self.refIonicStr_label.setEnabled(True)
-            self.A.setEnabled(True)
-            self.A_label.setEnabled(True)
-            self.B.setEnabled(True)
-            self.B_label.setEnabled(True)
-            self.c0.setEnabled(True)
-            self.c0_label.setEnabled(True)
-            self.c1.setEnabled(True)
-            self.c1_label.setEnabled(True)
-            self.d0.setEnabled(True)
-            self.d0_label.setEnabled(True)
-            self.d1.setEnabled(True)
-            self.d1_label.setEnabled(True)
-            self.e0.setEnabled(True)
-            self.e0_label.setEnabled(True)
-            self.e1.setEnabled(True)
-            self.e1_label.setEnabled(True)
-
-            self.c0back.setEnabled(True)
-            self.c0back_label.setEnabled(True)
-            self.ctback.setEnabled(True)
-            self.ctback_label.setEnabled(True)
-            self.cback.setEnabled(True)
-            self.cback_label.setEnabled(True)
+            for field in self.imode_fields:
+                field.setEnabled(True)
 
             self.speciesView.model().setColumnReadOnly(range(4, 8), False)
             self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), False)
 
         else:
-            self.refIonicStr.setEnabled(False)
-            self.refIonicStr_label.setEnabled(False)
-            self.A.setEnabled(False)
-            self.A_label.setEnabled(False)
-            self.B.setEnabled(False)
-            self.B_label.setEnabled(False)
-            self.c0.setEnabled(False)
-            self.c0_label.setEnabled(False)
-            self.c1.setEnabled(False)
-            self.c1_label.setEnabled(False)
-            self.d0.setEnabled(False)
-            self.d0_label.setEnabled(False)
-            self.d1.setEnabled(False)
-            self.d1_label.setEnabled(False)
-            self.e0.setEnabled(False)
-            self.e0_label.setEnabled(False)
-            self.e1.setEnabled(False)
-            self.e1_label.setEnabled(False)
-
-            self.c0back.setEnabled(False)
-            self.c0back_label.setEnabled(False)
-            self.ctback.setEnabled(False)
-            self.ctback_label.setEnabled(False)
-            self.cback.setEnabled(False)
-            self.cback_label.setEnabled(False)
+            for field in self.imode_fields:
+                field.setEnabled(False)
 
             self.speciesView.model().setColumnReadOnly(range(4, 8), True)
             self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), True)
