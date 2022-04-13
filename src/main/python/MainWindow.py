@@ -4,7 +4,7 @@ import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
 from ExportWindow import ExportWindow
 from PlotWindow_pyqtgraph import PlotWindow
-from PySide6.QtCore import QThreadPool, QUrl
+from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow
 from ui.PyES_main import Ui_MainWindow
@@ -25,6 +25,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
 
+        # Initiate threadpool
+        self.threadpool = QThreadPool()
+
+        # Initiate settings context
+        self.settings = QSettings()
+
+        self.restoreGeometry(self.settings.value("mainwindow/geometry", QByteArray()))
+
         # Set window title and project path as defaults
         self.setWindowTitle("PyES - New Project")
         self.project_path = None
@@ -32,9 +40,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Setup for secondary windows
         self.PlotWindow = None
         self.ExportWindow = None
-
-        # Initiate threadpool
-        self.threadpool = QThreadPool()
 
         # Generate clean data for tableviews
         (
@@ -822,6 +827,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Cleanup before closing.
         """
+        self.settings.setValue("mainwindow/geometry", self.saveGeometry())
+
         # Close any secondary window still open
         if self.ExportWindow:
             self.ExportWindow.close()

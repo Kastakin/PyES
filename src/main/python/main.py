@@ -1,14 +1,13 @@
 import sys
 
+from MainWindow import MainWindow
 from ppg_runtime.application_context import cached_property
 from ppg_runtime.application_context.PySide6 import ApplicationContext
-
-from MainWindow import MainWindow
 
 
 class AppContext(ApplicationContext):
     def run(self):
-        self.main_window.showMaximized()
+        self.main_window.show()
         return self.app.exec()
 
     @cached_property
@@ -20,6 +19,7 @@ class AppContext(ApplicationContext):
         """
         result = self._qt_binding.QApplication(sys.argv)
         result.setApplicationName(self.build_settings["app_name"])
+        result.setOrganizationName(self.build_settings["app_name"])
         result.setApplicationVersion(self.build_settings["version"])
         return result
 
