@@ -3,6 +3,7 @@ from itertools import cycle
 
 import pandas as pd
 import pyqtgraph as pg
+from MainWindow import MainWindow
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QInputDialog, QMainWindow
@@ -33,7 +34,7 @@ BREWER12PAIRED = cycle(
 
 
 class PlotWindow(QMainWindow, Ui_PlotWindow):
-    def __init__(self, parent):
+    def __init__(self, parent: MainWindow):
         super().__init__()
         self.setupUi(self)
         # Inherit the required informations from the primary window
