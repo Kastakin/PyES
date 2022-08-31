@@ -1,8 +1,8 @@
 import sys
 
-from MainWindow import MainWindow
 from ppg_runtime.application_context import cached_property
 from ppg_runtime.application_context.PySide6 import ApplicationContext
+from windows.window import MainWindow
 
 
 class AppContext(ApplicationContext):

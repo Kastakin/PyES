@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'PyES_main.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.4
+## Created by: Qt User Interface Compiler version 6.3.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -944,15 +944,35 @@ class Ui_MainWindow(object):
         self.actionNew.setText(
             QCoreApplication.translate("MainWindow", "New Project", None)
         )
+        # if QT_CONFIG(shortcut)
+        self.actionNew.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+N", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.actionOpen.setText(
             QCoreApplication.translate("MainWindow", "Open Project", None)
         )
+        # if QT_CONFIG(shortcut)
+        self.actionOpen.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+O", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.actionSave.setText(
             QCoreApplication.translate("MainWindow", "Save Project", None)
         )
+        # if QT_CONFIG(shortcut)
+        self.actionSave.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+S", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.actionAbout.setText(
             QCoreApplication.translate("MainWindow", "About", None)
         )
+        # if QT_CONFIG(shortcut)
+        self.actionAbout.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+H", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.actionExit.setText(QCoreApplication.translate("MainWindow", "Exit", None))
         self.actionWebsite.setText(
             QCoreApplication.translate("MainWindow", "Website", None)
@@ -965,6 +985,11 @@ class Ui_MainWindow(object):
             QCoreApplication.translate("MainWindow", "Launch the calculation", None)
         )
         # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(shortcut)
+        self.actionCalculate.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+R", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.actionExport_Results.setText(
             QCoreApplication.translate("MainWindow", "Export Results", None)
         )
@@ -973,6 +998,11 @@ class Ui_MainWindow(object):
             QCoreApplication.translate("MainWindow", "Export Results", None)
         )
         # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(shortcut)
+        self.actionExport_Results.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+E", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.actionPlot_Results.setText(
             QCoreApplication.translate("MainWindow", "Plot Results", None)
         )
@@ -981,6 +1011,11 @@ class Ui_MainWindow(object):
             QCoreApplication.translate("MainWindow", "Plot Results", None)
         )
         # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(shortcut)
+        self.actionPlot_Results.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+P", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.sys_opt_label.setText(
             QCoreApplication.translate(
                 "MainWindow",

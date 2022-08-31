@@ -1,13 +1,16 @@
 import sys
+import typing
 from itertools import cycle
 
 import pandas as pd
 import pyqtgraph as pg
-from MainWindow import MainWindow
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QInputDialog, QMainWindow
 from ui.PyES_pyqtgraphPlotExport import Ui_PlotWindow
+
+if typing.TYPE_CHECKING:
+    from windows.window import MainWindow
 
 # Setup white background and black axis for the plot
 # THIS NEEDS TO BE DONE BOFORE LOADING THE UI FILE
@@ -34,7 +37,7 @@ BREWER12PAIRED = cycle(
 
 
 class PlotWindow(QMainWindow, Ui_PlotWindow):
-    def __init__(self, parent: MainWindow):
+    def __init__(self, parent: "MainWindow"):
         super().__init__()
         self.setupUi(self)
         # Inherit the required informations from the primary window

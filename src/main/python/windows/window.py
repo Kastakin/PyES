@@ -18,9 +18,8 @@ from viewmodels.models import (
     SpeciesModel,
     TitrationComponentsModel,
 )
+from windows.plot import PlotWindow
 from workers import optimizeWorker
-
-from main.python.PlotWindow import PlotWindow
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):

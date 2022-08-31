@@ -1726,6 +1726,9 @@
    <property name="text">
     <string>New Project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="actionOpen">
    <property name="icon">
@@ -1734,6 +1737,9 @@
    </property>
    <property name="text">
     <string>Open Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
@@ -1744,6 +1750,9 @@
    <property name="text">
     <string>Save Project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="icon">
@@ -1752,6 +1761,9 @@
    </property>
    <property name="text">
     <string>About</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="actionExit">
@@ -1775,6 +1787,9 @@
    <property name="toolTip">
     <string>Launch the calculation</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
   </action>
   <action name="actionExport_Results">
    <property name="icon">
@@ -1787,6 +1802,9 @@
    <property name="toolTip">
     <string>Export Results</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
   </action>
   <action name="actionPlot_Results">
    <property name="icon">
@@ -1798,6 +1816,9 @@
    </property>
    <property name="toolTip">
     <string>Plot Results</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

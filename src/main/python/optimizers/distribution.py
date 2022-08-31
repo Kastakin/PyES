@@ -737,6 +737,13 @@ class Distribution:
                 shifts_to_skip[-self.nf :],
             )
 
+            # J, delta = self._scaleMatrix(J, delta, with_solids)
+
+            if self.distribution:
+                # Ignore row and column relative to the indipendent component
+                J = np.delete(J, self.ind_comp, axis=0)
+                J = np.delete(J, self.ind_comp, axis=1)
+
             # Solve the equations to obtain newton step
             shifts = np.linalg.solve(J, delta)
 
@@ -897,7 +904,7 @@ class Distribution:
 
             for j in range(self.nc, nt):
                 for k in range(self.nc):
-                    J[j, k] = self.solid_model[k, (j - self.nc)] * (
+                    J[j, k] = np.negative(self.solid_model[k, (j - self.nc)]) * (
                         saturation_index[(j - self.nc)] / c_spec[k]
                     )
 
@@ -905,17 +912,33 @@ class Distribution:
                 for k in range(self.nc, nt):
                     J[j, k] = 0
 
-            # remove all the column and rows where saturation index is < 1 (not needed for calculation)
-            J = np.delete(J, to_skip, axis=0)
-            J = np.delete(J, to_skip, axis=1)
-
-        if self.distribution:
-            # Ignore row and column relative to the indipendent component
-            J = np.delete(J, self.ind_comp, axis=0)
-            J = np.delete(J, self.ind_comp, axis=1)
-
-        logging.debug("Jacobian: {}".format(J))
         return J
+
+    # def _scaleMatrix(self, J, delta, with_solids):
+    #     if with_solids:
+    #         nt = self.nc + self.nf
+    #         to_skip = np.concatenate(
+    #             (np.array([False for i in range(self.nc)]), to_skip)
+    #         )
+    #     else:
+    #         nt = self.nc
+
+    #     print(nt)
+
+    #     for j in range(nt):
+    #         for k in range(nt):
+    #             J[j, k] = J[j, k] * ((J[k, k] * J[j, j]) ** -0.5)
+
+    #     print(J)
+
+    #     print(delta)
+
+    #     for k in range(nt - (1 if self.distribution else 0)):
+    #         delta[k] = delta[k] * ((J[k, k]) ** -0.5)
+
+    #     print(delta)
+
+    #     return J, delta
 
     # TODO: document functions
     def _speciesConcentration(self, c, cp, log_beta):
@@ -1314,6 +1337,7 @@ class Distribution:
             + ((der_spec_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
         )
         species_sigma = np.concatenate((comp_sigma, species_sigma))
+
         # FIXME: we need to implement propagation error for solid concentrations
         solid_sigma = np.array([None for i in range(self.nf)])
 

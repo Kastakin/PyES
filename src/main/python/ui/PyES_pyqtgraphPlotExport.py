@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'PyES_pyqtgraphPlotExport.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.2.4
+## Created by: Qt User Interface Compiler version 6.3.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -19,6 +19,7 @@ class Ui_PlotWindow(object):
         if not PlotWindow.objectName():
             PlotWindow.setObjectName("PlotWindow")
         PlotWindow.resize(800, 600)
+        PlotWindow.setMinimumSize(QSize(800, 600))
         self.centralwidget = QWidget(PlotWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
@@ -85,28 +86,20 @@ class Ui_PlotWindow(object):
         self.tabWidget.addTab(self.conc_tab, "")
         self.perc_tab = QWidget()
         self.perc_tab.setObjectName("perc_tab")
-        self.horizontalLayout_3 = QHBoxLayout(self.perc_tab)
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(1, 1, 1, 1)
-        self.widget_3 = QWidget(self.perc_tab)
-        self.widget_3.setObjectName("widget_3")
-        sizePolicy.setHeightForWidth(self.widget_3.sizePolicy().hasHeightForWidth())
-        self.widget_3.setSizePolicy(sizePolicy)
-        self.verticalLayout_3 = QVBoxLayout(self.widget_3)
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
-
-        self.horizontalLayout_3.addWidget(self.widget_3)
-
+        self.verticalLayout_2 = QVBoxLayout(self.perc_tab)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(1, 1, 1, 1)
         self.perc_graph = PlotWidget(self.perc_tab)
         self.perc_graph.setObjectName("perc_graph")
 
-        self.horizontalLayout_3.addWidget(self.perc_graph)
+        self.verticalLayout_2.addWidget(self.perc_graph)
 
+        self.verticalLayout_2.setStretch(0, 1)
         self.tabWidget.addTab(self.perc_tab, "")
 
         self.horizontalLayout.addWidget(self.tabWidget)
 
+        self.horizontalLayout.setStretch(1, 1)
         PlotWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(PlotWindow)
@@ -114,7 +107,7 @@ class Ui_PlotWindow(object):
         self.select_all.clicked.connect(PlotWindow.selectAll)
         self.filter.clicked.connect(PlotWindow.filterSpecies)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
         QMetaObject.connectSlotsByName(PlotWindow)
 
