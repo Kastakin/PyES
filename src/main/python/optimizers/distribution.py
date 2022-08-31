@@ -225,9 +225,11 @@ class Distribution:
             log_beta_sigma = np.delete(log_beta_sigma, species_to_remove, axis=0)
             log_ks_sigma = np.delete(log_ks_sigma, solid_to_remove, axis=0)
 
-            self.beta_sigma = log_beta_sigma * np.log(10) * self.log_beta_ris[self.nc :]
+            self.beta_sigma = (
+                log_beta_sigma * np.log(10) * (10 ** self.log_beta_ris[self.nc :])
+            )
 
-            self.ks_sigma = log_ks_sigma * np.log(10) * self.log_ks_ris
+            self.ks_sigma = log_ks_sigma * np.log(10) * (10**self.log_ks_ris)
 
         # Check the ionic strength mode
         # Load the required data if so
