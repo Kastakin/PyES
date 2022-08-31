@@ -108,7 +108,7 @@ def cleanData():
             "DG",
             "EG",
             "COMP1",
-            "Comp. %",
+            "Ref. Comp.",
         ],
     )
     solid_species_data = pd.DataFrame(
@@ -123,7 +123,7 @@ def cleanData():
             "DG",
             "EG",
             "COMP1",
-            "Comp. %",
+            "Ref. Comp.",
         ],
     ).drop(0)
 

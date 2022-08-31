@@ -185,9 +185,9 @@ class SpeciesModel(QAbstractTableModel):
                 return str(self._data.index[section])
 
     def updateCompName(self, new_comp):
-        if self._data["Comp. %"].isin(new_comp).all() == False:
-            self._data["Comp. %"] = self._data["Comp. %"].where(
-                self._data["Comp. %"].isin(new_comp),
+        if self._data["Ref. Comp."].isin(new_comp).all() == False:
+            self._data["Ref. Comp."] = self._data["Ref. Comp."].where(
+                self._data["Ref. Comp."].isin(new_comp),
                 new_comp[0],
             )
             return True
@@ -207,7 +207,7 @@ class SpeciesModel(QAbstractTableModel):
                 "EG",
             ]
             + new_header
-            + ["Comp. %"]
+            + ["Ref. Comp."]
         )
 
         for row in self._data.index:
@@ -371,9 +371,9 @@ class SolidSpeciesModel(QAbstractTableModel):
                 return str(self._data.index[section])
 
     def updateCompName(self, new_comp):
-        if self._data["Comp. %"].isin(new_comp).all() == False:
-            self._data["Comp. %"] = self._data["Comp. %"].where(
-                self._data["Comp. %"].isin(new_comp),
+        if self._data["Ref. Comp."].isin(new_comp).all() == False:
+            self._data["Ref. Comp."] = self._data["Ref. Comp."].where(
+                self._data["Ref. Comp."].isin(new_comp),
                 new_comp[0],
             )
             return True
@@ -393,7 +393,7 @@ class SolidSpeciesModel(QAbstractTableModel):
                 "EGF",
             ]
             + new_header
-            + ["Comp. %"]
+            + ["Ref. Comp."]
         )
 
         for row in self._data.index:
