@@ -126,8 +126,7 @@ class Distribution:
             # of the designated indipendent comp
             # reduce its index by one (they "slide over")
             self.ind_comp = self.ind_comp - (ignored_comps < self.ind_comp).sum()
-        # Assign total concentrations for each point
-        if self.distribution:
+            # Assign total concentrations for each point
             self.c_tot = np.tile(self.c_tot, [self.nop, 1])
         else:
             self.initial_c = self.c_tot
@@ -184,7 +183,9 @@ class Distribution:
         # If any of the species or solid species would use one of the ignored comps
         # assign the index for computation as if the indipendent comp
         # would be used instead (its percent value will be zero)
-        self._percEncoder(ignored_comp_names)
+        self.species_perc_int, self.solid_perc_int = self._percEncoder(
+            ignored_comp_names
+        )
 
         # Assemble the models and betas matrix
         self.model = np.concatenate((comp_model, base_model), axis=1)
@@ -1275,8 +1276,7 @@ class Distribution:
                 solid_perc_int == key, self.ind_comp, solid_perc_int
             )
 
-        self.species_perc_int = species_perc_int.astype(int)
-        self.solid_perc_int = solid_perc_int.astype(int)
+        return species_perc_int.astype(int), solid_perc_int.astype(int)
 
     def _computeErrors(self, c_spec, log_b, point):
 
