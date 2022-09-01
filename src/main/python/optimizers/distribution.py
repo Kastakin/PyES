@@ -1315,6 +1315,10 @@ class Distribution:
         for r in range(self.nc):
             der_free_tot[:, r] = np.linalg.solve(M, d[:, r])
 
+        if self.distribution:
+            der_free_beta[self.ind_comp, :] = 0
+            der_free_tot[self.ind_comp, :] = 0
+
         for i in range(self.ns):
             for l in range(self.ns):
                 der_spec_beta[i, l] = (1 if i == l else 0) * (
