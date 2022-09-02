@@ -487,11 +487,19 @@ class Ui_MainWindow(object):
 
         self.move_up_button = QToolButton(self.horizontalWidget)
         self.move_up_button.setObjectName("move_up_button")
+        icon10 = QIcon()
+        icon10.addFile(":/icons/row_up.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.move_up_button.setIcon(icon10)
+        self.move_up_button.setIconSize(QSize(18, 18))
 
         self.horizontalLayout_4.addWidget(self.move_up_button)
 
         self.move_down_button = QToolButton(self.horizontalWidget)
         self.move_down_button.setObjectName("move_down_button")
+        icon11 = QIcon()
+        icon11.addFile(":/icons/row_down.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.move_down_button.setIcon(icon11)
+        self.move_down_button.setIconSize(QSize(18, 18))
 
         self.horizontalLayout_4.addWidget(self.move_down_button)
 
@@ -520,9 +528,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addWidget(self.speciesView)
 
-        icon10 = QIcon()
-        icon10.addFile(":/icons/flask.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.tablesTab.addTab(self.species, icon10, "")
+        icon12 = QIcon()
+        icon12.addFile(":/icons/flask.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.tablesTab.addTab(self.species, icon12, "")
         self.solidspecies = QWidget()
         self.solidspecies.setObjectName("solidspecies")
         self.verticalLayout_12 = QVBoxLayout(self.solidspecies)
@@ -540,9 +548,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.solidSpeciesView)
 
-        icon11 = QIcon()
-        icon11.addFile(":/icons/beaker-empty.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.tablesTab.addTab(self.solidspecies, icon11, "")
+        icon13 = QIcon()
+        icon13.addFile(":/icons/beaker-empty.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.tablesTab.addTab(self.solidspecies, icon13, "")
 
         self.verticalLayout.addWidget(self.tablesTab)
 
@@ -998,6 +1006,8 @@ class Ui_MainWindow(object):
         self.insert_above_button.clicked.connect(MainWindow.insertRowAbove)
         self.insert_below_button.clicked.connect(MainWindow.insertRowBelow)
         self.remove_button.clicked.connect(MainWindow.removeRow)
+        self.move_up_button.clicked.connect(MainWindow.moveRowUp)
+        self.move_down_button.clicked.connect(MainWindow.moveRowDown)
 
         self.tabWidget.setCurrentIndex(0)
         self.tablesTab.setCurrentIndex(0)
@@ -1273,12 +1283,8 @@ class Ui_MainWindow(object):
         )
         # endif // QT_CONFIG(statustip)
         self.remove_button.setText("")
-        self.move_up_button.setText(
-            QCoreApplication.translate("MainWindow", "...", None)
-        )
-        self.move_down_button.setText(
-            QCoreApplication.translate("MainWindow", "...", None)
-        )
+        self.move_up_button.setText("")
+        self.move_down_button.setText("")
         self.tablesTab.setTabText(
             self.tablesTab.indexOf(self.species),
             QCoreApplication.translate("MainWindow", "Solution Species", None),

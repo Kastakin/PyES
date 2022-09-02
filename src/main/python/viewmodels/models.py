@@ -218,19 +218,24 @@ class SpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def flags(self, index):
-        if index.column() == 0:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled
-        elif index.column() == 1:
-            return Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        else:
-            value = self._data.iloc[index.row(), 0]
-            if value == False:
-                if index.column() == self.columnCount() - 1:
-                    return Qt.ItemIsEditable | Qt.ItemIsEnabled
-                else:
-                    return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if index.row() >= 0:
+            if index.column() == 0:
+                return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            elif index.column() == 1:
+                return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
             else:
-                return Qt.NoItemFlags
+                value = self._data.iloc[index.row(), 0]
+                if value == False:
+                    if index.column() == self.columnCount() - 1:
+                        return Qt.ItemIsEditable | Qt.ItemIsEnabled
+                    else:
+                        return (
+                            Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+                        )
+                else:
+                    return Qt.NoItemFlags
+        else:
+            return Qt.NoItemFlags
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
@@ -340,6 +345,12 @@ class SpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
         return True
+
+    def swapRows(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+            self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.shape[0]
@@ -417,9 +428,9 @@ class SolidSpeciesModel(QAbstractTableModel):
     def flags(self, index):
         if index.row() >= 0:
             if index.column() == 0:
-                return Qt.ItemIsEditable | Qt.ItemIsEnabled
+                return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
             elif index.column() == 1:
-                return Qt.ItemIsSelectable | Qt.ItemIsEnabled
+                return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
             else:
                 value = self._data.iloc[index.row(), 0]
                 if value == False:
@@ -431,6 +442,8 @@ class SolidSpeciesModel(QAbstractTableModel):
                         )
                 else:
                     return Qt.NoItemFlags
+        else:
+            return Qt.NoItemFlags
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
@@ -538,6 +551,12 @@ class SolidSpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
         return True
+
+    def swapRows(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+            self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.shape[0]

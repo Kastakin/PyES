@@ -719,7 +719,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def removeRow(self):
         if self.species.isVisible():
-            if self.speciesView.selectedIndexes():
+            if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
                 self.speciesModel.removeRows(
                     self.speciesView.selectedIndexes()[0].row() + 1, 1
                 )
@@ -730,6 +730,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.solidSpeciesView.selectedIndexes()[0].row() + 1, 1
                 )
                 self.numPhases.setValue(self.numPhases.value() - 1)
+        else:
+            pass
+
+    def moveRowUp(self):
+        if self.species.isVisible():
+            if self.speciesView.selectedIndexes():
+                row = self.speciesView.selectedIndexes()[0].row()
+                self.speciesModel.swapRows(row, row - 1)
+                self.speciesView.selectRow(row - 1)
+        elif self.solidspecies.isVisible():
+            if self.solidSpeciesView.selectedIndexes():
+                row = self.solidSpeciesView.selectedIndexes()[0].row()
+                self.solidSpeciesModel.swapRows(row, row - 1)
+                self.solidSpeciesView.selectRow(row - 1)
+        else:
+            pass
+
+    def moveRowDown(self):
+        if self.species.isVisible():
+            if self.speciesView.selectedIndexes():
+                row = self.speciesView.selectedIndexes()[0].row()
+                self.speciesModel.swapRows(row, row + 1)
+                self.speciesView.selectRow(row + 1)
+        elif self.solidspecies.isVisible():
+            if self.solidSpeciesView.selectedIndexes():
+                row = self.solidSpeciesView.selectedIndexes()[0].row()
+                self.solidSpeciesModel.swapRows(row, row + 1)
+                self.solidSpeciesView.selectRow(row + 1)
         else:
             pass
 

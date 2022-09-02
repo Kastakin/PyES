@@ -845,14 +845,34 @@
               <item>
                <widget class="QToolButton" name="move_up_button">
                 <property name="text">
-                 <string>...</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/row_up.png</normaloff>:/icons/row_up.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="QToolButton" name="move_down_button">
                 <property name="text">
-                 <string>...</string>
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/row_down.png</normaloff>:/icons/row_down.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
                 </property>
                </widget>
               </item>
@@ -2198,6 +2218,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>move_up_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>moveRowUp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>563</x>
+     <y>115</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>958</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>move_down_button</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>moveRowDown()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>603</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>938</x>
+     <y>-9</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>browseSlot()</slot>
@@ -2218,5 +2270,7 @@
   <slot>insertRowAbove()</slot>
   <slot>insertRowBelow()</slot>
   <slot>removeRow()</slot>
+  <slot>moveRowUp()</slot>
+  <slot>moveRowDown()</slot>
  </slots>
 </ui>
