@@ -433,13 +433,59 @@ class Ui_MainWindow(object):
         self.widget_2.setObjectName("widget_2")
         self.verticalLayout = QVBoxLayout(self.widget_2)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 2, 0, 0)
-        self.tabWidget_2 = QTabWidget(self.widget_2)
-        self.tabWidget_2.setObjectName("tabWidget_2")
-        self.tabWidget_2.setTabPosition(QTabWidget.North)
-        self.tabWidget_2.setTabShape(QTabWidget.Rounded)
-        self.tabWidget_2.setUsesScrollButtons(False)
-        self.tabWidget_2.setTabBarAutoHide(False)
+        self.verticalLayout.setContentsMargins(1, 1, 1, 1)
+        self.horizontalWidget = QWidget(self.widget_2)
+        self.horizontalWidget.setObjectName("horizontalWidget")
+        sizePolicy2.setHeightForWidth(
+            self.horizontalWidget.sizePolicy().hasHeightForWidth()
+        )
+        self.horizontalWidget.setSizePolicy(sizePolicy2)
+        self.horizontalLayout_4 = QHBoxLayout(self.horizontalWidget)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.horizontalLayout_4.setContentsMargins(0, 6, 0, 0)
+        self.toolButton_3 = QToolButton(self.horizontalWidget)
+        self.toolButton_3.setObjectName("toolButton_3")
+        icon7 = QIcon()
+        icon7.addFile(
+            ":/icons/table-insert-row-after.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.toolButton_3.setIcon(icon7)
+        self.toolButton_3.setIconSize(QSize(18, 18))
+
+        self.horizontalLayout_4.addWidget(self.toolButton_3)
+
+        self.toolButton_2 = QToolButton(self.horizontalWidget)
+        self.toolButton_2.setObjectName("toolButton_2")
+        sizePolicy3.setHeightForWidth(
+            self.toolButton_2.sizePolicy().hasHeightForWidth()
+        )
+        self.toolButton_2.setSizePolicy(sizePolicy3)
+        icon8 = QIcon()
+        icon8.addFile(
+            ":/icons/table-insert-row-before.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.toolButton_2.setIcon(icon8)
+        self.toolButton_2.setIconSize(QSize(18, 18))
+
+        self.horizontalLayout_4.addWidget(self.toolButton_2)
+
+        self.toolButton = QToolButton(self.horizontalWidget)
+        self.toolButton.setObjectName("toolButton")
+        icon9 = QIcon()
+        icon9.addFile(":/icons/table-delete-row.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.toolButton.setIcon(icon9)
+        self.toolButton.setIconSize(QSize(18, 18))
+
+        self.horizontalLayout_4.addWidget(self.toolButton)
+
+        self.verticalLayout.addWidget(self.horizontalWidget)
+
+        self.tablesTab = QTabWidget(self.widget_2)
+        self.tablesTab.setObjectName("tablesTab")
+        self.tablesTab.setTabPosition(QTabWidget.North)
+        self.tablesTab.setTabShape(QTabWidget.Rounded)
+        self.tablesTab.setUsesScrollButtons(False)
+        self.tablesTab.setTabBarAutoHide(False)
         self.species = QWidget()
         self.species.setObjectName("species")
         self.verticalLayout_3 = QVBoxLayout(self.species)
@@ -451,13 +497,15 @@ class Ui_MainWindow(object):
         self.speciesView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustIgnored)
         self.speciesView.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.speciesView.setProperty("showDropIndicator", False)
+        self.speciesView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.speciesView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.speciesView.horizontalHeader().setCascadingSectionResizes(True)
 
         self.verticalLayout_3.addWidget(self.speciesView)
 
-        icon7 = QIcon()
-        icon7.addFile(":/icons/flask.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_2.addTab(self.species, icon7, "")
+        icon10 = QIcon()
+        icon10.addFile(":/icons/flask.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.tablesTab.addTab(self.species, icon10, "")
         self.solidspecies = QWidget()
         self.solidspecies.setObjectName("solidspecies")
         self.verticalLayout_12 = QVBoxLayout(self.solidspecies)
@@ -469,15 +517,17 @@ class Ui_MainWindow(object):
         self.solidSpeciesView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustIgnored)
         self.solidSpeciesView.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.solidSpeciesView.setProperty("showDropIndicator", False)
+        self.solidSpeciesView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.solidSpeciesView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.solidSpeciesView.horizontalHeader().setCascadingSectionResizes(True)
 
         self.verticalLayout_12.addWidget(self.solidSpeciesView)
 
-        icon8 = QIcon()
-        icon8.addFile(":/icons/beaker-empty.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.tabWidget_2.addTab(self.solidspecies, icon8, "")
+        icon11 = QIcon()
+        icon11.addFile(":/icons/beaker-empty.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.tablesTab.addTab(self.solidspecies, icon11, "")
 
-        self.verticalLayout.addWidget(self.tabWidget_2)
+        self.verticalLayout.addWidget(self.tablesTab)
 
         self.horizontalLayout.addWidget(self.widget_2)
 
@@ -928,9 +978,12 @@ class Ui_MainWindow(object):
         self.numSpecies.valueChanged.connect(MainWindow.updateSpecies)
         self.speciesView.clicked.connect(self.speciesView.edit)
         self.numPhases.valueChanged.connect(MainWindow.updateSolid)
+        self.toolButton_3.clicked.connect(MainWindow.insertRowAbove)
+        self.toolButton_2.clicked.connect(MainWindow.insertRowBelow)
+        self.toolButton.clicked.connect(MainWindow.removeRow)
 
         self.tabWidget.setCurrentIndex(0)
-        self.tabWidget_2.setCurrentIndex(0)
+        self.tablesTab.setCurrentIndex(0)
         self.dmode.setCurrentIndex(1)
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1170,12 +1223,45 @@ class Ui_MainWindow(object):
                 None,
             )
         )
-        self.tabWidget_2.setTabText(
-            self.tabWidget_2.indexOf(self.species),
+        # if QT_CONFIG(tooltip)
+        self.toolButton_3.setToolTip(
+            QCoreApplication.translate("MainWindow", "Add Row Before", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.toolButton_3.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Add Row Before", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.toolButton_3.setText("")
+        # if QT_CONFIG(tooltip)
+        self.toolButton_2.setToolTip(
+            QCoreApplication.translate("MainWindow", "Add Row After", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.toolButton_2.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Add Row After", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.toolButton_2.setText("")
+        # if QT_CONFIG(tooltip)
+        self.toolButton.setToolTip(
+            QCoreApplication.translate("MainWindow", "Remove Row", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.toolButton.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Remove Row", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.toolButton.setText("")
+        self.tablesTab.setTabText(
+            self.tablesTab.indexOf(self.species),
             QCoreApplication.translate("MainWindow", "Solution Species", None),
         )
-        self.tabWidget_2.setTabText(
-            self.tabWidget_2.indexOf(self.solidspecies),
+        self.tablesTab.setTabText(
+            self.tablesTab.indexOf(self.solidspecies),
             QCoreApplication.translate("MainWindow", "Solid Species", None),
         )
         self.tabWidget.setTabText(

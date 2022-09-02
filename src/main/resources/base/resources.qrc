@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="icons">
+    <file>table-insert-row-after.png</file>
+    <file>table-insert-row-before.png</file>
+    <file>table-delete-row.png</file>
     <file>pencil-ruler.png</file>
     <file>question-frame.png</file>
     <file>control.png</file>

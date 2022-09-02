@@ -726,21 +726,120 @@
         </item>
         <item>
          <widget class="QWidget" name="widget_2" native="true">
-          <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
+          <layout class="QVBoxLayout" name="verticalLayout">
            <property name="leftMargin">
-            <number>0</number>
+            <number>1</number>
            </property>
            <property name="topMargin">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="rightMargin">
-            <number>0</number>
+            <number>1</number>
            </property>
            <property name="bottomMargin">
-            <number>0</number>
+            <number>1</number>
            </property>
            <item>
-            <widget class="QTabWidget" name="tabWidget_2">
+            <widget class="QWidget" name="horizontalWidget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>6</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QToolButton" name="toolButton_3">
+                <property name="toolTip">
+                 <string>Add Row Before</string>
+                </property>
+                <property name="statusTip">
+                 <string>Add Row Before</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-insert-row-after.png</normaloff>:/icons/table-insert-row-after.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Add Row After</string>
+                </property>
+                <property name="statusTip">
+                 <string>Add Row After</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-insert-row-before.png</normaloff>:/icons/table-insert-row-before.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButton">
+                <property name="toolTip">
+                 <string>Remove Row</string>
+                </property>
+                <property name="statusTip">
+                 <string>Remove Row</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-delete-row.png</normaloff>:/icons/table-delete-row.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTabWidget" name="tablesTab">
              <property name="tabPosition">
               <enum>QTabWidget::North</enum>
              </property>
@@ -791,6 +890,12 @@
                  <property name="showDropIndicator" stdset="0">
                   <bool>false</bool>
                  </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>true</bool>
                  </attribute>
@@ -832,6 +937,12 @@
                  </property>
                  <property name="showDropIndicator" stdset="0">
                   <bool>false</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior">
+                  <enum>QAbstractItemView::SelectRows</enum>
                  </property>
                  <attribute name="horizontalHeaderCascadingSectionResizes">
                   <bool>true</bool>
@@ -1833,8 +1944,8 @@
    <slot>calculate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>98</x>
-     <y>108</y>
+     <x>102</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -1849,8 +1960,8 @@
    <slot>exportDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>144</y>
+     <x>112</x>
+     <y>744</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -1865,8 +1976,8 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>144</y>
+     <x>708</x>
+     <y>744</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
@@ -1897,8 +2008,8 @@
    <slot>indipendentUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>142</y>
+     <x>530</x>
+     <y>535</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
@@ -1913,8 +2024,8 @@
    <slot>v0Updater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>108</x>
-     <y>133</y>
+     <x>524</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
      <x>804</x>
@@ -2018,6 +2129,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>toolButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>insertRowAbove()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>457</x>
+     <y>122</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>649</x>
+     <y>-4</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>insertRowBelow()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>493</x>
+     <y>109</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>794</x>
+     <y>-4</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>removeRow()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>520</x>
+     <y>116</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>781</x>
+     <y>-9</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>browseSlot()</slot>
@@ -2035,5 +2194,8 @@
   <slot>dmodeUpdater()</slot>
   <slot>indipendentUpdater()</slot>
   <slot>v0Updater()</slot>
+  <slot>insertRowAbove()</slot>
+  <slot>insertRowBelow()</slot>
+  <slot>removeRow()</slot>
  </slots>
 </ui>

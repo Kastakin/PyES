@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from turtle import isvisible
 
 import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
@@ -673,6 +674,64 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.concModel.updateIndex(updated_comps)
         indCompUpdater(self)
+
+    def insertRowAbove(self):
+        if self.species.isVisible():
+            if self.speciesView.selectedIndexes():
+                row = self.speciesView.selectedIndexes()[0].row()
+            else:
+                row = 0
+            self.speciesModel.insertRows(row - 1, 1)
+            self.numSpecies.setValue(self.numSpecies.value() + 1)
+            self.speciesView.selectRow(row)
+        elif self.solidspecies.isVisible():
+            if self.solidSpeciesView.selectedIndexes():
+                row = self.solidSpeciesView.selectedIndexes()[0].row()
+            else:
+                row = 0
+
+            self.solidSpeciesModel.insertRows(row - 1, 1)
+            self.numPhases.setValue(self.numPhases.value() + 1)
+            self.speciesView.selectRow(row)
+        else:
+            pass
+
+    def insertRowBelow(self):
+        if self.species.isVisible():
+            if self.speciesView.selectedIndexes():
+                row = self.speciesView.selectedIndexes()[0].row()
+            else:
+                row = self.speciesModel.rowCount()
+            self.speciesModel.insertRows(row, 1)
+            self.numSpecies.setValue(self.numSpecies.value() + 1)
+            self.speciesView.selectRow(row + 1)
+        elif self.solidspecies.isVisible():
+            if self.solidSpeciesView.selectedIndexes():
+                row = self.solidSpeciesView.selectedIndexes()[0].row()
+            else:
+                row = self.solidSpeciesModel.rowCount()
+
+            self.solidSpeciesModel.insertRows(row, 1)
+            self.numPhases.setValue(self.numPhases.value() + 1)
+            self.speciesView.selectRow(row + 1)
+        else:
+            pass
+
+    def removeRow(self):
+        if self.species.isVisible():
+            if self.speciesView.selectedIndexes():
+                self.speciesModel.removeRows(
+                    self.speciesView.selectedIndexes()[0].row() + 1, 1
+                )
+                self.numSpecies.setValue(self.numSpecies.value() - 1)
+        elif self.solidspecies.isVisible():
+            if self.solidSpeciesView.selectedIndexes():
+                self.solidSpeciesModel.removeRows(
+                    self.solidSpeciesView.selectedIndexes()[0].row() + 1, 1
+                )
+                self.numPhases.setValue(self.numPhases.value() - 1)
+        else:
+            pass
 
     def calculate(self):
         # Disable the button, one omptimization calculation at the time

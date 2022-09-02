@@ -268,7 +268,9 @@ class SpeciesModel(QAbstractTableModel):
 
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """Insert a row into the model."""
-        self.beginInsertRows(index, position, position + rows - 1)
+        self.beginInsertRows(
+            index, (0 if position == -1 else position), position + rows - 1
+        )
 
         empty_rows = pd.DataFrame(
             [
@@ -282,8 +284,17 @@ class SpeciesModel(QAbstractTableModel):
             columns=self._data.columns,
         )
 
-        # for row in range(rows):
-        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
+        if position == -1:
+            self._data = pd.concat(
+                [empty_rows, self._data],
+                ignore_index=True,
+            )
+        else:
+            # for row in range(rows):
+            self._data = pd.concat(
+                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                ignore_index=True,
+            )
 
         self.endInsertRows()
         self.layoutChanged.emit()
@@ -296,7 +307,7 @@ class SpeciesModel(QAbstractTableModel):
 
         self._data = self._data.drop(
             self._data.index[position - rows : position], axis=0
-        )
+        ).reset_index(drop=True)
 
         self.endRemoveRows()
         self.layoutChanged.emit()
@@ -404,19 +415,22 @@ class SolidSpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def flags(self, index):
-        if index.column() == 0:
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled
-        elif index.column() == 1:
-            return Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        else:
-            value = self._data.iloc[index.row(), 0]
-            if value == False:
-                if index.column() == self.columnCount() - 1:
-                    return Qt.ItemIsEditable | Qt.ItemIsEnabled
-                else:
-                    return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if index.row() >= 0:
+            if index.column() == 0:
+                return Qt.ItemIsEditable | Qt.ItemIsEnabled
+            elif index.column() == 1:
+                return Qt.ItemIsSelectable | Qt.ItemIsEnabled
             else:
-                return Qt.NoItemFlags
+                value = self._data.iloc[index.row(), 0]
+                if value == False:
+                    if index.column() == self.columnCount() - 1:
+                        return Qt.ItemIsEditable | Qt.ItemIsEnabled
+                    else:
+                        return (
+                            Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+                        )
+                else:
+                    return Qt.NoItemFlags
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
@@ -454,8 +468,9 @@ class SolidSpeciesModel(QAbstractTableModel):
 
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """Insert a row into the model."""
-        self.beginInsertRows(index, position, position + rows - 1)
-
+        self.beginInsertRows(
+            index, (0 if position == -1 else position), position + rows - 1
+        )
         empty_rows = pd.DataFrame(
             [
                 [False]
@@ -468,8 +483,17 @@ class SolidSpeciesModel(QAbstractTableModel):
             columns=self._data.columns,
         )
 
-        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
-
+        if position == -1:
+            self._data = pd.concat(
+                [empty_rows, self._data],
+                ignore_index=True,
+            )
+        else:
+            # for row in range(rows):
+            self._data = pd.concat(
+                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                ignore_index=True,
+            )
         self.endInsertRows()
         self.layoutChanged.emit()
 
@@ -481,7 +505,7 @@ class SolidSpeciesModel(QAbstractTableModel):
 
         self._data = self._data.drop(
             self._data.index[position - rows : position], axis=0
-        )
+        ).reset_index(drop=True)
 
         self.endRemoveRows()
         self.layoutChanged.emit()
