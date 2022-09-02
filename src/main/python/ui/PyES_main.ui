@@ -10,12 +10,6 @@
     <height>778</height>
    </rect>
   </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>1</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
   <property name="minimumSize">
    <size>
     <width>1204</width>
@@ -23,10 +17,13 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>SuperSimpleSpeciesCalculator</string>
+   <string>PyES</string>
   </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1193,7 +1190,7 @@
                     <bool>false</bool>
                    </property>
                    <property name="statusTip">
-                    <string>Initial concentration of beckground ions in titration vessel.</string>
+                    <string>Initial concentration of background ions in titration vessel.</string>
                    </property>
                    <property name="suffix">
                     <string> mol/l</string>
@@ -1729,6 +1726,9 @@
    <property name="text">
     <string>New Project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="actionOpen">
    <property name="icon">
@@ -1737,6 +1737,9 @@
    </property>
    <property name="text">
     <string>Open Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionSave">
@@ -1747,6 +1750,9 @@
    <property name="text">
     <string>Save Project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionAbout">
    <property name="icon">
@@ -1755,6 +1761,9 @@
    </property>
    <property name="text">
     <string>About</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="actionExit">
@@ -1778,6 +1787,9 @@
    <property name="toolTip">
     <string>Launch the calculation</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
   </action>
   <action name="actionExport_Results">
    <property name="icon">
@@ -1790,6 +1802,9 @@
    <property name="toolTip">
     <string>Export Results</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
   </action>
   <action name="actionPlot_Results">
    <property name="icon">
@@ -1801,6 +1816,9 @@
    </property>
    <property name="toolTip">
     <string>Plot Results</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

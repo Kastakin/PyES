@@ -2,10 +2,9 @@ import logging
 import time
 from datetime import datetime
 
-from PySide6.QtCore import QObject, QRunnable, Signal, Slot
-
 from optimizers.distribution import Distribution
 from optimizers.titration import Titration
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 
 
 # Main optimization routine worker and signals
@@ -39,7 +38,6 @@ class optimizeWorker(QRunnable):
             log.addHandler(filehandler)
             log.setLevel(logging.DEBUG)
 
-    
         optimizer = Distribution()
         # Start timer to time entire process
         start_time = time.time()
@@ -56,7 +54,9 @@ class optimizeWorker(QRunnable):
 
         self.signals.log.emit(r"DATA LOADED!")
         if self.data["dmode"] == 0:
-            self.signals.log.emit(r"Calculating species concentration for the simulated titration...")
+            self.signals.log.emit(
+                r"Calculating species concentration for the simulated titration..."
+            )
             start_time = time.time()
             self.signals.log.emit("--" * 40)
         else:
@@ -73,8 +73,6 @@ class optimizeWorker(QRunnable):
             self.signals.aborted.emit(str(e))
             return None
 
-        species_distribution = optimizer.speciesDistribution()
-        solid_distribution = optimizer.solidDistribution()
         species_sigma, solid_sigma = optimizer.sigmas()
         species_percentages, solid_percentages = optimizer.percentages()
         species_info, solid_info, comp_info = optimizer.parameters()
@@ -84,7 +82,9 @@ class optimizeWorker(QRunnable):
         self._storeResult(comp_info, "comp_info")
 
         # Print and store species results
-        self._storeResult(species_distribution, "species_distribution", log=True)
+        self._storeResult(
+            optimizer.speciesDistribution(), "species_distribution", log=True
+        )
 
         # Print and store species percentages
         self._storeResult(species_percentages, "species_percentages", log=True)
@@ -92,29 +92,29 @@ class optimizeWorker(QRunnable):
         if self.data["emode"] == 0:
             self._storeResult(species_sigma, "species_sigma", log=True)
 
-
         if self.data["np"] > 0:
             # Store input info regarding solids
             self._storeResult(solid_info, "solid_info")
             # Print and store solid species results
-            self._storeResult(solid_distribution, "solid_distribution", log=True)
+            self._storeResult(
+                optimizer.solidDistribution(), "solid_distribution", log=True
+            )
 
-            # Print and store solid species percentages
-            self._storeResult(solid_percentages, "solid_percentages", log=True)
+            # # Print and store solid species percentages
+            # self._storeResult(solid_percentages, "solid_percentages", log=True)
 
             if self.data["emode"] == 0:
                 self._storeResult(solid_sigma, "solid_sigma", log=True)
 
-
         # If working at variable ionic strength print and store formation constants/solubility products aswell
         if self.data["imode"] == 1:
-            formation_constants = optimizer.formationConstants()
-            self._storeResult(formation_constants, "formation_constants", log=True)
+            self._storeResult(
+                optimizer.formationConstants(), "formation_constants", log=True
+            )
 
             if self.data["np"] > 0:
-                solubility_products = optimizer.solubilityProducts()
                 self._storeResult(
-                    solubility_products, "solubility_products", log=True
+                    optimizer.solubilityProducts(), "solubility_products", log=True
                 )
 
         self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)

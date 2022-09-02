@@ -1,13 +1,13 @@
 import json
+import os
+from pathlib import Path
 
 import pandas as pd
-from PySide6.QtCore import QThreadPool, QUrl
-from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow
-
-from dialogs import aboutDialog, newDialog, wrongFileDialog
+from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
 from ExportWindow import ExportWindow
-from PlotWindow_pyqtgraph import PlotWindow
+from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
+from PySide6.QtGui import QDesktopServices
+from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QWidget
 from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
@@ -18,6 +18,7 @@ from viewmodels.models import (
     SpeciesModel,
     TitrationComponentsModel,
 )
+from windows.plot import PlotWindow
 from workers import optimizeWorker
 
 
@@ -25,6 +26,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+        # Initiate threadpool
+        self.threadpool = QThreadPool()
+
+        # Initiate settings context
+        self.settings = QSettings()
+        self.settings.setValue("path/default", str(Path.home()))
+
+        self.restoreGeometry(self.settings.value("mainwindow/geometry", QByteArray()))
 
         # Set window title and project path as defaults
         self.setWindowTitle("PyES - New Project")
@@ -34,8 +44,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.PlotWindow = None
         self.ExportWindow = None
 
-        # Initiate threadpool
-        self.threadpool = QThreadPool()
+        self.imode_fields: list[QWidget] = [
+            self.refIonicStr,
+            self.refIonicStr_label,
+            self.A,
+            self.A_label,
+            self.B,
+            self.B_label,
+            self.c0,
+            self.c0_label,
+            self.c1,
+            self.c1_label,
+            self.d0,
+            self.d0_label,
+            self.d1,
+            self.d1_label,
+            self.e0,
+            self.e0_label,
+            self.e1,
+            self.e1_label,
+            self.c0back,
+            self.c0back_label,
+            self.ctback,
+            self.ctback_label,
+            self.cback,
+            self.cback_label,
+        ]
 
         # Generate clean data for tableviews
         (
@@ -119,7 +153,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
         solidSpeciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
-        
+
         # Interface is populated with empty basic data
         self.resetFields()
 
@@ -133,8 +167,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display a prompt asking if you want to create a new project
         """
-        dialog = newDialog(self)
-        if dialog.exec_():
+        dialog = NewDialog(self)
+        if dialog.exec():
             self.resetFields()
             self.project_path = None
             self.setWindowTitle("PyES - New Project")
@@ -160,8 +194,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display about dialog
         """
-        dialog = aboutDialog(self)
-        dialog.exec_()
+        dialog = AboutDialog(self)
+        dialog.exec()
 
     def file_save(self):
         """
@@ -173,7 +207,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
         else:
             output_path, _ = QFileDialog.getSaveFileName(
-                self, "Save Project", "", "JSON (*.json)"
+                self,
+                "Save Project",
+                self.settings.value("path/default"),
+                "JSON (*.json)",
             )
 
         if output_path:
@@ -199,9 +236,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Load a previously saved project
         """
-        input_path, _ = QFileDialog.getOpenFileName(
-            self, "Open Project", "~", "JSON (*.json)"
-        )
+        if self.project_path:
+            input_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Open Project",
+                os.path.dirname(self.project_path),
+                "JSON (*.json)",
+            )
+        else:
+            input_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Open Project",
+                self.settings.value("path/default"),
+                "JSON (*.json)",
+            )
 
         if input_path:
             with open(
@@ -213,10 +261,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # TODO: better and more robust validation of project files
             # The loaded file has to be a valid project file, discard it if not
             if jsdata["check"] != self.check_line["check"]:
-                dialog = wrongFileDialog(self)
-                dialog.exec_()
+                dialog = WrongFileDialog(self)
+                dialog.exec()
                 return False
 
+            self.resetFields()
             # Resets results
             self.result = {}
             # Get file path from the open project file
@@ -356,7 +405,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except:
                 self.cback.setValue(0)
 
-            # TODO: Find a way to handle missing model data
             try:
                 self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
                 self.compModel._data.index = range(jsdata["nc"])
@@ -444,7 +492,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Reset rel. error settings
         self.relErrorMode.setCurrentIndex(1)
-        
 
         # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)
@@ -503,7 +550,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             indCompUpdater(self)
         except:
             pass
-
 
     def updateComp(self, rows):
         """
@@ -662,6 +708,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.exportButton.setEnabled(True)
         self.actionExport_Results.setEnabled(True)
         self.actionPlot_Results.setEnabled(True)
+        info_dialog = CompletedCalculation(succesful=True)
+        info_dialog.exec()
 
     def aborted(self, error):
         self.consoleOutput.append("### ERROR ###")
@@ -669,6 +717,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.consoleOutput.append("### ABORTED ###")
 
         self.calcButton.setEnabled(True)
+        info_dialog = CompletedCalculation(succesful=False)
+        info_dialog.exec()
 
     def logger(self, log):
         self.consoleOutput.append(log)
@@ -680,61 +730,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         fields in the modelviews
         """
         if imode == 1:
-            self.refIonicStr.setEnabled(True)
-            self.refIonicStr_label.setEnabled(True)
-            self.A.setEnabled(True)
-            self.A_label.setEnabled(True)
-            self.B.setEnabled(True)
-            self.B_label.setEnabled(True)
-            self.c0.setEnabled(True)
-            self.c0_label.setEnabled(True)
-            self.c1.setEnabled(True)
-            self.c1_label.setEnabled(True)
-            self.d0.setEnabled(True)
-            self.d0_label.setEnabled(True)
-            self.d1.setEnabled(True)
-            self.d1_label.setEnabled(True)
-            self.e0.setEnabled(True)
-            self.e0_label.setEnabled(True)
-            self.e1.setEnabled(True)
-            self.e1_label.setEnabled(True)
-
-            self.c0back.setEnabled(True)
-            self.c0back_label.setEnabled(True)
-            self.ctback.setEnabled(True)
-            self.ctback_label.setEnabled(True)
-            self.cback.setEnabled(True)
-            self.cback_label.setEnabled(True)
+            for field in self.imode_fields:
+                field.setEnabled(True)
 
             self.speciesView.model().setColumnReadOnly(range(4, 8), False)
             self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), False)
 
         else:
-            self.refIonicStr.setEnabled(False)
-            self.refIonicStr_label.setEnabled(False)
-            self.A.setEnabled(False)
-            self.A_label.setEnabled(False)
-            self.B.setEnabled(False)
-            self.B_label.setEnabled(False)
-            self.c0.setEnabled(False)
-            self.c0_label.setEnabled(False)
-            self.c1.setEnabled(False)
-            self.c1_label.setEnabled(False)
-            self.d0.setEnabled(False)
-            self.d0_label.setEnabled(False)
-            self.d1.setEnabled(False)
-            self.d1_label.setEnabled(False)
-            self.e0.setEnabled(False)
-            self.e0_label.setEnabled(False)
-            self.e1.setEnabled(False)
-            self.e1_label.setEnabled(False)
-
-            self.c0back.setEnabled(False)
-            self.c0back_label.setEnabled(False)
-            self.ctback.setEnabled(False)
-            self.ctback_label.setEnabled(False)
-            self.cback.setEnabled(False)
-            self.cback_label.setEnabled(False)
+            for field in self.imode_fields:
+                field.setEnabled(False)
 
             self.speciesView.model().setColumnReadOnly(range(4, 8), True)
             self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), True)
@@ -821,6 +825,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Cleanup before closing.
         """
+        self.settings.setValue("mainwindow/geometry", self.saveGeometry())
+
         # Close any secondary window still open
         if self.ExportWindow:
             self.ExportWindow.close()
