@@ -35,17 +35,6 @@ class Ui_PlotWindow(object):
         self.verticalLayout = QVBoxLayout(self.widget)
         self.verticalLayout.setObjectName("verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.tableView = QTableView(self.widget)
-        self.tableView.setObjectName("tableView")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.tableView.sizePolicy().hasHeightForWidth())
-        self.tableView.setSizePolicy(sizePolicy1)
-        self.tableView.setAlternatingRowColors(True)
-
-        self.verticalLayout.addWidget(self.tableView)
-
         self.widget_2 = QWidget(self.widget)
         self.widget_2.setObjectName("widget_2")
         self.gridLayout = QGridLayout(self.widget_2)
@@ -55,17 +44,59 @@ class Ui_PlotWindow(object):
         self.deselect_all = QPushButton(self.widget_2)
         self.deselect_all.setObjectName("deselect_all")
 
-        self.gridLayout.addWidget(self.deselect_all, 0, 1, 1, 1)
-
-        self.select_all = QPushButton(self.widget_2)
-        self.select_all.setObjectName("select_all")
-
-        self.gridLayout.addWidget(self.select_all, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.deselect_all, 1, 1, 1, 1)
 
         self.filter = QPushButton(self.widget_2)
         self.filter.setObjectName("filter")
 
-        self.gridLayout.addWidget(self.filter, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.filter, 2, 0, 1, 2)
+
+        self.select_all = QPushButton(self.widget_2)
+        self.select_all.setObjectName("select_all")
+
+        self.gridLayout.addWidget(self.select_all, 1, 0, 1, 1)
+
+        self.tabWidget_2 = QTabWidget(self.widget_2)
+        self.tabWidget_2.setObjectName("tabWidget_2")
+        self.tabWidget_2.setEnabled(True)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.tabWidget_2.sizePolicy().hasHeightForWidth())
+        self.tabWidget_2.setSizePolicy(sizePolicy1)
+        self.species = QWidget()
+        self.species.setObjectName("species")
+        self.horizontalLayout_4 = QHBoxLayout(self.species)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.speciesView = QTableView(self.species)
+        self.speciesView.setObjectName("speciesView")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.speciesView.sizePolicy().hasHeightForWidth())
+        self.speciesView.setSizePolicy(sizePolicy2)
+        self.speciesView.setAlternatingRowColors(True)
+        self.speciesView.horizontalHeader().setVisible(False)
+
+        self.horizontalLayout_4.addWidget(self.speciesView)
+
+        self.tabWidget_2.addTab(self.species, "")
+        self.solids = QWidget()
+        self.solids.setObjectName("solids")
+        self.horizontalLayout_3 = QHBoxLayout(self.solids)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.solidsView = QTableView(self.solids)
+        self.solidsView.setObjectName("solidsView")
+        sizePolicy2.setHeightForWidth(self.solidsView.sizePolicy().hasHeightForWidth())
+        self.solidsView.setSizePolicy(sizePolicy2)
+        self.solidsView.setAlternatingRowColors(True)
+        self.solidsView.horizontalHeader().setVisible(False)
+
+        self.horizontalLayout_3.addWidget(self.solidsView)
+
+        self.tabWidget_2.addTab(self.solids, "")
+
+        self.gridLayout.addWidget(self.tabWidget_2, 0, 0, 1, 2)
 
         self.verticalLayout.addWidget(self.widget_2)
 
@@ -107,6 +138,7 @@ class Ui_PlotWindow(object):
         self.select_all.clicked.connect(PlotWindow.selectAll)
         self.filter.clicked.connect(PlotWindow.filterSpecies)
 
+        self.tabWidget_2.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(1)
 
         QMetaObject.connectSlotsByName(PlotWindow)
@@ -120,10 +152,18 @@ class Ui_PlotWindow(object):
         self.deselect_all.setText(
             QCoreApplication.translate("PlotWindow", "Deselect All", None)
         )
+        self.filter.setText(QCoreApplication.translate("PlotWindow", "Filter", None))
         self.select_all.setText(
             QCoreApplication.translate("PlotWindow", "Select All", None)
         )
-        self.filter.setText(QCoreApplication.translate("PlotWindow", "Filter", None))
+        self.tabWidget_2.setTabText(
+            self.tabWidget_2.indexOf(self.species),
+            QCoreApplication.translate("PlotWindow", "Species", None),
+        )
+        self.tabWidget_2.setTabText(
+            self.tabWidget_2.indexOf(self.solids),
+            QCoreApplication.translate("PlotWindow", "Solids", None),
+        )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.conc_tab),
             QCoreApplication.translate("PlotWindow", "Concentrations", None),

@@ -3,7 +3,6 @@ from datetime import datetime
 
 from pandas import ExcelWriter
 from PySide6.QtWidgets import QFileDialog, QWidget
-
 from ui.PyES_dataExport import Ui_ExportWindow
 from utils_func import adjustColumnWidths
 
@@ -127,14 +126,14 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                         wb, "Species Percentages", self.result["species_percentages"]
                     )
 
-                    if "solid_percentages" in self.result:
-                        self.result["solid_percentages"].to_excel(
-                            writer, sheet_name="Solid Percentages"
-                        )
+                    # if "solid_percentages" in self.result:
+                    #     self.result["solid_percentages"].to_excel(
+                    #         writer, sheet_name="Solid Percentages"
+                    #     )
 
-                        adjustColumnWidths(
-                            wb, "Solid Percentages", self.result["solid_percentages"]
-                        )
+                    #     adjustColumnWidths(
+                    #         wb, "Solid Percentages", self.result["solid_percentages"]
+                    #     )
 
                 if self.adjlogb_check_excel.isChecked():
                     self.result["formation_constants"].to_excel(
@@ -192,10 +191,10 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                     base_name + "_species_percentages.csv"
                 )
 
-                if "solid_percentages" in self.result:
-                    self.result["solid_percentages"].to_csv(
-                        base_name + "_solid_percentages.csv"
-                    )
+                # if "solid_percentages" in self.result:
+                #     self.result["solid_percentages"].to_csv(
+                #         base_name + "_solid_percentages.csv"
+                #     )
 
             if self.adjlogb_check_csv.isChecked():
                 self.result["formation_constants"].to_csv(base_name + "_logb.csv")

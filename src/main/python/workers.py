@@ -100,8 +100,8 @@ class optimizeWorker(QRunnable):
                 optimizer.solidDistribution(), "solid_distribution", log=True
             )
 
-            # Print and store solid species percentages
-            self._storeResult(solid_percentages, "solid_percentages", log=True)
+            # # Print and store solid species percentages
+            # self._storeResult(solid_percentages, "solid_percentages", log=True)
 
             if self.data["emode"] == 0:
                 self._storeResult(solid_sigma, "solid_sigma", log=True)

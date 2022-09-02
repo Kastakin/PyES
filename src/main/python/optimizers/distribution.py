@@ -370,6 +370,17 @@ class Distribution:
         self.solid_distribution = pd.DataFrame(
             solid, columns=self.solid_names
         ).rename_axis(columns="Solid Conc. [mol/L]")
+        check = self.solid_distribution.apply(
+            lambda x: pd.Series(
+                ["*" if i > 1 else "" for i in x],
+                index=["Prec." + name for name in self.solid_distribution.columns],
+                dtype=str,
+            ),
+            axis=1,
+        )
+        self.solid_distribution = pd.merge(
+            self.solid_distribution, check, left_index=True, right_index=True, sort=True
+        )[list(sum(zip(check.columns, self.solid_distribution.columns), ()))]
         self.solid_distribution = self._setDataframeIndex(self.solid_distribution)
 
         # Compute and create table with percentages of species with respect to component
@@ -610,18 +621,19 @@ class Distribution:
                 saturation_index = self._getSaturationIndex(
                     species_conc_calc[: self.nc], log_ks
                 )
-                if any(i > 1 for i in saturation_index):
-                    (
-                        species_conc_calc,
-                        solid_conc_calc,
-                        log_b,
-                        log_ks,
-                        ionic_strength,
-                    ) = self._newtonRaphson(
-                        point, c, cp, self.c_tot[point], fixed_c, with_solids=True
-                    )
-                else:
-                    break
+                solid_conc_calc = saturation_index
+                # if any(i > 1 for i in saturation_index):
+                #     (
+                #         species_conc_calc,
+                #         solid_conc_calc,
+                #         log_b,
+                #         log_ks,
+                #         ionic_strength,
+                #     ) = self._newtonRaphson(
+                #         point, c, cp, self.c_tot[point], fixed_c, with_solids=True
+                #     )
+                # else:
+                #     break
 
             if self.errors:
                 species_sigma, solid_sigma = self._computeErrors(
