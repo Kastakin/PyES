@@ -761,41 +761,12 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QToolButton" name="toolButton_3">
+               <widget class="QToolButton" name="insert_above_button">
                 <property name="toolTip">
                  <string>Add Row Before</string>
                 </property>
                 <property name="statusTip">
                  <string>Add Row Before</string>
-                </property>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
-                  <normaloff>:/icons/table-insert-row-after.png</normaloff>:/icons/table-insert-row-after.png</iconset>
-                </property>
-                <property name="iconSize">
-                 <size>
-                  <width>18</width>
-                  <height>18</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButton_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="toolTip">
-                 <string>Add Row After</string>
-                </property>
-                <property name="statusTip">
-                 <string>Add Row After</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -813,7 +784,36 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="toolButton">
+               <widget class="QToolButton" name="insert_below_button">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Add Row After</string>
+                </property>
+                <property name="statusTip">
+                 <string>Add Row After</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-insert-row-after.png</normaloff>:/icons/table-insert-row-after.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="remove_button">
                 <property name="toolTip">
                  <string>Remove Row</string>
                 </property>
@@ -832,6 +832,27 @@
                   <width>18</width>
                   <height>18</height>
                  </size>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Line" name="line_4">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="move_up_button">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="move_down_button">
+                <property name="text">
+                 <string>...</string>
                 </property>
                </widget>
               </item>
@@ -2130,7 +2151,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolButton_3</sender>
+   <sender>insert_above_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>insertRowAbove()</slot>
@@ -2146,7 +2167,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolButton_2</sender>
+   <sender>insert_below_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>insertRowBelow()</slot>
@@ -2162,7 +2183,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolButton</sender>
+   <sender>remove_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>removeRow()</slot>

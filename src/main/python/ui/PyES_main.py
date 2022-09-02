@@ -443,40 +443,57 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4 = QHBoxLayout(self.horizontalWidget)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.horizontalLayout_4.setContentsMargins(0, 6, 0, 0)
-        self.toolButton_3 = QToolButton(self.horizontalWidget)
-        self.toolButton_3.setObjectName("toolButton_3")
+        self.insert_above_button = QToolButton(self.horizontalWidget)
+        self.insert_above_button.setObjectName("insert_above_button")
         icon7 = QIcon()
         icon7.addFile(
-            ":/icons/table-insert-row-after.png", QSize(), QIcon.Normal, QIcon.Off
-        )
-        self.toolButton_3.setIcon(icon7)
-        self.toolButton_3.setIconSize(QSize(18, 18))
-
-        self.horizontalLayout_4.addWidget(self.toolButton_3)
-
-        self.toolButton_2 = QToolButton(self.horizontalWidget)
-        self.toolButton_2.setObjectName("toolButton_2")
-        sizePolicy3.setHeightForWidth(
-            self.toolButton_2.sizePolicy().hasHeightForWidth()
-        )
-        self.toolButton_2.setSizePolicy(sizePolicy3)
-        icon8 = QIcon()
-        icon8.addFile(
             ":/icons/table-insert-row-before.png", QSize(), QIcon.Normal, QIcon.Off
         )
-        self.toolButton_2.setIcon(icon8)
-        self.toolButton_2.setIconSize(QSize(18, 18))
+        self.insert_above_button.setIcon(icon7)
+        self.insert_above_button.setIconSize(QSize(18, 18))
 
-        self.horizontalLayout_4.addWidget(self.toolButton_2)
+        self.horizontalLayout_4.addWidget(self.insert_above_button)
 
-        self.toolButton = QToolButton(self.horizontalWidget)
-        self.toolButton.setObjectName("toolButton")
+        self.insert_below_button = QToolButton(self.horizontalWidget)
+        self.insert_below_button.setObjectName("insert_below_button")
+        sizePolicy3.setHeightForWidth(
+            self.insert_below_button.sizePolicy().hasHeightForWidth()
+        )
+        self.insert_below_button.setSizePolicy(sizePolicy3)
+        icon8 = QIcon()
+        icon8.addFile(
+            ":/icons/table-insert-row-after.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.insert_below_button.setIcon(icon8)
+        self.insert_below_button.setIconSize(QSize(18, 18))
+
+        self.horizontalLayout_4.addWidget(self.insert_below_button)
+
+        self.remove_button = QToolButton(self.horizontalWidget)
+        self.remove_button.setObjectName("remove_button")
         icon9 = QIcon()
         icon9.addFile(":/icons/table-delete-row.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButton.setIcon(icon9)
-        self.toolButton.setIconSize(QSize(18, 18))
+        self.remove_button.setIcon(icon9)
+        self.remove_button.setIconSize(QSize(18, 18))
 
-        self.horizontalLayout_4.addWidget(self.toolButton)
+        self.horizontalLayout_4.addWidget(self.remove_button)
+
+        self.line_4 = QFrame(self.horizontalWidget)
+        self.line_4.setObjectName("line_4")
+        self.line_4.setFrameShape(QFrame.VLine)
+        self.line_4.setFrameShadow(QFrame.Sunken)
+
+        self.horizontalLayout_4.addWidget(self.line_4)
+
+        self.move_up_button = QToolButton(self.horizontalWidget)
+        self.move_up_button.setObjectName("move_up_button")
+
+        self.horizontalLayout_4.addWidget(self.move_up_button)
+
+        self.move_down_button = QToolButton(self.horizontalWidget)
+        self.move_down_button.setObjectName("move_down_button")
+
+        self.horizontalLayout_4.addWidget(self.move_down_button)
 
         self.verticalLayout.addWidget(self.horizontalWidget)
 
@@ -978,9 +995,9 @@ class Ui_MainWindow(object):
         self.numSpecies.valueChanged.connect(MainWindow.updateSpecies)
         self.speciesView.clicked.connect(self.speciesView.edit)
         self.numPhases.valueChanged.connect(MainWindow.updateSolid)
-        self.toolButton_3.clicked.connect(MainWindow.insertRowAbove)
-        self.toolButton_2.clicked.connect(MainWindow.insertRowBelow)
-        self.toolButton.clicked.connect(MainWindow.removeRow)
+        self.insert_above_button.clicked.connect(MainWindow.insertRowAbove)
+        self.insert_below_button.clicked.connect(MainWindow.insertRowBelow)
+        self.remove_button.clicked.connect(MainWindow.removeRow)
 
         self.tabWidget.setCurrentIndex(0)
         self.tablesTab.setCurrentIndex(0)
@@ -1224,38 +1241,44 @@ class Ui_MainWindow(object):
             )
         )
         # if QT_CONFIG(tooltip)
-        self.toolButton_3.setToolTip(
+        self.insert_above_button.setToolTip(
             QCoreApplication.translate("MainWindow", "Add Row Before", None)
         )
         # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(statustip)
-        self.toolButton_3.setStatusTip(
+        self.insert_above_button.setStatusTip(
             QCoreApplication.translate("MainWindow", "Add Row Before", None)
         )
         # endif // QT_CONFIG(statustip)
-        self.toolButton_3.setText("")
+        self.insert_above_button.setText("")
         # if QT_CONFIG(tooltip)
-        self.toolButton_2.setToolTip(
+        self.insert_below_button.setToolTip(
             QCoreApplication.translate("MainWindow", "Add Row After", None)
         )
         # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(statustip)
-        self.toolButton_2.setStatusTip(
+        self.insert_below_button.setStatusTip(
             QCoreApplication.translate("MainWindow", "Add Row After", None)
         )
         # endif // QT_CONFIG(statustip)
-        self.toolButton_2.setText("")
+        self.insert_below_button.setText("")
         # if QT_CONFIG(tooltip)
-        self.toolButton.setToolTip(
+        self.remove_button.setToolTip(
             QCoreApplication.translate("MainWindow", "Remove Row", None)
         )
         # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(statustip)
-        self.toolButton.setStatusTip(
+        self.remove_button.setStatusTip(
             QCoreApplication.translate("MainWindow", "Remove Row", None)
         )
         # endif // QT_CONFIG(statustip)
-        self.toolButton.setText("")
+        self.remove_button.setText("")
+        self.move_up_button.setText(
+            QCoreApplication.translate("MainWindow", "...", None)
+        )
+        self.move_down_button.setText(
+            QCoreApplication.translate("MainWindow", "...", None)
+        )
         self.tablesTab.setTabText(
             self.tablesTab.indexOf(self.species),
             QCoreApplication.translate("MainWindow", "Solution Species", None),
