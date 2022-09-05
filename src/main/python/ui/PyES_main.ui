@@ -63,7 +63,7 @@
        <attribute name="title">
         <string>Species</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,5">
+       <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,2,5">
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
@@ -92,142 +92,31 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
            <property name="spacing">
-            <number>15</number>
+            <number>8</number>
+           </property>
+           <property name="leftMargin">
+            <number>1</number>
            </property>
            <property name="topMargin">
-            <number>25</number>
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>1</number>
+           </property>
+           <property name="bottomMargin">
+            <number>1</number>
            </property>
            <item>
-            <widget class="QFrame" name="frame_9">
+            <widget class="QLabel" name="sys_opt_label">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Options&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
-             <layout class="QFormLayout" name="formLayout_5">
-              <property name="horizontalSpacing">
-               <number>6</number>
-              </property>
-              <property name="topMargin">
-               <number>9</number>
-              </property>
-              <property name="rightMargin">
-               <number>5</number>
-              </property>
-              <property name="bottomMargin">
-               <number>9</number>
-              </property>
-              <item row="0" column="0" colspan="2">
-               <widget class="QLabel" name="sys_opt_label">
-                <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;System Options&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="comp_label">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>N° Comp.</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="species_label">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>N° Species</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="phases_label">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>N° Solid Species</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QSpinBox" name="numPhases">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="statusTip">
-                 <string>Number of solid phases to be considered.</string>
-                </property>
-                <property name="minimum">
-                 <number>0</number>
-                </property>
-                <property name="maximum">
-                 <number>999</number>
-                </property>
-                <property name="value">
-                 <number>0</number>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QSpinBox" name="numComp">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="statusTip">
-                 <string>Number of components present.</string>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>999</number>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QSpinBox" name="numSpecies">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="statusTip">
-                 <string>Number of species to be considered.</string>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>999</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
             </widget>
            </item>
            <item>
@@ -281,27 +170,148 @@
                  <property name="bottomMargin">
                   <number>5</number>
                  </property>
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QLabel" name="calc_opt_label">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="comp_label">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Calculation Options&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>N° Comp.</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="0" column="1">
+                  <widget class="QSpinBox" name="numComp">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="statusTip">
+                    <string>Number of components present.</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="species_label">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>N° Species</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QSpinBox" name="numSpecies">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="statusTip">
+                    <string>Number of species to be considered.</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="phases_label">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>N° Solid Species</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QSpinBox" name="numPhases">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="statusTip">
+                    <string>Number of solid phases to be considered.</string>
+                   </property>
+                   <property name="minimum">
+                    <number>0</number>
+                   </property>
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                   <property name="value">
+                    <number>0</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="Line" name="line_7">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="relErrorMode_label">
+                   <property name="text">
+                    <string>Relative Errors</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QComboBox" name="relErrorMode">
+                   <item>
+                    <property name="text">
+                     <string>Yes</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>No</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="8" column="0" colspan="2">
+                  <widget class="Line" name="line">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="9" column="0">
                   <widget class="QLabel" name="imode_label">
                    <property name="text">
                     <string>Ionic Strength</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
+                 <item row="9" column="1">
                   <widget class="QComboBox" name="imode">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -324,7 +334,7 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="4" column="0">
+                 <item row="10" column="0">
                   <widget class="QLabel" name="refIonicStr_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -334,7 +344,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
+                 <item row="10" column="1">
                   <widget class="QDoubleSpinBox" name="refIonicStr">
                    <property name="enabled">
                     <bool>false</bool>
@@ -353,45 +363,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0" colspan="2">
-                  <widget class="Line" name="line">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="relErrorMode_label">
-                   <property name="text">
-                    <string>Relative Errors</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="relErrorMode">
-                   <item>
-                    <property name="text">
-                     <string>Yes</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>No</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
                  <item row="11" column="0">
-                  <widget class="QLabel" name="e0_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>e0</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
                   <widget class="QLabel" name="A_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -401,7 +373,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
+                 <item row="11" column="1">
                   <widget class="QDoubleSpinBox" name="A">
                    <property name="enabled">
                     <bool>false</bool>
@@ -423,7 +395,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="0">
+                 <item row="12" column="0">
                   <widget class="QLabel" name="B_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -433,7 +405,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
+                 <item row="12" column="1">
                   <widget class="QDoubleSpinBox" name="B">
                    <property name="enabled">
                     <bool>false</bool>
@@ -455,7 +427,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="7" column="0">
+                 <item row="13" column="0">
                   <widget class="QLabel" name="c0_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -465,7 +437,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="7" column="1">
+                 <item row="13" column="1">
                   <widget class="QDoubleSpinBox" name="c0">
                    <property name="enabled">
                     <bool>false</bool>
@@ -487,7 +459,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="0">
+                 <item row="14" column="0">
                   <widget class="QLabel" name="c1_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -497,7 +469,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="8" column="1">
+                 <item row="14" column="1">
                   <widget class="QDoubleSpinBox" name="c1">
                    <property name="enabled">
                     <bool>false</bool>
@@ -519,7 +491,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="9" column="1">
+                 <item row="15" column="0">
+                  <widget class="QLabel" name="d0_label">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>d0</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="15" column="1">
                   <widget class="QDoubleSpinBox" name="d0">
                    <property name="enabled">
                     <bool>false</bool>
@@ -541,17 +523,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="9" column="0">
-                  <widget class="QLabel" name="d0_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>d0</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="0">
+                 <item row="16" column="0">
                   <widget class="QLabel" name="d1_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -561,7 +533,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="10" column="1">
+                 <item row="16" column="1">
                   <widget class="QDoubleSpinBox" name="d1">
                    <property name="enabled">
                     <bool>false</bool>
@@ -583,7 +555,17 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="11" column="1">
+                 <item row="17" column="0">
+                  <widget class="QLabel" name="e0_label">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>e0</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="17" column="1">
                   <widget class="QDoubleSpinBox" name="e0">
                    <property name="enabled">
                     <bool>false</bool>
@@ -605,7 +587,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="12" column="0">
+                 <item row="18" column="0">
                   <widget class="QLabel" name="e1_label">
                    <property name="enabled">
                     <bool>false</bool>
@@ -615,7 +597,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="12" column="1">
+                 <item row="18" column="1">
                   <widget class="QDoubleSpinBox" name="e1">
                    <property name="enabled">
                     <bool>false</bool>
@@ -644,7 +626,7 @@
             </widget>
            </item>
            <item>
-            <spacer name="verticalSpacer">
+            <spacer name="verticalSpacer_2">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -668,6 +650,9 @@
            </sizepolicy>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_8">
+           <property name="spacing">
+            <number>8</number>
+           </property>
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -740,25 +725,44 @@
             <number>1</number>
            </property>
            <item>
-            <widget class="QWidget" name="horizontalWidget" native="true">
+            <widget class="QLabel" name="tab_comp_label_2">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Species&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QFrame" name="horizontalFrame">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <property name="leftMargin">
                <number>0</number>
               </property>
               <property name="topMargin">
-               <number>6</number>
+               <number>2</number>
               </property>
               <property name="rightMargin">
                <number>0</number>
               </property>
               <property name="bottomMargin">
-               <number>0</number>
+               <number>2</number>
               </property>
               <item>
                <widget class="QToolButton" name="insert_above_button">
@@ -780,6 +784,9 @@
                   <width>18</width>
                   <height>18</height>
                  </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -810,6 +817,9 @@
                   <height>18</height>
                  </size>
                 </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item>
@@ -832,6 +842,9 @@
                   <width>18</width>
                   <height>18</height>
                  </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
@@ -857,6 +870,9 @@
                   <height>18</height>
                  </size>
                 </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
               <item>
@@ -874,7 +890,23 @@
                   <height>18</height>
                  </size>
                 </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </widget>
@@ -2081,8 +2113,8 @@
    <slot>relErrorsUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>259</x>
-     <y>333</y>
+     <x>251</x>
+     <y>277</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -2097,8 +2129,8 @@
    <slot>imodeUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>259</x>
-     <y>375</y>
+     <x>251</x>
+     <y>325</y>
     </hint>
     <hint type="destinationlabel">
      <x>1204</x>
@@ -2113,8 +2145,8 @@
    <slot>updateComp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>193</x>
-     <y>182</y>
+     <x>251</x>
+     <y>155</y>
     </hint>
     <hint type="destinationlabel">
      <x>382</x>
@@ -2129,8 +2161,8 @@
    <slot>updateSpecies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>193</x>
-     <y>216</y>
+     <x>251</x>
+     <y>189</y>
     </hint>
     <hint type="destinationlabel">
      <x>548</x>
@@ -2161,8 +2193,8 @@
    <slot>updateSolid()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>169</x>
-     <y>234</y>
+     <x>249</x>
+     <y>223</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -2177,12 +2209,12 @@
    <slot>insertRowAbove()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>457</x>
-     <y>122</y>
+     <x>439</x>
+     <y>131</y>
     </hint>
     <hint type="destinationlabel">
-     <x>649</x>
-     <y>-4</y>
+     <x>715</x>
+     <y>-3</y>
     </hint>
    </hints>
   </connection>
@@ -2193,12 +2225,12 @@
    <slot>insertRowBelow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>493</x>
-     <y>109</y>
+     <x>469</x>
+     <y>134</y>
     </hint>
     <hint type="destinationlabel">
-     <x>794</x>
-     <y>-4</y>
+     <x>888</x>
+     <y>-5</y>
     </hint>
    </hints>
   </connection>
@@ -2209,12 +2241,12 @@
    <slot>removeRow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>520</x>
-     <y>116</y>
+     <x>509</x>
+     <y>138</y>
     </hint>
     <hint type="destinationlabel">
-     <x>781</x>
-     <y>-9</y>
+     <x>1026</x>
+     <y>-3</y>
     </hint>
    </hints>
   </connection>
@@ -2225,12 +2257,12 @@
    <slot>moveRowUp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>563</x>
-     <y>115</y>
+     <x>551</x>
+     <y>131</y>
     </hint>
     <hint type="destinationlabel">
-     <x>958</x>
-     <y>-1</y>
+     <x>855</x>
+     <y>-12</y>
     </hint>
    </hints>
   </connection>
@@ -2241,12 +2273,12 @@
    <slot>moveRowDown()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>603</x>
-     <y>114</y>
+     <x>572</x>
+     <y>139</y>
     </hint>
     <hint type="destinationlabel">
-     <x>938</x>
-     <y>-9</y>
+     <x>673</x>
+     <y>-17</y>
     </hint>
    </hints>
   </connection>
