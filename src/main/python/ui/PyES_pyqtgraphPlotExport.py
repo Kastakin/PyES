@@ -33,28 +33,19 @@ class Ui_PlotWindow(object):
         sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
         self.widget.setSizePolicy(sizePolicy)
         self.verticalLayout = QVBoxLayout(self.widget)
+        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
         self.widget_2 = QWidget(self.widget)
         self.widget_2.setObjectName("widget_2")
         self.gridLayout = QGridLayout(self.widget_2)
         self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.deselect_all = QPushButton(self.widget_2)
-        self.deselect_all.setObjectName("deselect_all")
-
-        self.gridLayout.addWidget(self.deselect_all, 1, 1, 1, 1)
-
-        self.filter = QPushButton(self.widget_2)
-        self.filter.setObjectName("filter")
-
-        self.gridLayout.addWidget(self.filter, 2, 0, 1, 2)
-
         self.select_all = QPushButton(self.widget_2)
         self.select_all.setObjectName("select_all")
 
-        self.gridLayout.addWidget(self.select_all, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.select_all, 2, 0, 1, 1)
 
         self.tabWidget_2 = QTabWidget(self.widget_2)
         self.tabWidget_2.setObjectName("tabWidget_2")
@@ -98,23 +89,27 @@ class Ui_PlotWindow(object):
 
         self.gridLayout.addWidget(self.tabWidget_2, 0, 0, 1, 2)
 
+        self.deselect_all = QPushButton(self.widget_2)
+        self.deselect_all.setObjectName("deselect_all")
+
+        self.gridLayout.addWidget(self.deselect_all, 2, 1, 1, 1)
+
+        self.filter = QPushButton(self.widget_2)
+        self.filter.setObjectName("filter")
+
+        self.gridLayout.addWidget(self.filter, 3, 0, 1, 2)
+
+        self.regions_check = QCheckBox(self.widget_2)
+        self.regions_check.setObjectName("regions_check")
+
+        self.gridLayout.addWidget(self.regions_check, 1, 0, 1, 2)
+
         self.verticalLayout.addWidget(self.widget_2)
 
         self.horizontalLayout.addWidget(self.widget)
 
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName("tabWidget")
-        self.conc_tab = QWidget()
-        self.conc_tab.setObjectName("conc_tab")
-        self.horizontalLayout_2 = QHBoxLayout(self.conc_tab)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(1, 1, 1, 1)
-        self.conc_graph = PlotWidget(self.conc_tab)
-        self.conc_graph.setObjectName("conc_graph")
-
-        self.horizontalLayout_2.addWidget(self.conc_graph)
-
-        self.tabWidget.addTab(self.conc_tab, "")
         self.perc_tab = QWidget()
         self.perc_tab.setObjectName("perc_tab")
         self.verticalLayout_2 = QVBoxLayout(self.perc_tab)
@@ -127,6 +122,17 @@ class Ui_PlotWindow(object):
 
         self.verticalLayout_2.setStretch(0, 1)
         self.tabWidget.addTab(self.perc_tab, "")
+        self.conc_tab = QWidget()
+        self.conc_tab.setObjectName("conc_tab")
+        self.horizontalLayout_2 = QHBoxLayout(self.conc_tab)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(1, 1, 1, 1)
+        self.conc_graph = PlotWidget(self.conc_tab)
+        self.conc_graph.setObjectName("conc_graph")
+
+        self.horizontalLayout_2.addWidget(self.conc_graph)
+
+        self.tabWidget.addTab(self.conc_tab, "")
 
         self.horizontalLayout.addWidget(self.tabWidget)
 
@@ -137,9 +143,10 @@ class Ui_PlotWindow(object):
         self.deselect_all.clicked.connect(PlotWindow.deselectAll)
         self.select_all.clicked.connect(PlotWindow.selectAll)
         self.filter.clicked.connect(PlotWindow.filterSpecies)
+        self.regions_check.clicked.connect(PlotWindow.changeSolidsGraphics)
 
         self.tabWidget_2.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
 
         QMetaObject.connectSlotsByName(PlotWindow)
 
@@ -149,10 +156,6 @@ class Ui_PlotWindow(object):
         PlotWindow.setWindowTitle(
             QCoreApplication.translate("PlotWindow", "Export Plot", None)
         )
-        self.deselect_all.setText(
-            QCoreApplication.translate("PlotWindow", "Deselect All", None)
-        )
-        self.filter.setText(QCoreApplication.translate("PlotWindow", "Filter", None))
         self.select_all.setText(
             QCoreApplication.translate("PlotWindow", "Select All", None)
         )
@@ -164,13 +167,20 @@ class Ui_PlotWindow(object):
             self.tabWidget_2.indexOf(self.solids),
             QCoreApplication.translate("PlotWindow", "Solids", None),
         )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.conc_tab),
-            QCoreApplication.translate("PlotWindow", "Concentrations", None),
+        self.deselect_all.setText(
+            QCoreApplication.translate("PlotWindow", "Deselect All", None)
+        )
+        self.filter.setText(QCoreApplication.translate("PlotWindow", "Filter", None))
+        self.regions_check.setText(
+            QCoreApplication.translate("PlotWindow", "Solids as regions", None)
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.perc_tab),
             QCoreApplication.translate("PlotWindow", "Percentages", None),
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.conc_tab),
+            QCoreApplication.translate("PlotWindow", "Concentrations", None),
         )
 
     # retranslateUi

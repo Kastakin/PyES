@@ -42,17 +42,20 @@
        </sizepolicy>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
        <property name="leftMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="topMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="rightMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="bottomMargin">
-        <number>0</number>
+        <number>2</number>
        </property>
        <item>
         <widget class="QWidget" name="widget_2" native="true">
@@ -72,21 +75,7 @@
           <property name="spacing">
            <number>2</number>
           </property>
-          <item row="1" column="1">
-           <widget class="QPushButton" name="deselect_all">
-            <property name="text">
-             <string>Deselect All</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QPushButton" name="filter">
-            <property name="text">
-             <string>Filter</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QPushButton" name="select_all">
             <property name="text">
              <string>Select All</string>
@@ -155,6 +144,27 @@
             </widget>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="deselect_all">
+            <property name="text">
+             <string>Deselect All</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QPushButton" name="filter">
+            <property name="text">
+             <string>Filter</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="regions_check">
+            <property name="text">
+             <string>Solids as regions</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -164,30 +174,8 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="conc_tab">
-       <attribute name="title">
-        <string>Concentrations</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="leftMargin">
-         <number>1</number>
-        </property>
-        <property name="topMargin">
-         <number>1</number>
-        </property>
-        <property name="rightMargin">
-         <number>1</number>
-        </property>
-        <property name="bottomMargin">
-         <number>1</number>
-        </property>
-        <item>
-         <widget class="PlotWidget" name="conc_graph" native="true"/>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="perc_tab">
        <attribute name="title">
         <string>Percentages</string>
@@ -207,6 +195,28 @@
         </property>
         <item>
          <widget class="PlotWidget" name="perc_graph" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="conc_tab">
+       <attribute name="title">
+        <string>Concentrations</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="leftMargin">
+         <number>1</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>1</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item>
+         <widget class="PlotWidget" name="conc_graph" native="true"/>
         </item>
        </layout>
       </widget>
@@ -264,12 +274,28 @@
    <slot>filterSpecies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>148</x>
-     <y>599</y>
+     <x>152</x>
+     <y>595</y>
     </hint>
     <hint type="destinationlabel">
      <x>-3</x>
      <y>449</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>regions_check</sender>
+   <signal>clicked()</signal>
+   <receiver>PlotWindow</receiver>
+   <slot>changeSolidsGraphics()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>93</x>
+     <y>520</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>289</x>
+     <y>519</y>
     </hint>
    </hints>
   </connection>
@@ -278,5 +304,6 @@
   <slot>selectAll()</slot>
   <slot>deselectAll()</slot>
   <slot>filterSpecies()</slot>
+  <slot>changeSolidsGraphics()</slot>
  </slots>
 </ui>

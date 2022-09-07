@@ -61,16 +61,19 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.perc_result.columns = self.conc_result.columns
 
         if self.with_solids:
-            self.solid_result = parent.result["solid_distribution"][
+            self.solid_conc_result = parent.result["solid_distribution"][
                 [
                     column
                     for column in parent.result["solid_distribution"]
-                    if not column.startswith("Prec.")
+                    if not (column.startswith("Prec.") or column.startswith("SI"))
                 ]
             ]
-            self.solid_result.columns = [
-                column + "_(s)" for column in self.solid_result.columns
+            self.solid_conc_result.columns = [
+                column + "_(s)" for column in self.solid_conc_result.columns
             ]
+
+            self.solid_perc_result = parent.result["solid_percentages"]
+            self.solid_perc_result.columns = self.solid_conc_result.columns
 
         self.comps = parent.result["comp_info"]
         if self.distribution:
@@ -106,7 +109,7 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             self.speciesModel.appendRow([item])
 
         if self.with_solids:
-            for column in self.solid_result.columns:
+            for column in self.solid_conc_result.columns:
                 item = QStandardItem()
                 item.setText(column)
                 item.setForeground(QBrush(QColor(self.get_solids_color(column)[:-2])))
@@ -179,22 +182,40 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 if name in self._data_lines:
                     self._removePlotLines(name)
 
-        for name in self.solid_result.columns:
+        for name in self.solid_conc_result.columns:
+            if self.regions_check.isChecked():
+                solid_regions = np.reshape(
+                    np.diff(
+                        np.r_[0, (self.solid_conc_result[name] > 0).astype(int), 0]
+                    ).nonzero()[0],
+                    (-1, 2),
+                )
 
-            solid_regions = np.reshape(
-                np.diff(
-                    np.r_[0, (self.solid_result[name] > 1).astype(int), 0]
-                ).nonzero()[0],
-                (-1, 2),
-            )
-
-            if name in self._data_visible:
-                if name not in self._data_lines:
-                    self._addRegionLines(solid_regions, name)
-
+                if name in self._data_visible:
+                    if name not in self._data_lines:
+                        self._addRegionLines(solid_regions, name)
+                else:
+                    if name in self._data_lines:
+                        self._removeRegionLines(name)
             else:
-                if name in self._data_lines:
-                    self._removeRegionLines(name)
+                line_style = Qt.DashLine
+                values = [
+                    self.solid_conc_result[name].to_numpy(dtype=float),
+                    self.solid_perc_result[name].to_numpy(dtype=float),
+                ]
+                if name in self._data_visible:
+                    if name not in self._data_lines:
+                        self._addPlotLines(values, name, line_style)
+
+                    conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
+                        conc_y_max, *values[0]
+                    )
+                    perc_y_min, perc_y_max = min(perc_y_min, *values[1]), max(
+                        perc_y_max, *values[1]
+                    )
+                else:
+                    if name in self._data_lines:
+                        self._removePlotLines(name)
 
         self.conc_graph.setLimits(
             yMin=conc_y_min * 0.5,
@@ -328,6 +349,18 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
     def _removeLegendItem(self, name):
         self.conc_legend.removeItem(self._data_lines[name][0])
         self.perc_legend.removeItem(self._data_lines[name][1])
+
+    def changeSolidsGraphics(self):
+        if self.regions_check.isChecked():
+            for name in self.solid_conc_result.columns:
+                if name in self._data_visible:
+                    self._removePlotLines(name)
+        else:
+            for name in self.solid_conc_result.columns:
+                if name in self._data_visible:
+                    self._removeRegionLines(name)
+
+        self.redraw()
 
     def selectAll(self):
         """

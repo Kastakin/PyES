@@ -206,31 +206,31 @@ class Distribution:
             )
 
         if self.errors:
-            self.conc_sigma = self.conc_data.iloc[:, 2].copy().to_numpy(dtype="float")
-            self.conc_sigma = np.delete(self.conc_sigma, ignored_comps)
+            self.c0_sigma = self.conc_data.iloc[:, 2].copy().to_numpy(dtype="float")
+            self.c0_sigma = np.delete(self.c0_sigma, ignored_comps)
             if self.distribution:
-                self.conc_sigma[self.ind_comp] = 0
-                self.conc_sigma = np.tile(self.conc_sigma, [self.nop, 1])
+                self.c0_sigma[self.ind_comp] = 0
+                self.conc_sigma = np.tile(self.c0_sigma, [self.nop, 1])
             else:
-                conc_added_sigma_base = (
-                    self.conc_data.iloc[:, 3].copy().to_numpy(dtype="float")
-                )
-                conc_added_sigma_base = np.delete(conc_added_sigma_base, ignored_comps)
-                self.conc_sigma = np.tile(self.conc_sigma, [self.nop, 1]) + (
-                    np.tile(self.v_added, [self.nc, 1]).T * conc_added_sigma_base
+                self.ct_sigma = self.conc_data.iloc[:, 3].copy().to_numpy(dtype="float")
+                self.ct_sigma = np.delete(self.ct_sigma, ignored_comps)
+                self.conc_sigma = np.tile(self.c0_sigma, [self.nop, 1]) + (
+                    np.tile(self.v_added, [self.nc, 1]).T * self.ct_sigma
                 )
 
-            log_beta_sigma = species_not_ignored.iloc[:, 3].to_numpy(dtype="float")
-            log_ks_sigma = solid_not_ignored.iloc[:, 3].to_numpy(dtype="float")
+            self.log_beta_sigma = species_not_ignored.iloc[:, 3].to_numpy(dtype="float")
+            self.log_ks_sigma = solid_not_ignored.iloc[:, 3].to_numpy(dtype="float")
 
-            log_beta_sigma = np.delete(log_beta_sigma, species_to_remove, axis=0)
-            log_ks_sigma = np.delete(log_ks_sigma, solid_to_remove, axis=0)
+            self.log_beta_sigma = np.delete(
+                self.log_beta_sigma, species_to_remove, axis=0
+            )
+            self.log_ks_sigma = np.delete(self.log_ks_sigma, solid_to_remove, axis=0)
 
             self.beta_sigma = (
-                log_beta_sigma * np.log(10) * (10 ** self.log_beta_ris[self.nc :])
+                self.log_beta_sigma * np.log(10) * (10 ** self.log_beta_ris[self.nc :])
             )
 
-            self.ks_sigma = log_ks_sigma * np.log(10) * (10**self.log_ks_ris)
+            self.ks_sigma = self.log_ks_sigma * np.log(10) * (10**self.log_ks_ris)
 
         # Check the ionic strength mode
         # Load the required data if so
@@ -349,6 +349,7 @@ class Distribution:
         (
             species,
             solid,
+            si,
             species_sigma,
             solid_sigma,
             log_b,
@@ -372,15 +373,38 @@ class Distribution:
         ).rename_axis(columns="Solid Conc. [mol/L]")
         check = self.solid_distribution.apply(
             lambda x: pd.Series(
-                ["*" if i > 1 else "" for i in x],
+                ["*" if i > 0 else "" for i in x],
                 index=["Prec." + name for name in self.solid_distribution.columns],
                 dtype=str,
             ),
             axis=1,
         )
+        saturation_index = pd.DataFrame(
+            si, columns=["SI" + name for name in self.solid_names]
+        )
+
         self.solid_distribution = pd.merge(
             self.solid_distribution, check, left_index=True, right_index=True, sort=True
-        )[list(sum(zip(check.columns, self.solid_distribution.columns), ()))]
+        )
+
+        self.solid_distribution = pd.merge(
+            self.solid_distribution,
+            saturation_index,
+            left_index=True,
+            right_index=True,
+            sort=True,
+        )
+
+        self.solid_distribution = self.solid_distribution[
+            list(
+                sum(
+                    zip(
+                        check.columns, saturation_index, self.solid_distribution.columns
+                    ),
+                    (),
+                )
+            )
+        ]
         self.solid_distribution = self._setDataframeIndex(self.solid_distribution)
 
         # Compute and create table with percentages of species with respect to component
@@ -426,7 +450,7 @@ class Distribution:
 
         self.solid_sigma = pd.DataFrame(
             solid_sigma, columns=self.solid_names
-        ).rename_axis(columns="Solid Std. Dev. [mol/L]")
+        ).rename_axis(columns="Solid Std. Dev. [mol]")
         self.solid_sigma = self._setDataframeIndex(self.solid_sigma)
 
         # If working at variable ionic strength
@@ -531,7 +555,7 @@ class Distribution:
             if self.nf > 0:
                 solid_info = pd.DataFrame(
                     {
-                        "logB": self.log_ks_ris,
+                        "logKs": self.log_ks_ris,
                     },
                     index=self.solid_names,
                 ).rename_axis(index="Solid Names")
@@ -552,17 +576,29 @@ class Distribution:
                     solid_info.insert(4, "D", self.solid_dg)
                     solid_info.insert(5, "E", self.solid_eg)
 
+            if self.errors:
+                species_info.insert(1, "Sigma logB", self.log_beta_sigma)
+
+                if self.nf > 0:
+                    solid_info.insert(1, "Sigma logKs", self.log_ks_sigma)
+
             comp_info = pd.DataFrame(
                 {
                     "Charge": self.comp_charge,
                 },
                 index=self.species_names[: self.nc],
             ).rename_axis(index="Components Names")
+
             if self.distribution:
                 comp_info["Tot. C."] = np.insert(self.c_tot[0], self.ind_comp, None)
+                if self.errors:
+                    comp_info.insert(2, "Sigma Tot C", self.c0_sigma)
             else:
                 comp_info["Vessel Conc."] = self.initial_c
                 comp_info["Titrant Conc."] = self.c_added
+                if self.errors:
+                    comp_info.insert(2, "Sigma C0", self.c0_sigma)
+                    comp_info.insert(4, "Sigma cT", self.ct_sigma)
 
             return species_info, solid_info, comp_info
         else:
@@ -577,6 +613,7 @@ class Distribution:
         for_estimation_c = []
         results_species_conc = []
         results_solid_conc = []
+        results_solid_si = []
         results_species_sigma = []
         results_solid_sigma = []
         results_log_b = []
@@ -617,23 +654,40 @@ class Distribution:
             # Store concentrations before solid precipitation to estimate next points c
             for_estimation_c.append(species_conc_calc)
 
-            for solid in range(self.nf):
+            saturation_index_calc = np.zeros(self.nf)
+
+            for _ in range(self.nf):
                 saturation_index = self._getSaturationIndex(
                     species_conc_calc[: self.nc], log_ks
                 )
-                solid_conc_calc = saturation_index
-                # if any(i > 1 for i in saturation_index):
-                #     (
-                #         species_conc_calc,
-                #         solid_conc_calc,
-                #         log_b,
-                #         log_ks,
-                #         ionic_strength,
-                #     ) = self._newtonRaphson(
-                #         point, c, cp, self.c_tot[point], fixed_c, with_solids=True
-                #     )
-                # else:
-                #     break
+                if any(i > 1.000000001 for i in saturation_index):
+                    (
+                        species_conc_calc,
+                        solid_conc_calc,
+                        log_b,
+                        log_ks,
+                        ionic_strength,
+                    ) = self._newtonRaphson(
+                        point,
+                        species_conc_calc[: self.nc],
+                        solid_conc_calc,
+                        self.c_tot[point],
+                        fixed_c,
+                        with_solids=True,
+                    )
+
+                    saturation_index_calc[
+                        np.argmax(saturation_index)
+                    ] = saturation_index = self._getSaturationIndex(
+                        species_conc_calc[: self.nc], log_ks
+                    )[
+                        np.argmax(saturation_index)
+                    ]
+                else:
+                    saturation_index_calc = np.maximum(
+                        saturation_index_calc, saturation_index
+                    )
+                    break
 
             if self.errors:
                 species_sigma, solid_sigma = self._computeErrors(
@@ -646,6 +700,8 @@ class Distribution:
             # Store calculated species/solid concentration into a vector
             results_species_conc.append(species_conc_calc)
             results_solid_conc.append(solid_conc_calc)
+
+            results_solid_si.append(saturation_index_calc)
             # Store uncertainty for calculated values
             results_species_sigma.append(species_sigma)
             results_solid_sigma.append(solid_sigma)
@@ -658,6 +714,7 @@ class Distribution:
         # Stack calculated species concentration/logB/ionic strength in tabular fashion
         results_species_conc = np.stack(results_species_conc)
         results_solid_conc = np.stack(results_solid_conc)
+        results_solid_si = np.stack(results_solid_si)
         results_species_sigma = np.stack(results_species_sigma)
         results_solid_sigma = np.stack(results_solid_sigma)
         results_log_b = np.stack(results_log_b)
@@ -668,6 +725,7 @@ class Distribution:
         return (
             results_species_conc,
             results_solid_conc,
+            results_solid_si,
             results_species_sigma,
             results_solid_sigma,
             results_log_b,
@@ -680,41 +738,63 @@ class Distribution:
         # np.seterr("print")
         iteration = 0
 
-        # If working with variable ionic strength ompute initial guess for species concentration
-        if self.imode == 1:
-            if point == 0:
-                log_beta, log_ks, _ = self._updateConstants(
-                    c_tot,
+        if not with_solids:
+            # If working with variable ionic strength ompute initial guess for species concentration
+            if self.imode == 1:
+                if point == 0:
+                    log_beta, log_ks, _ = self._updateConstants(
+                        c_tot,
+                        self.log_beta_ris,
+                        self.log_ks_ris,
+                        self.comp_charge,
+                        point,
+                        first_guess=True,
+                    )
+                else:
+                    log_beta = self.previous_log_beta
+                    log_ks = self.previous_log_ks
+
+                logging.debug(
+                    "Estimate of LogB for point {}: {}".format(point, log_beta)
+                )
+
+                c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
+
+                log_beta, log_ks, cis = self._updateConstants(
+                    c_spec,
                     self.log_beta_ris,
                     self.log_ks_ris,
-                    self.comp_charge,
+                    self.species_charges,
                     point,
-                    first_guess=True,
                 )
+
+                self.previous_log_beta = log_beta
+                self.previous_log_ks = log_ks
+                logging.debug("Updated LogB: {}".format(log_beta))
             else:
-                log_beta = self.previous_log_beta
-                log_ks = self.previous_log_ks
-
-            logging.debug("Estimate of LogB for point {}: {}".format(point, log_beta))
-
-            c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
-
-            log_beta, log_ks, cis = self._updateConstants(
-                c_spec,
-                self.log_beta_ris,
-                self.log_ks_ris,
-                self.species_charges,
-                point,
-            )
-
-            self.previous_log_beta = log_beta
-            self.previous_log_ks = log_ks
-            logging.debug("Updated LogB: {}".format(log_beta))
+                log_beta = self.log_beta_ris
+                log_ks = self.log_ks_ris
+                c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
+                cis = [None]
         else:
-            log_beta = self.log_beta_ris
-            log_ks = self.log_ks_ris
-            c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
-            cis = [None]
+            if self.imode == 1:
+                c_tot_calc, c_spec = self._speciesConcentration(
+                    c, cp, self.previous_log_beta
+                )
+                log_beta, log_ks, cis = self._updateConstants(
+                    c_spec,
+                    self.log_beta_ris,
+                    self.log_ks_ris,
+                    self.species_charges,
+                    point,
+                )
+
+                self.previous_log_beta = log_beta
+                self.previous_log_ks = log_ks
+            else:
+                log_beta = self.log_beta_ris
+                log_ks = self.log_ks_ris
+                cis = [None]
 
         # Calculate total concentration given the species concentration
         c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
@@ -726,6 +806,7 @@ class Distribution:
         shifts_to_calculate, shifts_to_skip = self._checkSolidsSaturation(
             saturation_index
         )
+
         # Compute difference between total concentrations and calculated one
         delta, can_delta, solid_delta = self._computeDelta(
             c_tot,
@@ -735,7 +816,7 @@ class Distribution:
             shifts_to_calculate[-self.nf :],
         )
 
-        while iteration < 200:
+        while iteration < 2000:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION {} ON POINT {}".format(
                     iteration, point
@@ -758,7 +839,7 @@ class Distribution:
                 J = np.delete(J, self.ind_comp, axis=1)
 
             # Solve the equations to obtain newton step
-            shifts = np.linalg.solve(J, delta)
+            shifts = np.linalg.solve(J, -delta)
 
             if with_solids:
                 actual_shifts = np.zeros(len(shifts_to_calculate))
@@ -880,7 +961,7 @@ class Distribution:
     def _computeDelta(
         self, c_tot, c_tot_calc, with_solids, saturation_index, cp_to_calculate
     ):
-        can_delta = c_tot - c_tot_calc
+        can_delta = c_tot_calc - c_tot
 
         if with_solids:
             solid_delta = np.ones(self.nf) - saturation_index
@@ -924,6 +1005,10 @@ class Distribution:
             for j in range(self.nc, nt):
                 for k in range(self.nc, nt):
                     J[j, k] = 0
+
+            # Remove rows and columns referring to under-saturated solids
+            J = np.delete(J, to_skip, axis=0)
+            J = np.delete(J, to_skip, axis=1)
 
         return J
 
