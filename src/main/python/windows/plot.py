@@ -372,12 +372,22 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             if item.checkState() != Qt.Checked:
                 item.setCheckState(Qt.Checked)
 
+        for row in range(self.solidsModel.rowCount()):
+            item = self.solidsModel.item(row)
+            if item.checkState() != Qt.Checked:
+                item.setCheckState(Qt.Checked)
+
     def deselectAll(self):
         """
         Deselect all species.
         """
         for row in range(self.speciesModel.rowCount()):
             item = self.speciesModel.item(row)
+            if item.checkState() == Qt.Checked:
+                item.setCheckState(Qt.Unchecked)
+
+        for row in range(self.solidsModel.rowCount()):
+            item = self.solidsModel.item(row)
             if item.checkState() == Qt.Checked:
                 item.setCheckState(Qt.Unchecked)
 
@@ -392,6 +402,11 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             self.deselectAll()
             for row in range(self.speciesModel.rowCount()):
                 item = self.speciesModel.item(row)
+                if choice in item.text():
+                    item.setCheckState(Qt.Checked)
+
+            for row in range(self.solidsModel.rowCount()):
+                item = self.solidsModel.item(row)
                 if choice in item.text():
                     item.setCheckState(Qt.Checked)
 
