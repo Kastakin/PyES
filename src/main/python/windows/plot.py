@@ -35,16 +35,17 @@ PALETTE = [
 
 ALPHA_PALETTE = [color + "66" for color in PALETTE]
 
-# Colour cycle to use for plotting species.
-BREWER12PAIRED = cycle(PALETTE)
-
-BREWER12PAIRED_ALPHA = cycle(ALPHA_PALETTE)
-
 
 class PlotWindow(QMainWindow, Ui_PlotWindow):
     def __init__(self, parent: "MainWindow"):
         super().__init__()
         self.setupUi(self)
+
+        # Colour cycle to use for plotting species.
+        self.color_palette = cycle(PALETTE)
+
+        self.color_palette_alpha = cycle(ALPHA_PALETTE)
+
         # Inherit the required informations from the primary window
         if parent.dmode.currentIndex() == 0:
             self.distribution = False
@@ -144,13 +145,13 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
 
     def get_species_color(self, species):
         if species not in self._data_colors:
-            self._data_colors[species] = next(BREWER12PAIRED)
+            self._data_colors[species] = next(self.color_palette)
 
         return self._data_colors[species]
 
     def get_solids_color(self, solids):
         if solids not in self._data_colors:
-            self._data_colors[solids] = next(BREWER12PAIRED_ALPHA)
+            self._data_colors[solids] = next(self.color_palette_alpha)
 
         return self._data_colors[solids]
 
