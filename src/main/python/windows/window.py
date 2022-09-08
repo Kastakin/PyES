@@ -4,10 +4,15 @@ from pathlib import Path
 
 import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
-from ExportWindow import ExportWindow
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFileDialog, QHeaderView, QMainWindow, QWidget
+from PySide6.QtWidgets import (
+    QFileDialog,
+    QHeaderView,
+    QMainWindow,
+    QMessageBox,
+    QWidget,
+)
 from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, indCompUpdater, returnDataDict
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
@@ -18,6 +23,7 @@ from viewmodels.models import (
     SpeciesModel,
     TitrationComponentsModel,
 )
+from windows.export import ExportWindow
 from windows.plot import PlotWindow
 from workers import optimizeWorker
 
@@ -702,13 +708,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def removeComp(self):
         if self.compView.selectedIndexes() and self.compModel.rowCount() > 1:
-            row = self.compView.selectedIndexes()[0].row() + 1
-            self.compModel.removeRows(row, 1)
+            if (
+                QMessageBox.question(
+                    self,
+                    "Deleting Component",
+                    "Are you sure you want to delete the selected component?",
+                )
+                == QMessageBox.Yes
+            ):
+                row = self.compView.selectedIndexes()[0].row() + 1
+                self.compModel.removeRows(row, 1)
 
-            self.removeSpeciesComp(row + 8, 1)
-            self.concModel.removeRows(row)
+                self.removeSpeciesComp(row + 8, 1)
+                self.concModel.removeRows(row)
 
-            self.numComp.setValue(self.numComp.value() - 1)
+                self.numComp.setValue(self.numComp.value() - 1)
 
     def moveCompUp(self):
         if self.compView.selectedIndexes():
@@ -781,16 +795,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def removeSpecies(self):
         if self.species.isVisible():
             if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
-                self.speciesModel.removeRows(
-                    self.speciesView.selectedIndexes()[0].row() + 1, 1
-                )
-                self.numSpecies.setValue(self.numSpecies.value() - 1)
+                if (
+                    QMessageBox.question(
+                        self,
+                        "Deleting Species",
+                        "Are you sure you want to delete the selected species?",
+                    )
+                    == QMessageBox.Yes
+                ):
+                    self.speciesModel.removeRows(
+                        self.speciesView.selectedIndexes()[0].row() + 1, 1
+                    )
+                    self.numSpecies.setValue(self.numSpecies.value() - 1)
         elif self.solidspecies.isVisible():
             if self.solidSpeciesView.selectedIndexes():
-                self.solidSpeciesModel.removeRows(
-                    self.solidSpeciesView.selectedIndexes()[0].row() + 1, 1
-                )
-                self.numPhases.setValue(self.numPhases.value() - 1)
+                if (
+                    QMessageBox.question(
+                        self,
+                        "Deleting Species",
+                        "Are you sure you want to delete the selected species?",
+                    )
+                    == QMessageBox.Yes
+                ):
+                    self.solidSpeciesModel.removeRows(
+                        self.solidSpeciesView.selectedIndexes()[0].row() + 1, 1
+                    )
+                    self.numPhases.setValue(self.numPhases.value() - 1)
         else:
             pass
 
