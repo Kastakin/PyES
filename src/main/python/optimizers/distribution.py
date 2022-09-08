@@ -36,8 +36,8 @@ class Distribution:
         # Charge values of comps
         self.comp_charge = data["compModel"]["Charge"]
         # Data relative to the species and solid species
-        self.species_data = data["speciesModel"]
-        self.solid_data = data["solidSpeciesModel"]
+        self.species_data: pd.DataFrame = data["speciesModel"]
+        self.solid_data: pd.DataFrame = data["solidSpeciesModel"]
         # Data relative to comp concentrations
         self.conc_data = data["concModel"]
 
@@ -144,6 +144,24 @@ class Distribution:
             self.species_data["Ignored"] == False
         ]
         solid_not_ignored = self.solid_data.loc[self.solid_data["Ignored"] == False]
+
+        species_duplicates = species_not_ignored.loc[
+            species_not_ignored.duplicated(subset="Name", keep="first").to_list(),
+            "Name",
+        ]
+        if not species_duplicates.empty:
+            raise Exception(
+                f"Species {', '.join(species_duplicates.to_list())} with indices {', '.join(species_duplicates.index.astype(str).to_list())} appear to be duplicates, you can and should remove them to avoid ambiguities in the results."
+            )
+
+        solids_duplicates = solid_not_ignored.loc[
+            solid_not_ignored.duplicated(subset="Name", keep="first").to_list(),
+            "Name",
+        ]
+        if not solids_duplicates.empty:
+            raise Exception(
+                f"Solids {', '.join(solids_duplicates.to_list())} with indices {', '.join(solids_duplicates.index.astype(str).to_list())} appear to be duplicates, you can and should remove them to avoid ambiguities in the results."
+            )
 
         # Store the stechiometric coefficients for the species and solid species
         base_model = species_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
