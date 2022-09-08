@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from turtle import isvisible
+from turtle import isvisible, pos
 
 import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
@@ -560,63 +560,65 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.compModel.rowCount() < rows:
             added_rows = rows - self.compModel.rowCount()
             self.compModel.insertRows(self.compModel.rowCount(), added_rows)
-            self.speciesView.setItemDelegateForColumn(
-                self.speciesModel.columnCount() - 1, None
-            )
-            self.speciesModel.insertColumns(
-                self.speciesModel.columnCount() - 1, added_rows
-            )
-            self.speciesView.setItemDelegateForColumn(
-                self.speciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.speciesView, self.compModel._data["Name"].tolist()
-                ),
-            )
-            self.solidSpeciesView.setItemDelegateForColumn(
-                self.solidSpeciesModel.columnCount() - 1, None
-            )
-            self.solidSpeciesModel.insertColumns(
-                self.solidSpeciesModel.columnCount() - 1, added_rows
-            )
-            self.solidSpeciesView.setItemDelegateForColumn(
-                self.solidSpeciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
-                ),
-            )
+
+            self.addSpeciesComp(self.speciesModel.columnCount() - 1, added_rows)
             self.concModel.insertRows(self.concModel.rowCount(), added_rows)
+
         elif self.compModel.rowCount() > rows:
             removed_rows = self.compModel.rowCount() - rows
             self.compModel.removeRows(self.compModel.rowCount(), removed_rows)
-            self.speciesView.setItemDelegateForColumn(
-                self.speciesModel.columnCount() - 1, None
-            )
-            self.speciesModel.removeColumns(
-                self.speciesModel.columnCount() - 1, removed_rows
-            )
-            self.speciesView.setItemDelegateForColumn(
-                self.speciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.speciesView, self.compModel._data["Name"].tolist()
-                ),
-            )
-            self.solidSpeciesView.setItemDelegateForColumn(
-                self.solidSpeciesModel.columnCount() - 1, None
-            )
-            self.solidSpeciesModel.removeColumns(
-                self.solidSpeciesModel.columnCount(), removed_rows
-            )
-            self.solidSpeciesView.setItemDelegateForColumn(
-                self.solidSpeciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
-                ),
-            )
+
+            self.removeSpeciesComp(self.speciesModel.columnCount() - 1, removed_rows)
             self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
         else:
             pass
         self.updateCompName()
         indCompUpdater(self)
+
+    def addSpeciesComp(self, position, added_rows):
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1, None
+        )
+        self.speciesModel.insertColumns(position, added_rows)
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.speciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
+
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1, None
+        )
+        self.solidSpeciesModel.insertColumns(position, added_rows)
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
+
+    def removeSpeciesComp(self, position, removed_rows):
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1, None
+        )
+        self.speciesModel.removeColumns(position, removed_rows)
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.speciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1, None
+        )
+        self.solidSpeciesModel.removeColumns(position, removed_rows)
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
 
     def updateSpecies(self, s):
         """
@@ -675,7 +677,67 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.concModel.updateIndex(updated_comps)
         indCompUpdater(self)
 
-    def insertRowAbove(self):
+    def insertCompAbove(self):
+        if self.compView.selectedIndexes():
+            row = self.compView.selectedIndexes()[0].row()
+        else:
+            row = 0
+        self.compModel.insertRows(row - 1, 1)
+        self.addSpeciesComp(row + 8, 1)
+        self.concModel.insertRows(row - 1)
+
+        self.numComp.setValue(self.numComp.value() + 1)
+        self.compView.selectRow(row)
+
+    def insertCompBelow(self):
+        if self.compView.selectedIndexes():
+            row = self.compView.selectedIndexes()[0].row() + 1
+        else:
+            row = self.compModel.rowCount()
+        self.compModel.insertRows(row - 1, 1)
+        self.addSpeciesComp(row + 7, 1)
+        self.concModel.insertRows(row - 1)
+
+        self.numComp.setValue(self.numComp.value() + 1)
+        self.compView.selectRow(row)
+
+    def removeComp(self):
+        if self.compView.selectedIndexes() and self.compModel.rowCount() > 1:
+            row = self.compView.selectedIndexes()[0].row() + 1
+            self.compModel.removeRows(row, 1)
+
+            self.removeSpeciesComp(row + 8, 1)
+            self.concModel.removeRows(row)
+
+            self.numComp.setValue(self.numComp.value() - 1)
+
+    def moveCompUp(self):
+        if self.compView.selectedIndexes():
+            row = self.compView.selectedIndexes()[0].row()
+            if row == 0:
+                return
+
+            self.speciesModel.swapColumns(row + 8, row + 7)
+            self.solidSpeciesModel.swapColumns(row + 8, row + 7)
+            self.concModel.swapRows(row, row - 1)
+            self.compModel.swapRows(row, row - 1)
+            self.compView.selectRow(row - 1)
+
+    def moveCompDown(self):
+        if self.compView.selectedIndexes():
+            row = self.compView.selectedIndexes()[0].row()
+            if row == self.compModel.rowCount() - 1:
+                return
+
+            self.speciesModel.swapColumns(row + 8, row + 9)
+            self.solidSpeciesModel.swapColumns(row + 8, row + 9)
+            self.concModel.swapRows(row, row + 1)
+            self.compModel.swapRows(row, row + 1)
+            self.compView.selectRow(row + 1)
+
+            self.updateCompName()
+
+    def insertSpeciesAbove(self):
         if self.species.isVisible():
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
@@ -696,7 +758,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    def insertRowBelow(self):
+    def insertSpeciesBelow(self):
         if self.species.isVisible():
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
@@ -717,7 +779,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    def removeRow(self):
+    def removeSpecies(self):
         if self.species.isVisible():
             if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
                 self.speciesModel.removeRows(
@@ -733,7 +795,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    def moveRowUp(self):
+    def moveSpeciesUp(self):
         if self.species.isVisible():
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
@@ -747,7 +809,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             pass
 
-    def moveRowDown(self):
+    def moveSpeciesDown(self):
         if self.species.isVisible():
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()

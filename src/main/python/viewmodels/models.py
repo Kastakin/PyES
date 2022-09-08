@@ -45,14 +45,27 @@ class TitrationComponentsModel(QAbstractTableModel):
 
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """Insert a row into the model."""
-        self.beginInsertRows(index, position, position + rows - 1)
+        self.beginInsertRows(
+            index, (0 if position == -1 else position), position + rows - 1
+        )
 
         empty_rows = pd.DataFrame(
             [[0.0 for x in range(4)] for row in range(rows)],
             columns=["C0", "CT", "Sigma C0", "Sigma CT"],
             index=["COMP" + str(position + row + 1) for row in range(rows)],
         )
-        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
+
+        if position == -1:
+            self._data = pd.concat(
+                [empty_rows, self._data],
+                ignore_index=True,
+            )
+        else:
+            # for row in range(rows):
+            self._data = pd.concat(
+                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                ignore_index=True,
+            )
 
         self.endInsertRows()
         self.layoutChanged.emit()
@@ -62,13 +75,25 @@ class TitrationComponentsModel(QAbstractTableModel):
         """Remove a row from the model."""
         self.beginRemoveRows(index, position, position + rows - 1)
 
-        self._data = self._data.drop(
-            self._data.index[position - rows : position], axis=0
+        self._data = pd.concat(
+            [self._data.iloc[0 : position - rows, :], self._data.iloc[position:, :]]
         )
 
         self.endRemoveRows()
         self.layoutChanged.emit()
         return True
+
+    def swapRows(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+            self.layoutChanged.emit()
+
+    def swapColumns(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
+            self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.shape[0]
@@ -117,7 +142,9 @@ class ComponentsModel(QAbstractTableModel):
 
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """Insert a row into the model."""
-        self.beginInsertRows(index, position, position + rows - 1)
+        self.beginInsertRows(
+            index, (0 if position == -1 else position), position + rows - 1
+        )
 
         empty_rows = pd.DataFrame(
             [["COMP" + str(position + row + 1)] + [0] for row in range(rows)],
@@ -126,11 +153,21 @@ class ComponentsModel(QAbstractTableModel):
                 "Charge",
             ],
         )
-        self._data = pd.concat([self._data, empty_rows], ignore_index=True)
+
+        if position == -1:
+            self._data = pd.concat(
+                [empty_rows, self._data],
+                ignore_index=True,
+            )
+        else:
+            # for row in range(rows):
+            self._data = pd.concat(
+                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                ignore_index=True,
+            )
 
         self.endInsertRows()
         self.layoutChanged.emit()
-        return True
 
     def removeRows(self, position, rows=1, index=QModelIndex()):
         """Remove a row from the model."""
@@ -143,6 +180,18 @@ class ComponentsModel(QAbstractTableModel):
         self.endRemoveRows()
         self.layoutChanged.emit()
         return True
+
+    def swapRows(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+            self.layoutChanged.emit()
+
+    def swapColumns(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
+            self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.shape[0]
@@ -339,7 +388,11 @@ class SpeciesModel(QAbstractTableModel):
         finish = position
         self.beginRemoveColumns(index, start, finish)
 
-        self._data = self._data.drop(self._data.columns[start:finish], axis=1)
+        # self._data = self._data.drop(self._data.columns[start:finish], axis=1)
+        self._data = pd.concat(
+            [self._data.iloc[:, 0 : finish - columns], self._data.iloc[:, finish:]],
+            axis=1,
+        )
 
         self.endRemoveColumns()
         self.layoutChanged.emit()
@@ -350,6 +403,12 @@ class SpeciesModel(QAbstractTableModel):
         if second != -1 and second != self.rowCount():
             a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
             self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+            self.layoutChanged.emit()
+
+    def swapColumns(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
             self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
@@ -545,7 +604,10 @@ class SolidSpeciesModel(QAbstractTableModel):
         finish = position
         self.beginRemoveColumns(index, start, finish)
 
-        self._data = self._data.drop(self._data.columns[start:finish], axis=1)
+        self._data = pd.concat(
+            [self._data.iloc[:, 0 : finish - columns], self._data.iloc[:, finish:]],
+            axis=1,
+        )
 
         self.endRemoveColumns()
         self.layoutChanged.emit()
@@ -556,6 +618,12 @@ class SolidSpeciesModel(QAbstractTableModel):
         if second != -1 and second != self.rowCount():
             a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
             self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+            self.layoutChanged.emit()
+
+    def swapColumns(self, first: int, second: int):
+        if second != -1 and second != self.rowCount():
+            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
             self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):

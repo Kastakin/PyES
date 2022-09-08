@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1204</width>
+    <width>1283</width>
     <height>778</height>
    </rect>
   </property>
@@ -679,16 +679,189 @@
             </widget>
            </item>
            <item>
+            <widget class="QFrame" name="horizontalFrame_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::Box</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>2</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>2</number>
+              </property>
+              <item>
+               <widget class="QToolButton" name="insert_above_button_2">
+                <property name="toolTip">
+                 <string>Add Component Above</string>
+                </property>
+                <property name="statusTip">
+                 <string>Add Component Above</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-insert-row-before.png</normaloff>:/icons/table-insert-row-before.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="insert_below_button_2">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Add Component Below</string>
+                </property>
+                <property name="statusTip">
+                 <string>Add Component Below</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-insert-row-after.png</normaloff>:/icons/table-insert-row-after.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="remove_button_2">
+                <property name="toolTip">
+                 <string>Remove Component</string>
+                </property>
+                <property name="statusTip">
+                 <string>Remove Component</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/table-delete-row.png</normaloff>:/icons/table-delete-row.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="Line" name="line_5">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="move_up_button_2">
+                <property name="toolTip">
+                 <string>Move Component Up</string>
+                </property>
+                <property name="statusTip">
+                 <string>Move Component Up</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/row_up.png</normaloff>:/icons/row_up.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="move_down_button_2">
+                <property name="toolTip">
+                 <string>Move Component Down</string>
+                </property>
+                <property name="statusTip">
+                 <string>Move Component Down</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="icon">
+                 <iconset resource="../../resources/base/resources.qrc">
+                  <normaloff>:/icons/row_down.png</normaloff>:/icons/row_down.png</iconset>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>18</width>
+                  <height>18</height>
+                 </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <widget class="QTableView" name="compView">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
              <property name="maximumSize">
               <size>
-               <width>150</width>
+               <width>180</width>
                <height>16777215</height>
               </size>
              </property>
@@ -700,6 +873,12 @@
              </property>
              <property name="editTriggers">
               <set>QAbstractItemView::AllEditTriggers</set>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
              </property>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
@@ -767,10 +946,10 @@
               <item>
                <widget class="QToolButton" name="insert_above_button">
                 <property name="toolTip">
-                 <string>Add Row Before</string>
+                 <string>Add Species Above</string>
                 </property>
                 <property name="statusTip">
-                 <string>Add Row Before</string>
+                 <string>Add Species Above</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -799,10 +978,10 @@
                  </sizepolicy>
                 </property>
                 <property name="toolTip">
-                 <string>Add Row After</string>
+                 <string>Add Species Below</string>
                 </property>
                 <property name="statusTip">
-                 <string>Add Row After</string>
+                 <string>Add Species Below</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -825,10 +1004,10 @@
               <item>
                <widget class="QToolButton" name="remove_button">
                 <property name="toolTip">
-                 <string>Remove Row</string>
+                 <string>Remove Species</string>
                 </property>
                 <property name="statusTip">
-                 <string>Remove Row</string>
+                 <string>Remove Species</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -857,6 +1036,12 @@
               </item>
               <item>
                <widget class="QToolButton" name="move_up_button">
+                <property name="toolTip">
+                 <string>Move Species Up</string>
+                </property>
+                <property name="statusTip">
+                 <string>Move Species Up</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -877,6 +1062,12 @@
               </item>
               <item>
                <widget class="QToolButton" name="move_down_button">
+                <property name="toolTip">
+                 <string>Move Species Down</string>
+                </property>
+                <property name="statusTip">
+                 <string>Move Species Down</string>
+                </property>
                 <property name="text">
                  <string/>
                 </property>
@@ -1674,7 +1865,7 @@
                  <item row="1" column="0">
                   <widget class="QLabel" name="indComp_label">
                    <property name="text">
-                    <string>Indipendent Comp A:</string>
+                    <string>Indipendent Comp:</string>
                    </property>
                   </widget>
                  </item>
@@ -1841,7 +2032,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1204</width>
+     <width>1283</width>
      <height>24</height>
     </rect>
    </property>
@@ -2117,7 +2308,7 @@
      <y>277</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1204</x>
+     <x>1203</x>
      <y>280</y>
     </hint>
    </hints>
@@ -2133,7 +2324,7 @@
      <y>325</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1204</x>
+     <x>1203</x>
      <y>376</y>
     </hint>
    </hints>
@@ -2150,7 +2341,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>382</x>
-     <y>-7</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -2166,7 +2357,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>548</x>
-     <y>-16</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -2206,15 +2397,15 @@
    <sender>insert_above_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>insertRowAbove()</slot>
+   <slot>insertSpeciesAbove()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>439</x>
-     <y>131</y>
+     <x>483</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel">
      <x>715</x>
-     <y>-3</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -2222,15 +2413,15 @@
    <sender>insert_below_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>insertRowBelow()</slot>
+   <slot>insertSpeciesBelow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>469</x>
-     <y>134</y>
+     <x>515</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel">
      <x>888</x>
-     <y>-5</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -2238,15 +2429,15 @@
    <sender>remove_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>removeRow()</slot>
+   <slot>removeSpecies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>509</x>
-     <y>138</y>
+     <x>547</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
-     <y>-3</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -2254,15 +2445,15 @@
    <sender>move_up_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>moveRowUp()</slot>
+   <slot>moveSpeciesUp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>551</x>
-     <y>131</y>
+     <x>588</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel">
      <x>855</x>
-     <y>-12</y>
+     <y>0</y>
     </hint>
    </hints>
   </connection>
@@ -2270,15 +2461,95 @@
    <sender>move_down_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>moveRowDown()</slot>
+   <slot>moveCompDown()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>572</x>
-     <y>139</y>
+     <x>620</x>
+     <y>149</y>
     </hint>
     <hint type="destinationlabel">
      <x>673</x>
-     <y>-17</y>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>insert_above_button_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>insertCompAbove()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>291</x>
+     <y>140</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>367</x>
+     <y>-5</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>insert_below_button_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>insertCompBelow()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>141</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>335</x>
+     <y>-11</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>remove_button_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>removeComp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>346</x>
+     <y>139</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>301</x>
+     <y>-11</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>move_up_button_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>moveCompUp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>386</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>505</x>
+     <y>-4</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>move_down_button_2</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>moveCompDown()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>427</x>
+     <y>133</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>663</x>
+     <y>-4</y>
     </hint>
    </hints>
   </connection>
@@ -2299,10 +2570,15 @@
   <slot>dmodeUpdater()</slot>
   <slot>indipendentUpdater()</slot>
   <slot>v0Updater()</slot>
-  <slot>insertRowAbove()</slot>
-  <slot>insertRowBelow()</slot>
-  <slot>removeRow()</slot>
-  <slot>moveRowUp()</slot>
-  <slot>moveRowDown()</slot>
+  <slot>insertSpeciesAbove()</slot>
+  <slot>insertSpeciesBelow()</slot>
+  <slot>removeSpecies()</slot>
+  <slot>moveSpeciesUp()</slot>
+  <slot>moveSpeciesDown()</slot>
+  <slot>insertCompAbove()</slot>
+  <slot>insertCompBelow()</slot>
+  <slot>removeComp()</slot>
+  <slot>moveCompUp()</slot>
+  <slot>moveCompDown()</slot>
  </slots>
 </ui>

@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1204, 778)
+        MainWindow.resize(1283, 778)
         MainWindow.setMinimumSize(QSize(1204, 778))
         MainWindow.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         MainWindow.setUnifiedTitleAndToolBarOnMac(True)
@@ -404,17 +404,103 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addWidget(self.tab_comp_label)
 
-        self.compView = QTableView(self.widget_6)
-        self.compView.setObjectName("compView")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+        self.horizontalFrame_2 = QFrame(self.widget_6)
+        self.horizontalFrame_2.setObjectName("horizontalFrame_2")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         sizePolicy6.setHorizontalStretch(0)
         sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.compView.sizePolicy().hasHeightForWidth())
-        self.compView.setSizePolicy(sizePolicy6)
-        self.compView.setMaximumSize(QSize(150, 16777215))
+        sizePolicy6.setHeightForWidth(
+            self.horizontalFrame_2.sizePolicy().hasHeightForWidth()
+        )
+        self.horizontalFrame_2.setSizePolicy(sizePolicy6)
+        self.horizontalFrame_2.setFrameShape(QFrame.Box)
+        self.horizontalFrame_2.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_8 = QHBoxLayout(self.horizontalFrame_2)
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.horizontalLayout_8.setContentsMargins(0, 2, 0, 2)
+        self.insert_above_button_2 = QToolButton(self.horizontalFrame_2)
+        self.insert_above_button_2.setObjectName("insert_above_button_2")
+        icon7 = QIcon()
+        icon7.addFile(
+            ":/icons/table-insert-row-before.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.insert_above_button_2.setIcon(icon7)
+        self.insert_above_button_2.setIconSize(QSize(18, 18))
+        self.insert_above_button_2.setAutoRaise(True)
+
+        self.horizontalLayout_8.addWidget(self.insert_above_button_2)
+
+        self.insert_below_button_2 = QToolButton(self.horizontalFrame_2)
+        self.insert_below_button_2.setObjectName("insert_below_button_2")
+        sizePolicy7 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(0)
+        sizePolicy7.setHeightForWidth(
+            self.insert_below_button_2.sizePolicy().hasHeightForWidth()
+        )
+        self.insert_below_button_2.setSizePolicy(sizePolicy7)
+        icon8 = QIcon()
+        icon8.addFile(
+            ":/icons/table-insert-row-after.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.insert_below_button_2.setIcon(icon8)
+        self.insert_below_button_2.setIconSize(QSize(18, 18))
+        self.insert_below_button_2.setAutoRaise(True)
+
+        self.horizontalLayout_8.addWidget(self.insert_below_button_2)
+
+        self.remove_button_2 = QToolButton(self.horizontalFrame_2)
+        self.remove_button_2.setObjectName("remove_button_2")
+        icon9 = QIcon()
+        icon9.addFile(":/icons/table-delete-row.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.remove_button_2.setIcon(icon9)
+        self.remove_button_2.setIconSize(QSize(18, 18))
+        self.remove_button_2.setAutoRaise(True)
+
+        self.horizontalLayout_8.addWidget(self.remove_button_2)
+
+        self.line_5 = QFrame(self.horizontalFrame_2)
+        self.line_5.setObjectName("line_5")
+        self.line_5.setFrameShape(QFrame.VLine)
+        self.line_5.setFrameShadow(QFrame.Sunken)
+
+        self.horizontalLayout_8.addWidget(self.line_5)
+
+        self.move_up_button_2 = QToolButton(self.horizontalFrame_2)
+        self.move_up_button_2.setObjectName("move_up_button_2")
+        icon10 = QIcon()
+        icon10.addFile(":/icons/row_up.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.move_up_button_2.setIcon(icon10)
+        self.move_up_button_2.setIconSize(QSize(18, 18))
+        self.move_up_button_2.setAutoRaise(True)
+
+        self.horizontalLayout_8.addWidget(self.move_up_button_2)
+
+        self.move_down_button_2 = QToolButton(self.horizontalFrame_2)
+        self.move_down_button_2.setObjectName("move_down_button_2")
+        icon11 = QIcon()
+        icon11.addFile(":/icons/row_down.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.move_down_button_2.setIcon(icon11)
+        self.move_down_button_2.setIconSize(QSize(18, 18))
+        self.move_down_button_2.setAutoRaise(True)
+
+        self.horizontalLayout_8.addWidget(self.move_down_button_2)
+
+        self.verticalLayout_8.addWidget(self.horizontalFrame_2)
+
+        self.compView = QTableView(self.widget_6)
+        self.compView.setObjectName("compView")
+        sizePolicy8 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
+        sizePolicy8.setHorizontalStretch(0)
+        sizePolicy8.setVerticalStretch(0)
+        sizePolicy8.setHeightForWidth(self.compView.sizePolicy().hasHeightForWidth())
+        self.compView.setSizePolicy(sizePolicy8)
+        self.compView.setMaximumSize(QSize(180, 16777215))
         self.compView.setFrameShape(QFrame.StyledPanel)
         self.compView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustIgnored)
         self.compView.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        self.compView.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.compView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.compView.verticalHeader().setVisible(False)
 
         self.verticalLayout_8.addWidget(self.compView)
@@ -437,13 +523,10 @@ class Ui_MainWindow(object):
 
         self.horizontalFrame = QFrame(self.widget_2)
         self.horizontalFrame.setObjectName("horizontalFrame")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(
+        sizePolicy6.setHeightForWidth(
             self.horizontalFrame.sizePolicy().hasHeightForWidth()
         )
-        self.horizontalFrame.setSizePolicy(sizePolicy7)
+        self.horizontalFrame.setSizePolicy(sizePolicy6)
         self.horizontalFrame.setFrameShape(QFrame.Box)
         self.horizontalFrame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_4 = QHBoxLayout(self.horizontalFrame)
@@ -451,10 +534,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 2, 0, 2)
         self.insert_above_button = QToolButton(self.horizontalFrame)
         self.insert_above_button.setObjectName("insert_above_button")
-        icon7 = QIcon()
-        icon7.addFile(
-            ":/icons/table-insert-row-before.png", QSize(), QIcon.Normal, QIcon.Off
-        )
         self.insert_above_button.setIcon(icon7)
         self.insert_above_button.setIconSize(QSize(18, 18))
         self.insert_above_button.setAutoRaise(True)
@@ -463,17 +542,10 @@ class Ui_MainWindow(object):
 
         self.insert_below_button = QToolButton(self.horizontalFrame)
         self.insert_below_button.setObjectName("insert_below_button")
-        sizePolicy8 = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
-        sizePolicy8.setHorizontalStretch(0)
-        sizePolicy8.setVerticalStretch(0)
-        sizePolicy8.setHeightForWidth(
+        sizePolicy7.setHeightForWidth(
             self.insert_below_button.sizePolicy().hasHeightForWidth()
         )
-        self.insert_below_button.setSizePolicy(sizePolicy8)
-        icon8 = QIcon()
-        icon8.addFile(
-            ":/icons/table-insert-row-after.png", QSize(), QIcon.Normal, QIcon.Off
-        )
+        self.insert_below_button.setSizePolicy(sizePolicy7)
         self.insert_below_button.setIcon(icon8)
         self.insert_below_button.setIconSize(QSize(18, 18))
         self.insert_below_button.setAutoRaise(True)
@@ -482,8 +554,6 @@ class Ui_MainWindow(object):
 
         self.remove_button = QToolButton(self.horizontalFrame)
         self.remove_button.setObjectName("remove_button")
-        icon9 = QIcon()
-        icon9.addFile(":/icons/table-delete-row.png", QSize(), QIcon.Normal, QIcon.Off)
         self.remove_button.setIcon(icon9)
         self.remove_button.setIconSize(QSize(18, 18))
         self.remove_button.setAutoRaise(True)
@@ -499,8 +569,6 @@ class Ui_MainWindow(object):
 
         self.move_up_button = QToolButton(self.horizontalFrame)
         self.move_up_button.setObjectName("move_up_button")
-        icon10 = QIcon()
-        icon10.addFile(":/icons/row_up.png", QSize(), QIcon.Normal, QIcon.Off)
         self.move_up_button.setIcon(icon10)
         self.move_up_button.setIconSize(QSize(18, 18))
         self.move_up_button.setAutoRaise(True)
@@ -509,8 +577,6 @@ class Ui_MainWindow(object):
 
         self.move_down_button = QToolButton(self.horizontalFrame)
         self.move_down_button.setObjectName("move_down_button")
-        icon11 = QIcon()
-        icon11.addFile(":/icons/row_down.png", QSize(), QIcon.Normal, QIcon.Off)
         self.move_down_button.setIcon(icon11)
         self.move_down_button.setIconSize(QSize(18, 18))
         self.move_down_button.setAutoRaise(True)
@@ -610,8 +676,8 @@ class Ui_MainWindow(object):
         self.dmode.addItem("")
         self.dmode.addItem("")
         self.dmode.setObjectName("dmode")
-        sizePolicy8.setHeightForWidth(self.dmode.sizePolicy().hasHeightForWidth())
-        self.dmode.setSizePolicy(sizePolicy8)
+        sizePolicy7.setHeightForWidth(self.dmode.sizePolicy().hasHeightForWidth())
+        self.dmode.setSizePolicy(sizePolicy7)
 
         self.horizontalLayout_2.addWidget(self.dmode)
 
@@ -973,7 +1039,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1204, 24))
+        self.menubar.setGeometry(QRect(0, 0, 1283, 24))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -1022,11 +1088,16 @@ class Ui_MainWindow(object):
         self.numSpecies.valueChanged.connect(MainWindow.updateSpecies)
         self.speciesView.clicked.connect(self.speciesView.edit)
         self.numPhases.valueChanged.connect(MainWindow.updateSolid)
-        self.insert_above_button.clicked.connect(MainWindow.insertRowAbove)
-        self.insert_below_button.clicked.connect(MainWindow.insertRowBelow)
-        self.remove_button.clicked.connect(MainWindow.removeRow)
-        self.move_up_button.clicked.connect(MainWindow.moveRowUp)
-        self.move_down_button.clicked.connect(MainWindow.moveRowDown)
+        self.insert_above_button.clicked.connect(MainWindow.insertSpeciesAbove)
+        self.insert_below_button.clicked.connect(MainWindow.insertSpeciesBelow)
+        self.remove_button.clicked.connect(MainWindow.removeSpecies)
+        self.move_up_button.clicked.connect(MainWindow.moveSpeciesUp)
+        self.move_down_button.clicked.connect(MainWindow.moveCompDown)
+        self.insert_above_button_2.clicked.connect(MainWindow.insertCompAbove)
+        self.insert_below_button_2.clicked.connect(MainWindow.insertCompBelow)
+        self.remove_button_2.clicked.connect(MainWindow.removeComp)
+        self.move_up_button_2.clicked.connect(MainWindow.moveCompUp)
+        self.move_down_button_2.clicked.connect(MainWindow.moveCompDown)
 
         self.tabWidget.setCurrentIndex(0)
         self.tablesTab.setCurrentIndex(0)
@@ -1262,6 +1333,61 @@ class Ui_MainWindow(object):
                 None,
             )
         )
+        # if QT_CONFIG(tooltip)
+        self.insert_above_button_2.setToolTip(
+            QCoreApplication.translate("MainWindow", "Add Component Above", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.insert_above_button_2.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Add Component Above", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.insert_above_button_2.setText("")
+        # if QT_CONFIG(tooltip)
+        self.insert_below_button_2.setToolTip(
+            QCoreApplication.translate("MainWindow", "Add Component Below", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.insert_below_button_2.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Add Component Below", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.insert_below_button_2.setText("")
+        # if QT_CONFIG(tooltip)
+        self.remove_button_2.setToolTip(
+            QCoreApplication.translate("MainWindow", "Remove Component", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.remove_button_2.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Remove Component", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.remove_button_2.setText("")
+        # if QT_CONFIG(tooltip)
+        self.move_up_button_2.setToolTip(
+            QCoreApplication.translate("MainWindow", "Move Component Up", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.move_up_button_2.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Move Component Up", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.move_up_button_2.setText("")
+        # if QT_CONFIG(tooltip)
+        self.move_down_button_2.setToolTip(
+            QCoreApplication.translate("MainWindow", "Move Component Down", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.move_down_button_2.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Move Component Down", None)
+        )
+        # endif // QT_CONFIG(statustip)
+        self.move_down_button_2.setText("")
         self.tab_comp_label_2.setText(
             QCoreApplication.translate(
                 "MainWindow",
@@ -1271,38 +1397,58 @@ class Ui_MainWindow(object):
         )
         # if QT_CONFIG(tooltip)
         self.insert_above_button.setToolTip(
-            QCoreApplication.translate("MainWindow", "Add Row Before", None)
+            QCoreApplication.translate("MainWindow", "Add Species Above", None)
         )
         # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(statustip)
         self.insert_above_button.setStatusTip(
-            QCoreApplication.translate("MainWindow", "Add Row Before", None)
+            QCoreApplication.translate("MainWindow", "Add Species Above", None)
         )
         # endif // QT_CONFIG(statustip)
         self.insert_above_button.setText("")
         # if QT_CONFIG(tooltip)
         self.insert_below_button.setToolTip(
-            QCoreApplication.translate("MainWindow", "Add Row After", None)
+            QCoreApplication.translate("MainWindow", "Add Species Below", None)
         )
         # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(statustip)
         self.insert_below_button.setStatusTip(
-            QCoreApplication.translate("MainWindow", "Add Row After", None)
+            QCoreApplication.translate("MainWindow", "Add Species Below", None)
         )
         # endif // QT_CONFIG(statustip)
         self.insert_below_button.setText("")
         # if QT_CONFIG(tooltip)
         self.remove_button.setToolTip(
-            QCoreApplication.translate("MainWindow", "Remove Row", None)
+            QCoreApplication.translate("MainWindow", "Remove Species", None)
         )
         # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(statustip)
         self.remove_button.setStatusTip(
-            QCoreApplication.translate("MainWindow", "Remove Row", None)
+            QCoreApplication.translate("MainWindow", "Remove Species", None)
         )
         # endif // QT_CONFIG(statustip)
         self.remove_button.setText("")
+        # if QT_CONFIG(tooltip)
+        self.move_up_button.setToolTip(
+            QCoreApplication.translate("MainWindow", "Move Species Up", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.move_up_button.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Move Species Up", None)
+        )
+        # endif // QT_CONFIG(statustip)
         self.move_up_button.setText("")
+        # if QT_CONFIG(tooltip)
+        self.move_down_button.setToolTip(
+            QCoreApplication.translate("MainWindow", "Move Species Down", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(statustip)
+        self.move_down_button.setStatusTip(
+            QCoreApplication.translate("MainWindow", "Move Species Down", None)
+        )
+        # endif // QT_CONFIG(statustip)
         self.move_down_button.setText("")
         self.tablesTab.setTabText(
             self.tablesTab.indexOf(self.species),
@@ -1500,7 +1646,7 @@ class Ui_MainWindow(object):
         # endif // QT_CONFIG(statustip)
         self.cback.setSuffix(QCoreApplication.translate("MainWindow", " mol/l", None))
         self.indComp_label.setText(
-            QCoreApplication.translate("MainWindow", "Indipendent Comp A:", None)
+            QCoreApplication.translate("MainWindow", "Indipendent Comp:", None)
         )
         # if QT_CONFIG(statustip)
         self.indComp.setStatusTip(
