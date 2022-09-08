@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from turtle import isvisible, pos
 
 import pandas as pd
 from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
