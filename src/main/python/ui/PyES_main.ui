@@ -2461,7 +2461,7 @@
    <sender>move_down_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>moveCompDown()</slot>
+   <slot>moveSpeciesDown()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>620</x>

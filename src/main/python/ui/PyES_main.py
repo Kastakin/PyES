@@ -1092,7 +1092,7 @@ class Ui_MainWindow(object):
         self.insert_below_button.clicked.connect(MainWindow.insertSpeciesBelow)
         self.remove_button.clicked.connect(MainWindow.removeSpecies)
         self.move_up_button.clicked.connect(MainWindow.moveSpeciesUp)
-        self.move_down_button.clicked.connect(MainWindow.moveCompDown)
+        self.move_down_button.clicked.connect(MainWindow.moveSpeciesDown)
         self.insert_above_button_2.clicked.connect(MainWindow.insertCompAbove)
         self.insert_below_button_2.clicked.connect(MainWindow.insertCompBelow)
         self.remove_button_2.clicked.connect(MainWindow.removeComp)
