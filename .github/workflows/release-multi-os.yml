@@ -29,7 +29,7 @@ jobs:
       - name: Install fpm
         run: |
           sudo apt-get install ruby ruby-dev rubygems build-essential
-          sudo gem install --no-document fpm
+          sudo gem install --no-document --minimal-deps fpm
           fpm --version
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
