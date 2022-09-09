@@ -993,7 +993,7 @@ class Ui_MainWindow(object):
         self.consoleOutput = QTextEdit(self.Calc)
         self.consoleOutput.setObjectName("consoleOutput")
         font = QFont()
-        font.setFamilies(["Monospace"])
+        font.setFamilies(["Courier New"])
         font.setPointSize(11)
         self.consoleOutput.setFont(font)
         self.consoleOutput.setUndoRedoEnabled(False)

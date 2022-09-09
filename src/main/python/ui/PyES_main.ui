@@ -1931,7 +1931,7 @@
          <widget class="QTextEdit" name="consoleOutput">
           <property name="font">
            <font>
-            <family>Monospace</family>
+            <family>Courier New</family>
             <pointsize>11</pointsize>
            </font>
           </property>
