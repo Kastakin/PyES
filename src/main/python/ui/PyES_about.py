@@ -18,16 +18,21 @@ class Ui_dialogAbout(object):
     def setupUi(self, dialogAbout):
         if not dialogAbout.objectName():
             dialogAbout.setObjectName("dialogAbout")
-        dialogAbout.resize(473, 256)
+        dialogAbout.resize(471, 298)
         sizePolicy = QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(dialogAbout.sizePolicy().hasHeightForWidth())
         dialogAbout.setSizePolicy(sizePolicy)
-        dialogAbout.setMinimumSize(QSize(473, 256))
-        dialogAbout.setMaximumSize(QSize(473, 256))
+        dialogAbout.setMinimumSize(QSize(471, 298))
+        dialogAbout.setMaximumSize(QSize(471, 298))
         self.verticalLayout = QVBoxLayout(dialogAbout)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.label = QLabel(dialogAbout)
+        self.label.setObjectName("label")
+
+        self.verticalLayout.addWidget(self.label)
+
         self.label_3 = QLabel(dialogAbout)
         self.label_3.setObjectName("label_3")
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -61,6 +66,9 @@ class Ui_dialogAbout(object):
     def retranslateUi(self, dialogAbout):
         dialogAbout.setWindowTitle(
             QCoreApplication.translate("dialogAbout", "About", None)
+        )
+        self.label.setText(
+            QCoreApplication.translate("dialogAbout", "PyES Version 0.2.7", None)
         )
         self.label_3.setText(
             QCoreApplication.translate(
