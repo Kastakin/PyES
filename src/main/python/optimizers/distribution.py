@@ -834,7 +834,7 @@ class Distribution:
             shifts_to_calculate[-self.nf :],
         )
 
-        while iteration < 2000:
+        while iteration < 200:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION {} ON POINT {}".format(
                     iteration, point
@@ -905,7 +905,9 @@ class Distribution:
                 shifts_to_calculate[-self.nf :],
             )
 
-            comp_conv_criteria = np.sum(can_delta / c_tot) ** 2
+            comp_conv_criteria = np.sum(
+                (can_delta[c_tot != 0] / c_tot[c_tot != 0]) ** 2
+            )
 
             logging.debug(
                 "Convergence for analytical concentrations at Point {} iteration {}: {}".format(
@@ -914,13 +916,11 @@ class Distribution:
             )
             iteration += 1
             # If convergence criteria is met return check if any solid has to be considered
-            if with_solids:
-                if comp_conv_criteria < 1e-16 and all(
-                    abs(i) <= 1e-9 for i in solid_delta
-                ):
-                    return c_spec, cp, log_beta, log_ks, cis
-            else:
-                if comp_conv_criteria < 1e-16:
+            if comp_conv_criteria < 1e-16:
+                if with_solids:
+                    if all(abs(i) <= 1e-9 for i in solid_delta):
+                        return c_spec, cp, log_beta, log_ks, cis
+                else:
                     return c_spec, cp, log_beta, log_ks, cis
 
         # If during the first or second run you exceed the iteration limit report it
