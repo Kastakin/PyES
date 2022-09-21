@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import QInputDialog, QMainWindow
 from ui.PyES_pyqtgraphPlotExport import Ui_PlotWindow
+from viewmodels.delegate import ColorPickerDelegate
 
 if typing.TYPE_CHECKING:
     from windows.window import MainWindow
@@ -33,8 +34,6 @@ PALETTE = [
     "#00a76c",
 ]
 
-ALPHA_PALETTE = [color + "66" for color in PALETTE]
-
 
 class PlotWindow(QMainWindow, Ui_PlotWindow):
     def __init__(self, parent: "MainWindow"):
@@ -44,7 +43,7 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         # Colour cycle to use for plotting species.
         self.color_palette = cycle(PALETTE)
 
-        self.color_palette_alpha = cycle(ALPHA_PALETTE)
+        self.color_palette_solids = cycle(PALETTE)
 
         # Inherit the required informations from the primary window
         if parent.dmode.currentIndex() == 0:
@@ -93,67 +92,89 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         # Initialize a Model for species_conc
         self.speciesModel = QStandardItemModel()
         self.solidsModel = QStandardItemModel()
-        # self.model.setHorizontalHeaderLabels(["Species"])
+        self.speciesModel.setHorizontalHeaderLabels(["Species", "Color"])
+        self.solidsModel.setHorizontalHeaderLabels(["Species", "Color"])
         self.speciesModel.itemChanged.connect(self.check_checked_state)
         self.solidsModel.itemChanged.connect(self.check_checked_state)
 
         self.speciesView.setModel(self.speciesModel)
         self.solidsView.setModel(self.solidsModel)
 
+        self.speciesView.setItemDelegateForColumn(1, ColorPickerDelegate(self))
+        self.solidsView.setItemDelegateForColumn(1, ColorPickerDelegate(self))
+
         # Each colum holds a checkbox and the species name
         for column in self.conc_result.columns:
             item = QStandardItem()
             item.setText(column)
-            item.setForeground(QBrush(QColor(self.get_species_color(column))))
             item.setColumnCount(2)
             item.setCheckable(True)
-            self.speciesModel.appendRow([item])
+            item.setEditable(False)
+
+            item2 = QStandardItem()
+            item2.setText(self.get_species_color(column, new=True))
+            self.speciesModel.appendRow([item, item2])
 
         if self.with_solids:
             for column in self.solid_conc_result.columns:
                 item = QStandardItem()
                 item.setText(column)
-                item.setForeground(QBrush(QColor(self.get_solids_color(column)[:-2])))
                 item.setColumnCount(2)
                 item.setCheckable(True)
-                self.solidsModel.appendRow([item])
+                item.setEditable(False)
+
+                item2 = QStandardItem()
+                item2.setText(self.get_solids_color(column, new=True))
+                self.solidsModel.appendRow([item, item2])
 
         # Resize column to newly added species
-        self.speciesView.resizeColumnToContents(0)
-        self.solidsView.resizeColumnToContents(0)
+        self.speciesView.resizeColumnsToContents()
+        self.solidsView.resizeColumnsToContents()
 
         self._initGraphs()
 
     def check_checked_state(self, i):
-        if not i.isCheckable():  # Skip data columns.
-            return
+        if i.isCheckable():  # Skip data columns.
+            name = i.text()
+            checked = i.checkState() == Qt.Checked
 
-        name = i.text()
-        checked = i.checkState() == Qt.Checked
+            if name in self._data_visible:
+                if not checked:
+                    self._data_visible.remove(name)
+                    self.redraw()
+                    if self._data_visible == []:
+                        self._resetGraphs()
 
-        if name in self._data_visible:
-            if not checked:
-                self._data_visible.remove(name)
-                self.redraw()
-                if self._data_visible == []:
-                    self._resetGraphs()
-
+            else:
+                if checked:
+                    self._data_visible.append(name)
+                    self.redraw()
         else:
-            if checked:
-                self._data_visible.append(name)
-                self.redraw()
+            self.redraw()
 
-    def get_species_color(self, species):
-        if species not in self._data_colors:
-            self._data_colors[species] = next(self.color_palette)
+    def get_species_color(self, species, new=False):
+        if new:
+            color = next(self.color_palette)
+        else:
+            color = self.speciesModel.item(
+                self.speciesModel.findItems(species, Qt.MatchExactly, 0)[0]
+                .index()
+                .row(),
+                1,
+            ).text()
 
-        return self._data_colors[species]
+        return color
 
-    def get_solids_color(self, solids):
-        if solids not in self._data_colors:
-            self._data_colors[solids] = next(self.color_palette_alpha)
+    def get_solids_color(self, solids, new=False):
+        if new:
+            color = next(self.color_palette_solids)
+        else:
+            color = self.solidsModel.item(
+                self.solidsModel.findItems(solids, Qt.MatchExactly, 0)[0].index().row(),
+                1,
+            ).text()
 
-        return self._data_colors[solids]
+        return color
 
     def redraw(self):
         conc_y_min, conc_y_max = 0, sys.maxsize
@@ -161,17 +182,19 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         x_min, x_max = min(self.x), max(self.x)
 
         for name in self.conc_result.columns:
-            line_style = Qt.SolidLine
             values = [
                 self.conc_result[name].to_numpy(dtype=float),
                 self.perc_result[name].to_numpy(dtype=float),
             ]
             if name in self._data_visible:
+                line_style = Qt.SolidLine
+                color = self.get_species_color(name)
                 if name not in self._data_lines:
-                    self._addPlotLines(values, name, line_style)
+                    self._addPlotLines(values, name, color, line_style)
                 else:
                     for i, plot in enumerate(self._data_lines[name]):
                         plot.setData(self.x, values[i])
+                        plot.setPen(pg.mkPen(color, width=2, style=line_style))
 
                 conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
                     conc_y_max, *values[0]
@@ -182,41 +205,58 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             else:
                 if name in self._data_lines:
                     self._removePlotLines(name)
-
-        for name in self.solid_conc_result.columns:
-            if self.regions_check.isChecked():
-                solid_regions = np.reshape(
-                    np.diff(
-                        np.r_[0, (self.solid_conc_result[name] > 0).astype(int), 0]
-                    ).nonzero()[0],
-                    (-1, 2),
-                )
-
-                if name in self._data_visible:
-                    if name not in self._data_lines:
-                        self._addRegionLines(solid_regions, name)
-                else:
-                    if name in self._data_lines:
-                        self._removeRegionLines(name)
-            else:
-                line_style = Qt.DashLine
-                values = [
-                    self.solid_conc_result[name].to_numpy(dtype=float),
-                    self.solid_perc_result[name].to_numpy(dtype=float),
-                ]
-                if name in self._data_visible:
-                    if name not in self._data_lines:
-                        self._addPlotLines(values, name, line_style)
-
-                    conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
-                        conc_y_max, *values[0]
+        if self.with_solids:
+            for name in self.solid_conc_result.columns:
+                if self.regions_check.isChecked():
+                    solid_regions = np.reshape(
+                        np.diff(
+                            np.r_[0, (self.solid_conc_result[name] > 0).astype(int), 0]
+                        ).nonzero()[0],
+                        (-1, 2),
                     )
-                    perc_y_min, perc_y_max = min(perc_y_min, *values[1]), max(
-                        perc_y_max, *values[1]
-                    )
+
+                    if name in self._data_visible:
+                        color = self.get_solids_color(name) + "66"
+                        if name not in self._data_lines:
+                            self._addRegionLines(solid_regions, name, color)
+                        else:
+                            for plot in self._data_lines[name]:
+                                for region in plot:
+                                    region.setBrush(pg.mkBrush(color))
+                    else:
+                        if name in self._data_lines:
+                            self._removeRegionLines(name)
                 else:
-                    if name in self._data_lines:
-                        self._removePlotLines(name)
+                    values = [
+                        self.solid_conc_result[name].to_numpy(dtype=float),
+                        self.solid_perc_result[name].to_numpy(dtype=float),
+                    ]
+                    if name in self._data_visible:
+                        line_style = Qt.DashLine
+                        color = self.get_solids_color(name)
+                        if name not in self._data_lines:
+                            self._addPlotLines(values, name, color, line_style)
+                        else:
+                            for i, plot in enumerate(self._data_lines[name]):
+                                plot.setData(self.x, values[i])
+                                plot.setPen(
+                                    pg.mkPen(
+                                        color,
+                                        width=2,
+                                        style=line_style,
+                                    )
+                                )
+
+                        conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
+                            conc_y_max, *values[0]
+                        )
+                        perc_y_min, perc_y_max = min(perc_y_min, *values[1]), max(
+                            perc_y_max, *values[1]
+                        )
+
+                    else:
+                        if name in self._data_lines:
+                            self._removePlotLines(name)
 
         self.conc_graph.setLimits(
             yMin=conc_y_min * 0.5,
@@ -278,18 +318,18 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             plot.clear()
         self._data_lines.pop(name)
 
-    def _addPlotLines(self, values, name, line_style):
+    def _addPlotLines(self, values, name, color, line_style):
         self._data_lines[name] = [
             self.conc_graph.plot(
                 self.x,
                 values[0],
-                pen=pg.mkPen(self.get_species_color(name), width=2, style=line_style),
+                pen=pg.mkPen(color, width=2, style=line_style),
                 name=name,
             ),
             self.perc_graph.plot(
                 self.x,
                 values[1],
-                pen=pg.mkPen(self.get_species_color(name), width=2, style=line_style),
+                pen=pg.mkPen(color, width=2, style=line_style),
                 name=name,
             ),
         ]
@@ -301,21 +341,19 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             self.perc_graph.removeItem(region[1])
         self._data_lines.pop(name)
 
-    def _addRegionLines(self, solid_regions, name):
+    def _addRegionLines(self, solid_regions, name, color):
         regions_list = []
-        color = self.get_solids_color(name)
-
         for region in solid_regions:
             line_region_conc = pg.LinearRegionItem(
                 values=[self.x[region[0]], self.x[region[1] - 1]],
                 movable=False,
-                pen=pg.mkPen(color),
+                pen=pg.mkPen(None),
                 brush=pg.mkBrush(color),
             )
             line_region_perc = pg.LinearRegionItem(
                 values=[self.x[region[0]], self.x[region[1] - 1]],
                 movable=False,
-                pen=pg.mkPen(color),
+                pen=pg.mkPen(None),
                 brush=pg.mkBrush(color),
             )
 
