@@ -1212,7 +1212,7 @@ class Distribution:
     def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        epsilon = 2.5e-1 if point > 0 else 1e-9
+        epsilon = 1e-3
         model = self.model
         nc = self.nc
         if self.distribution:
@@ -1224,7 +1224,7 @@ class Distribution:
         a0 = np.max(model, axis=1)
 
         iteration = 0
-        while iteration < 10000:
+        while iteration < 1000:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if self.distribution:
@@ -1239,10 +1239,13 @@ class Distribution:
                 model < 0, c_times_model, 0
             ).sum(axis=1)
 
-            conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
+            conv_criteria = (sum_reac - sum_prod) / (sum_reac + sum_prod)
+            # print(conv_criteria)
 
             if all(i < epsilon for i in conv_criteria):
-                logging.debug("EXITING DAMP ROUTINE")
+                logging.debug(
+                    f"CONVERGENCE! EXITING DAMP ROUTINE AFTER {iteration} ITERATIONS"
+                )
                 if self.distribution:
                     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
                 return c, c_spec
@@ -1267,12 +1270,19 @@ class Distribution:
 
             iteration += 1
 
+        logging.debug(
+            f"WARNING! EXITING DAMP ROUTINE AFTER {iteration} ITERATIONS WITHOUT CONVERGENCE"
+        )
+        if self.distribution:
+            c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
+        return c, c_spec
+
         # if self.distribution:
         #     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
         # return c, c_spec
-        raise Exception(
-            "Dampening routine couldn't find a solution at point {}".format(point)
-        )
+        # raise Exception(
+        #     "Dampening routine couldn't find a solution at point {}".format(point)
+        # )
 
     def _getSaturationIndex(self, c, log_ks):
         if self.nf > 0:
