@@ -66,6 +66,7 @@ class Ui_PlotWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.speciesView.sizePolicy().hasHeightForWidth())
         self.speciesView.setSizePolicy(sizePolicy2)
+        self.speciesView.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.speciesView.setAlternatingRowColors(True)
         self.speciesView.horizontalHeader().setVisible(False)
 
@@ -80,6 +81,7 @@ class Ui_PlotWindow(object):
         self.solidsView.setObjectName("solidsView")
         sizePolicy2.setHeightForWidth(self.solidsView.sizePolicy().hasHeightForWidth())
         self.solidsView.setSizePolicy(sizePolicy2)
+        self.solidsView.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.solidsView.setAlternatingRowColors(True)
         self.solidsView.horizontalHeader().setVisible(False)
 
