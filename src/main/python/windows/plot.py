@@ -128,8 +128,11 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 self.solidsModel.appendRow([item, item2])
 
         # Resize column to newly added species
-        self.speciesView.resizeColumnsToContents()
-        self.solidsView.resizeColumnsToContents()
+        # self.speciesView.resizeColumnsToContents()
+        self.speciesView.resizeColumnToContents(0)
+        self.speciesView.setColumnWidth(1, self.speciesView.rowHeight(0))
+        self.solidsView.resizeColumnToContents(0)
+        self.solidsView.setColumnWidth(1, self.solidsView.rowHeight(0))
 
         self._initGraphs()
 
