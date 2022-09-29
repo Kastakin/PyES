@@ -7,6 +7,8 @@
     "--exclude-module",
     "PySide6.QtQml",
     "--exclude-module",
+    "PySide6.QtQuick",
+    "--exclude-module",
     "_bootlocale"
   ]
 }
