@@ -96,7 +96,7 @@ class CheckBoxDelegate(QStyledItemDelegate):
         """
         The user wanted to change the old state in the opposite.
         """
-        newValue = Qt.Checked if not index.data() else Qt.Unchecked
+        newValue = True if not index.data() else False
         model.setData(index, newValue, Qt.EditRole)
 
     def getCheckBoxRect(self, option):
