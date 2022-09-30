@@ -209,7 +209,7 @@ class SpeciesModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             if index.column() != 0:
-                return str("{}".format(value))
+                return str(f"{value}")
             else:
                 return bool(value)
 
@@ -427,7 +427,7 @@ class SolidSpeciesModel(QAbstractTableModel):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             if index.column() != 0:
-                return str("{}".format(value))
+                return str(f"{value}")
             else:
                 return bool(value)
 

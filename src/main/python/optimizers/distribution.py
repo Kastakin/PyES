@@ -640,7 +640,7 @@ class Distribution:
 
         # Cycle over each point of titration
         for point in range(self.nop):
-            logging.debug("--> OPTIMIZATION POINT: {}".format(point))
+            logging.debug("--> OPTIMIZATION POINT: %s", point)
 
             if self.distribution:
                 c, fixed_c = self._distributionGuess(point, for_estimation_c)
@@ -651,8 +651,8 @@ class Distribution:
             # Initial guess for solids conentrations should always be zero
             cp = np.zeros(self.nf)
 
-            logging.debug("INITIAL ESTIMATED FREE C: {}".format(c))
-            logging.debug("TOTAL C: {}".format(self.c_tot[point]))
+            logging.debug("INITIAL ESTIMATED FREE C: %s", c)
+            logging.debug("TOTAL C: %s", self.c_tot[point])
 
             # Calculate species concnetration or each curve point
             (
@@ -772,9 +772,7 @@ class Distribution:
                     log_beta = self.previous_log_beta
                     log_ks = self.previous_log_ks
 
-                logging.debug(
-                    "Estimate of LogB for point {}: {}".format(point, log_beta)
-                )
+                logging.debug("Estimate of LogB for point %s: %s", point, log_beta)
 
                 c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
 
@@ -788,7 +786,7 @@ class Distribution:
 
                 self.previous_log_beta = log_beta
                 self.previous_log_ks = log_ks
-                logging.debug("Updated LogB: {}".format(log_beta))
+                logging.debug("Updated LogB: %s", log_beta)
             else:
                 log_beta = self.log_beta_ris
                 log_ks = self.log_ks_ris
@@ -836,9 +834,7 @@ class Distribution:
 
         while iteration < 200:
             logging.debug(
-                "-> BEGINNING NEWTON-RAPHSON ITERATION {} ON POINT {}".format(
-                    iteration, point
-                )
+                "-> BEGINNING NEWTON-RAPHSON ITERATION %s ON POINT %s", iteration, point
             )
 
             # Compute Jacobian
@@ -867,9 +863,7 @@ class Distribution:
             if self.distribution:
                 shifts = np.insert(shifts, self.ind_comp, 0, axis=0)
             logging.debug(
-                "Shifts to be applied to concentrations and precipitates: {}".format(
-                    shifts
-                )
+                "Shifts to be applied to concentrations and precipitates: %s", shifts
             )
 
             if with_solids:
@@ -885,10 +879,8 @@ class Distribution:
             if with_solids:
                 cp = cp + rev_del[self.nc :] * shifts[self.nc :]
 
-            logging.debug("Newton-Raphson updated free concentrations: {}".format(c))
-            logging.debug(
-                "Newton-Raphson updated precipitate concentrations: {}".format(cp)
-            )
+            logging.debug("Newton-Raphson updated free concentrations: %s", c)
+            logging.debug("Newton-Raphson updated precipitate concentrations: %s", cp)
 
             # Calculate total concentration given the updated free/precipitate concentration
             c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
@@ -910,10 +902,12 @@ class Distribution:
             )
 
             logging.debug(
-                "Convergence for analytical concentrations at Point {} iteration {}: {}".format(
-                    point, iteration, comp_conv_criteria
-                )
+                "Convergence for analytical concentrations at Point %s iteration %s: %s",
+                point,
+                iteration,
+                comp_conv_criteria,
             )
+
             iteration += 1
             # If convergence criteria is met return check if any solid has to be considered
             if comp_conv_criteria < 1e-16:
@@ -1277,11 +1271,8 @@ class Distribution:
             c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
         return c, c_spec
 
-        # if self.distribution:
-        #     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
-        # return c, c_spec
         # raise Exception(
-        #     "Dampening routine couldn't find a solution at point {}".format(point)
+        #     "Dampening routine couldn't find a solution at point %s", point
         # )
 
     def _getSaturationIndex(self, c, log_ks):
@@ -1310,9 +1301,7 @@ class Distribution:
             c = np.insert(c, self.ind_comp, 0, axis=0)
 
         cis = self._ionicStr(c, charges, point, first_guess)
-        logging.debug(
-            "Current I: {}".format(cis) + ("\tFIRST GUESS" if first_guess else "")
-        )
+        logging.debug("Current I: %s %s", cis, ("\tFIRST GUESS" if first_guess else ""))
         updated_log_b = self._updateLogB(cis, log_beta)
         updated_log_ks = self._updateLogKs(cis, log_ks)
         return updated_log_b, updated_log_ks, cis
