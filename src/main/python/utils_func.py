@@ -45,10 +45,8 @@ def returnDataDict(self, saving=True):
             "compModel": self.compModel._data.to_dict(),
             "concModel": self.concModel._data.to_dict(),
         }
-        if self.numSpecies.value() > 0:
-            data_models["speciesModel"] = self.speciesModel._data.to_dict()
-        if self.numPhases.value() > 0:
-            data_models["solidSpeciesModel"] = self.solidSpeciesModel._data.to_dict()
+        data_models["speciesModel"] = self.speciesModel._data.to_dict()
+        data_models["solidSpeciesModel"] = self.solidSpeciesModel._data.to_dict()
     else:
         data_models = {
             "compModel": self.compModel._data,

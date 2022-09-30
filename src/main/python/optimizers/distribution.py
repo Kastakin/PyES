@@ -34,12 +34,12 @@ class Distribution:
             self.errors = False
 
         # Charge values of comps
-        self.comp_charge = data["compModel"]["Charge"]
+        self.comp_charge = pd.DataFrame(data["compModel"])["Charge"]
         # Data relative to the species and solid species
-        self.species_data: pd.DataFrame = data["speciesModel"]
-        self.solid_data: pd.DataFrame = data["solidSpeciesModel"]
+        self.species_data: pd.DataFrame = pd.DataFrame(data["speciesModel"])
+        self.solid_data: pd.DataFrame = pd.DataFrame(data["solidSpeciesModel"])
         # Data relative to comp concentrations
-        self.conc_data = data["concModel"]
+        self.conc_data = pd.DataFrame(data["concModel"])
 
         if self.distribution:
             # Indipendent comp
@@ -1070,7 +1070,7 @@ class Distribution:
         log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
         log_c_spec = self._checkOverUnderFlow(log_c_spec)
         c_spec = 10**log_c_spec
-        logging.debug("Species Concentrations: {}".format(c_spec))
+        logging.debug("Species Concentrations: %s", c_spec)
 
         tiled_cp = np.tile(cp, [self.nc, 1])
 
@@ -1083,7 +1083,7 @@ class Distribution:
             # Take out the analytical concentration relative to the indipendent component
             c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
 
-        logging.debug("Calculated Total Concentration: {}".format(c_tot_calc))
+        logging.debug("Calculated Total Concentration: %s", c_tot_calc)
 
         return c_tot_calc, c_spec
 
@@ -1212,7 +1212,7 @@ class Distribution:
     def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        epsilon = 1e-3
+        epsilon = 2.5e-1 if point > 0 else 1e-9
         model = self.model
         nc = self.nc
         if self.distribution:

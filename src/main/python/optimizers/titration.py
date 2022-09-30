@@ -272,7 +272,7 @@ class Titration:
         log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
         log_c_spec = np.where(log_c_spec > self.epsl, self.epsl, log_c_spec)
         log_c_spec = np.where(log_c_spec < -self.epsl, -self.epsl, log_c_spec)
-        c_spec = 10 ** log_c_spec
+        c_spec = 10**log_c_spec
         logging.debug("Species Concentrations: {}".format(c_spec))
 
         # Estimate total concentration given the species concentration
