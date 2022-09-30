@@ -474,7 +474,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Opens the project website in the web
         """
-        url = QUrl("https://www.google.com/")
+        url = QUrl("https://github.com/Kastakin/PyES")
         QDesktopServices.openUrl(url)
 
     def resetFields(self):
