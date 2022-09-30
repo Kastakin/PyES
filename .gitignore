@@ -153,3 +153,5 @@ dmypy.json
 /mockup
 /logs
 .VSCodeCounter
+/benchmark/benchmark_results
+/benchmark/profiles
