@@ -1014,9 +1014,9 @@ class Distribution:
                         saturation_index[(j - self.nc)] / c_spec[k]
                     )
 
-            for j in range(self.nc, nt):
-                for k in range(self.nc, nt):
-                    J[j, k] = 0
+            # for j in range(self.nc, nt):
+            #     for k in range(self.nc, nt):
+            #         J[j, k] = 0
 
             # Remove rows and columns referring to under-saturated solids
             J = np.delete(J, to_skip, axis=0)
