@@ -1206,7 +1206,7 @@ class Distribution:
     def _damping(self, point, c, cp, log_beta, c_tot, fixed_c):
         logging.debug("ENTERING DAMP ROUTINE")
 
-        epsilon = 2.5e-1 if point > 0 else 1e-9
+        epsilon = 1e-6
         model = self.model
         nc = self.nc
         if self.distribution:
@@ -1215,7 +1215,7 @@ class Distribution:
             model = np.delete(model, self.ind_comp, axis=1)
 
         coeff = np.array([0 for i in range(nc)])
-        a0 = np.max(model, axis=1)
+        a0 = np.abs(np.min(np.where(model != 0, model, 1), axis=1))
 
         iteration = 0
         while iteration < 1000:
@@ -1233,8 +1233,7 @@ class Distribution:
                 model < 0, c_times_model, 0
             ).sum(axis=1)
 
-            conv_criteria = (sum_reac - sum_prod) / (sum_reac + sum_prod)
-            # print(conv_criteria)
+            conv_criteria = np.abs(sum_reac - sum_prod) / (sum_reac + sum_prod)
 
             if all(i < epsilon for i in conv_criteria):
                 logging.debug(
@@ -1245,11 +1244,11 @@ class Distribution:
                 return c, c_spec
 
             new_coeff = (
-                0.1
+                0.9
                 - np.where(
                     (sum_reac > sum_prod), (sum_prod / sum_reac), (sum_reac / sum_prod)
                 )
-                * 0.08
+                * 0.8
             )
 
             if iteration == 0:
