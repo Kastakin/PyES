@@ -1050,7 +1050,6 @@ class Distribution:
 
     #     return J, delta
 
-    # TODO: document functions
     def _speciesConcentration(self, c, cp, log_beta):
         """
         Calculate species concentration it returns c_spec and c_tot_calc:
@@ -1058,20 +1057,19 @@ class Distribution:
         - c_spec[nc+1->nc+ns] = species concentrations.
         - c_tot_calc = estimated anaytical concentration.
         """
-        log_c = np.log10(c)
-        tiled_log_c = np.tile(log_c, [self.ns + self.nc, 1]).T
-        log_spec_mat = tiled_log_c * self.model
-        log_c_spec = np.sum(log_spec_mat, axis=0) + log_beta
-        log_c_spec = self._checkOverUnderFlow(log_c_spec)
+        log_c_spec = self._checkOverUnderFlow(
+            np.sum(np.tile(np.log10(c), (self.ns + self.nc, 1)).T * self.model, axis=0)
+            + log_beta
+        )
+
         c_spec = 10**log_c_spec
         logging.debug("Species Concentrations: %s", c_spec)
 
-        tiled_cp = np.tile(cp, [self.nc, 1])
-
         # Estimate total concentration given the species concentration
-        c_tot_calc = np.sum(self.model * np.tile(c_spec, [self.nc, 1]), axis=1) + (
-            np.sum(self.solid_model * tiled_cp, axis=1) if self.nf > 0 else 0
-        )
+        c_tot_calc = np.sum(self.model * np.tile(c_spec, (self.nc, 1)), axis=1)
+
+        if self.nf > 0:
+            c_tot_calc += np.sum(self.solid_model * np.tile(cp, (self.nc, 1)), axis=1)
 
         if self.distribution:
             # Take out the analytical concentration relative to the indipendent component
