@@ -988,9 +988,7 @@ class Distribution:
     def _computeJacobian(self, c_spec, saturation_index, with_solids, to_skip):
         if with_solids:
             nt = self.nc + self.nf
-            to_skip = np.concatenate(
-                (np.array([False for i in range(self.nc)]), to_skip)
-            )
+            to_skip = np.concatenate(([False for i in range(self.nc)], to_skip))
         else:
             nt = self.nc
 
@@ -998,25 +996,26 @@ class Distribution:
 
         # Compute Jacobian
         # Jacobian for acqueous species
-        for j in range(self.nc):
-            for k in range(self.nc):
-                J[j, k] = np.sum(self.model[j] * self.model[k] * (c_spec / c_spec[k]))
+        J[: self.nc, : self.nc] = (
+            (
+                np.tile(c_spec, (self.nc, self.nc, 1))
+                / np.tile(
+                    c_spec[: self.nc].reshape((self.nc, 1)),
+                    (self.nc, 1, self.ns + self.nc),
+                )
+            )
+            * np.tile(self.model, (self.nc, 1, 1))
+            * np.rot90(np.tile(self.model, (self.nc, 1, 1)), -1, axes=(0, 1))
+        ).sum(axis=-1)
 
         if with_solids:
             # Jacobian for solid species
-            for j in range(self.nc):
-                for k in range(self.nc, nt):
-                    J[j, k] = self.solid_model[j, (k - self.nc)]
+            J[: self.nc, self.nc : nt] = self.solid_model
 
-            for j in range(self.nc, nt):
-                for k in range(self.nc):
-                    J[j, k] = np.negative(self.solid_model[k, (j - self.nc)]) * (
-                        saturation_index[(j - self.nc)] / c_spec[k]
-                    )
-
-            # for j in range(self.nc, nt):
-            #     for k in range(self.nc, nt):
-            #         J[j, k] = 0
+            J[self.nc : nt, : self.nc] = -self.solid_model.T * (
+                np.tile(saturation_index, (self.nc, 1)).T
+                / np.tile(c_spec[: self.nc], (nt - self.nc, 1))
+            )
 
             # Remove rows and columns referring to under-saturated solids
             J = np.delete(J, to_skip, axis=0)
