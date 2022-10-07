@@ -1392,36 +1392,42 @@ class Distribution:
         return species_perc_int.astype(int), solid_perc_int.astype(int)
 
     def _computeErrors(self, c_spec, log_b, point):
-
         # Get betas from log betas
         beta = 10 ** log_b[self.nc :]
         model = self.model[:, self.nc :]
+        solid_model = self.solid_model
         free_c = c_spec[: self.nc]
         c_spec = c_spec[self.nc :]
         # Define dimension of arrays required
-        M = np.zeros(shape=(self.nc, self.nc))
         der_free_beta = np.zeros(shape=(self.nc, self.ns))
         der_free_tot = np.zeros(shape=(self.nc, self.nc))
-        der_spec_beta = np.zeros(shape=(self.ns, self.ns))
-        der_spec_tot = np.zeros(shape=(self.ns, self.nc))
-        b = np.zeros(shape=(self.nc, self.ns))
-        d = np.zeros(shape=(self.nc, self.nc))
+        d = np.identity(self.nc)
 
         # Compute common matrix term
-        for j in range(self.nc):
-            for k in range(self.nc):
-                M[j, k] = np.sum(model[j] * model[k] * (c_spec / free_c[k])) + (
-                    1 if j == k else 0
-                )
+        M = (
+            (
+                np.tile(c_spec, (self.nc, self.nc, 1))
+                / np.tile(free_c.reshape((self.nc, 1)), (self.nc, 1, self.ns))
+            )
+            * np.tile(model, (self.nc, 1, 1))
+            * np.rot90(np.tile(model, (self.nc, 1, 1)), -1, axes=(0, 1))
+        ).sum(axis=-1)
+        M += d
 
-        for i in range(self.ns):
-            for j in range(self.nc):
-                b[j, i] = -model[j, i] * (c_spec[i] / beta[i])
+        # Compute indipendent variable for der_free_beta
+        b = -model * (c_spec / beta)
 
-        for r in range(self.nc):
-            for j in range(self.nc):
-                d[j, r] = 1 if j == r else 0
+        if self.distribution:
+            M = np.delete(M, self.ind_comp, 0)
+            M = np.delete(M, self.ind_comp, 1)
 
+            b = np.delete(b, self.ind_comp, 0)
+            d = np.delete(d, self.ind_comp, 0)
+
+            der_free_beta = np.delete(der_free_beta, self.ind_comp, 0)
+            der_free_tot = np.delete(der_free_tot, self.ind_comp, 0)
+
+        # Solve the systems of equations
         for i in range(self.ns):
             der_free_beta[:, i] = np.linalg.solve(M, b[:, i])
 
@@ -1429,21 +1435,33 @@ class Distribution:
             der_free_tot[:, r] = np.linalg.solve(M, d[:, r])
 
         if self.distribution:
-            der_free_beta[self.ind_comp, :] = 0
-            der_free_tot[self.ind_comp, :] = 0
+            der_free_beta = np.insert(der_free_beta, self.ind_comp, 0, axis=0)
+            der_free_tot = np.insert(der_free_tot, self.ind_comp, 0, axis=0)
 
-        for i in range(self.ns):
-            for l in range(self.ns):
-                der_spec_beta[i, l] = (1 if i == l else 0) * (
-                    c_spec[i] / beta[l]
-                ) + np.sum(model[:, i] * (c_spec[i] / free_c) * der_free_beta[:, l])
-
-        for i in range(self.ns):
-            for r in range(self.nc):
-                der_spec_tot[i, r] = np.sum(
-                    model[:, i] * (c_spec[i] / free_c) * der_free_tot[:, r]
+        # Compute derivatives for the species
+        der_spec_beta = (
+            np.rot90(np.tile(model.T, (self.ns, 1, 1)), -1)
+            * (
+                np.stack(
+                    [np.tile(c_spec, (self.ns, 1)).T for _ in range(self.nc)], axis=-1
                 )
+                / free_c
+            )
+            * np.tile(der_free_beta.T, (self.ns, 1, 1))
+        ).sum(axis=-1) + np.diag(c_spec / beta)
 
+        der_spec_tot = (
+            np.rot90(np.tile(model.T, (self.nc, 1, 1)), -1)
+            * (
+                np.stack(
+                    [np.tile(c_spec, (self.nc, 1)).T for _ in range(self.nc)], axis=-1
+                )
+                / free_c
+            )
+            * np.tile(der_free_tot.T, (self.ns, 1, 1))
+        ).sum(axis=-1)
+
+        # Calculate uncertanity for components and species given the input
         comp_sigma = np.sqrt(
             ((der_free_beta**2) * (self.beta_sigma**2)).sum(axis=1)
             + ((der_free_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
@@ -1455,7 +1473,7 @@ class Distribution:
         )
         species_sigma = np.concatenate((comp_sigma, species_sigma))
 
-        # FIXME: we need to implement propagation error for solid concentrations
+        # TODO: we need to implement propagation error for solid concentrations
         solid_sigma = np.array([None for i in range(self.nf)])
 
         return species_sigma, solid_sigma
