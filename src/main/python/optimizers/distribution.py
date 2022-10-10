@@ -753,7 +753,7 @@ class Distribution:
 
     def _newtonRaphson(self, point, c, cp, c_tot, fixed_c, with_solids=False):
         # FIXME: FOR DEBUGGING PURPOSES
-        # np.seterr("print")
+        np.seterr(all="ignore")
         iteration = 0
 
         if not with_solids:
