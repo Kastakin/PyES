@@ -331,7 +331,7 @@ class Distribution:
             self.solid_fib = self.solid_radqris / (1 + (self.b * self.solid_radqris))
 
             # For both species and solids sets the Debye-Huckle parameters used to update their defining constants
-            (self.species_cg, self.species_dg, self.species_eg) = self._setBHParams(
+            (self.species_cg, self.species_dg, self.species_eg) = self._setDBHParams(
                 species_not_ignored,
                 species_to_remove,
                 species_past,
@@ -341,7 +341,7 @@ class Distribution:
                 e,
             )
 
-            (self.solid_cg, self.solid_dg, self.solid_eg) = self._setBHParams(
+            (self.solid_cg, self.solid_dg, self.solid_eg) = self._setDBHParams(
                 solid_not_ignored,
                 solid_to_remove,
                 solid_past,
@@ -1171,7 +1171,7 @@ class Distribution:
         c = np.where(c < (-self.epsl / d), (-self.epsl / d), c)
         return c
 
-    def _setBHParams(self, species, to_remove, past, zast, c, d, e, solids=False):
+    def _setDBHParams(self, species, to_remove, past, zast, c, d, e, solids=False):
         # Retrive CG/DG/EG for each of the species
         # Remove values that refers to ignored comps
         cg = species.iloc[:, 5].to_numpy(dtype="float")
@@ -1204,6 +1204,7 @@ class Distribution:
         logging.debug("ENTERING DAMP ROUTINE")
 
         epsilon = 1e-6
+        max_iter = 1000 if point < 3 else 100
         model = self.model
         nc = self.nc
         if self.distribution:
@@ -1215,7 +1216,7 @@ class Distribution:
         a0 = np.max(np.where(model == 0, 1, np.abs(model)), axis=1)
 
         iteration = 0
-        while iteration < 1000:
+        while iteration < max_iter:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if self.distribution:
