@@ -208,7 +208,7 @@ class Distribution:
         # Assemble the models and betas matrix
         self.model = np.concatenate((comp_model, base_model), axis=1)
         self.log_beta_ris = np.concatenate(
-            (np.array([0 for i in range(self.nc)]), base_log_beta), axis=0
+            (np.array([0 for _ in range(self.nc)]), base_log_beta), axis=0
         )
         self.solid_model = solid_model
         self.log_ks_ris = base_log_ks
@@ -270,7 +270,7 @@ class Distribution:
 
             # Add ref. ionic strength for components
             self.species_ris = np.insert(
-                self.species_ris, 0, [data["ris"] for i in range(self.nc)]
+                self.species_ris, 0, [data["ris"] for _ in range(self.nc)]
             )
             # Calculate square root of reference ionic strength for species
             self.species_radqris = np.sqrt(self.species_ris)
@@ -712,8 +712,8 @@ class Distribution:
                     species_conc_calc, log_b, point
                 )
             else:
-                species_sigma = np.array([None for i in range(self.nc + self.ns)])
-                solid_sigma = np.array([None for i in range(self.nf)])
+                species_sigma = np.array([None for _ in range(self.nc + self.ns)])
+                solid_sigma = np.array([None for _ in range(self.nf)])
 
             # Store calculated species/solid concentration into a vector
             results_species_conc.append(species_conc_calc)
@@ -957,10 +957,10 @@ class Distribution:
                 False,
             )
             shifts_to_calculate = np.concatenate(
-                ([True for i in range(self.nc)], cp_to_calculate)
+                ([True for _ in range(self.nc)], cp_to_calculate)
             )
         else:
-            shifts_to_calculate = np.array([True for i in range(self.nc)])
+            shifts_to_calculate = np.array([True for _ in range(self.nc)])
 
         shifts_to_skip = ~shifts_to_calculate
 
@@ -988,7 +988,7 @@ class Distribution:
     def _computeJacobian(self, c_spec, saturation_index, with_solids, to_skip):
         if with_solids:
             nt = self.nc + self.nf
-            to_skip = np.concatenate(([False for i in range(self.nc)], to_skip))
+            to_skip = np.concatenate(([False for _ in range(self.nc)], to_skip))
         else:
             nt = self.nc
 
@@ -1183,9 +1183,9 @@ class Distribution:
 
         if not solids:
             # If computing solution species adds values for components
-            cg = np.insert(cg, 0, [0 for i in range(self.nc)])
-            dg = np.insert(dg, 0, [0 for i in range(self.nc)])
-            eg = np.insert(eg, 0, [0 for i in range(self.nc)])
+            cg = np.insert(cg, 0, [0 for _ in range(self.nc)])
+            dg = np.insert(dg, 0, [0 for _ in range(self.nc)])
+            eg = np.insert(eg, 0, [0 for _ in range(self.nc)])
 
         use_reference = (cg == 0) + (dg == 0) + (eg == 0)
 
@@ -1211,7 +1211,7 @@ class Distribution:
             model = np.delete(model, self.ind_comp, axis=0)
             model = np.delete(model, self.ind_comp, axis=1)
 
-        coeff = np.array([0 for i in range(nc)])
+        coeff = np.array([0 for _ in range(nc)])
         a0 = np.max(np.where(model == 0, 1, np.abs(model)), axis=1)
 
         iteration = 0
@@ -1353,7 +1353,7 @@ class Distribution:
         adjust_factor = np.where(adjust_factor <= 0, 1, adjust_factor)
         if not solids:
             adjust_factor = np.concatenate(
-                ([1 for component in range(self.nc)], adjust_factor), axis=0
+                ([1 for _ in range(self.nc)], adjust_factor), axis=0
             )
 
         perc_table = np.where(
@@ -1471,7 +1471,7 @@ class Distribution:
         species_sigma = np.concatenate((comp_sigma, species_sigma))
 
         # TODO: we need to implement propagation error for solid concentrations
-        solid_sigma = np.array([None for i in range(self.nf)])
+        solid_sigma = np.array([None for _ in range(self.nf)])
 
         return species_sigma, solid_sigma
 
