@@ -1212,7 +1212,7 @@ class Distribution:
             model = np.delete(model, self.ind_comp, axis=1)
 
         coeff = np.array([0 for i in range(nc)])
-        a0 = np.abs(np.min(np.where(model != 0, model, 1), axis=1))
+        a0 = np.max(np.where(model == 0, 1, np.abs(model)), axis=1)
 
         iteration = 0
         while iteration < 1000:
