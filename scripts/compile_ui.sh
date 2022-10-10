@@ -4,4 +4,6 @@ for filename in src/main/python/ui/*.ui; do
 done
 poetry run pyside6-rcc src/main/resources/base/resources.qrc -o src/main/python/resources_rc.py
 echo "Qt files compiled!"
-# pipenv run python iconCreator.py
+
+poetry run python scripts/icon_creator.py
+echo "Icons updated!"

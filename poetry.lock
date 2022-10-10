@@ -444,7 +444,7 @@ numpy = ">=1.20.0"
 type = "git"
 url = "git@github.com:pyqtgraph/pyqtgraph.git"
 reference = "HEAD"
-resolved_reference = "8bb9f09a94562ed4e0b907ccbbbe764f6977d3d6"
+resolved_reference = "b2e6c729e6f89ca42b704c8f4f24ea32b6492906"
 
 [[package]]
 name = "PySide6-Essentials"
@@ -646,7 +646,7 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "5f7a1a8a8f9bff95900301f949ba0501fecf4467f5fa2a39cd53bc8a9bd7bb5e"
+content-hash = "d0a886ddb4b7733bfd527bdd782bcd5c26f512e7b2e2d439812d9adf251efc02"
 
 [metadata.files]
 altgraph = [
