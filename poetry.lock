@@ -430,21 +430,14 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyqtgraph"
-version = "0.13.1.dev0"
+version = "0.13.1"
 description = "Scientific Graphics and GUI Library for Python"
 category = "main"
 optional = false
 python-versions = ">=3.8"
-develop = false
 
 [package.dependencies]
 numpy = ">=1.20.0"
-
-[package.source]
-type = "git"
-url = "git@github.com:pyqtgraph/pyqtgraph.git"
-reference = "HEAD"
-resolved_reference = "b2e6c729e6f89ca42b704c8f4f24ea32b6492906"
 
 [[package]]
 name = "PySide6-Essentials"
@@ -646,7 +639,7 @@ testing = ["coverage (>=6.2)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10,<3.11"
-content-hash = "d0a886ddb4b7733bfd527bdd782bcd5c26f512e7b2e2d439812d9adf251efc02"
+content-hash = "13228345c60e98661fd296cac94168ca18399ced4c0ed575cbef27793f9f8af5"
 
 [metadata.files]
 altgraph = [
@@ -1138,7 +1131,10 @@ pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},
     {file = "pyparsing-3.0.9.tar.gz", hash = "sha256:2b020ecf7d21b687f219b71ecad3631f644a47f01403fa1d1036b0c6416d70fb"},
 ]
-pyqtgraph = []
+pyqtgraph = [
+    {file = "pyqtgraph-0.13.1-py3-none-any.whl", hash = "sha256:906b2784c213890bf2a1df43e3675eff1921ee894ab9673468747fb993ea2d6c"},
+    {file = "pyqtgraph-0.13.1.tar.gz", hash = "sha256:698f87f59db965727b33602a0b29058de21291d8b143dea878b50578aec0dc08"},
+]
 PySide6-Essentials = [
     {file = "PySide6_Essentials-6.3.1-cp36-abi3-macosx_10_9_universal2.whl", hash = "sha256:55696693325a2de7bf5b56274b534f191032d218d61a948baa95933f6e642e59"},
     {file = "PySide6_Essentials-6.3.1-cp36-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:e27962beb2cc45fe13a1a1c24a454c3c3c3c3082c4a84bc5dcf6b306979ba013"},
