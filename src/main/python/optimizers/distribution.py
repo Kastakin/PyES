@@ -709,7 +709,12 @@ class Distribution:
 
             if self.errors:
                 species_sigma, solid_sigma = self._computeErrors(
-                    species_conc_calc, log_b, point
+                    species_conc_calc,
+                    solid_conc_calc,
+                    saturation_index_calc,
+                    log_b,
+                    log_ks,
+                    point,
                 )
             else:
                 species_sigma = np.array([None for _ in range(self.nc + self.ns)])
@@ -1389,20 +1394,40 @@ class Distribution:
 
         return species_perc_int.astype(int), solid_perc_int.astype(int)
 
-    def _computeErrors(self, c_spec, log_b, point):
+    def _computeErrors(self, c_spec, c_solid, saturation_index, log_b, log_ks, point):
         # Get betas from log betas
         beta = 10 ** log_b[self.nc :]
+        ks = 10**log_ks
         model = self.model[:, self.nc :]
         solid_model = self.solid_model
         free_c = c_spec[: self.nc]
         c_spec = c_spec[self.nc :]
+
+        with_solids = any(c_solid > 0)
+
+        to_skip = np.concatenate(([False for _ in range(self.nc)], c_solid == 0))
+        if with_solids:
+            nt = self.nc + self.nf
+        else:
+            nt = self.nc
+
         # Define dimension of arrays required
+        M = np.zeros(shape=(nt, nt))
+
         der_free_beta = np.zeros(shape=(self.nc, self.ns))
         der_free_tot = np.zeros(shape=(self.nc, self.nc))
+        der_free_ks = np.zeros(shape=(self.nc, self.nf))
+
+        der_solid_beta = np.zeros(shape=(self.nf, self.ns))
+        der_solid_tot = np.zeros(shape=(self.nf, self.nc))
+        der_solid_ks = np.zeros(shape=(self.nf, self.nf))
+
+        b = -model * (c_spec / beta)
         d = np.identity(self.nc)
+        f = np.zeros(shape=(self.nc, self.nf))
 
         # Compute common matrix term
-        M = (
+        M[: self.nc, : self.nc] = (
             (
                 np.tile(c_spec, (self.nc, self.nc, 1))
                 / np.tile(free_c.reshape((self.nc, 1)), (self.nc, 1, self.ns))
@@ -1410,31 +1435,95 @@ class Distribution:
             * np.tile(model, (self.nc, 1, 1))
             * np.rot90(np.tile(model, (self.nc, 1, 1)), -1, axes=(0, 1))
         ).sum(axis=-1)
-        M += d
+        M[: self.nc, : self.nc] += d
 
-        # Compute indipendent variable for der_free_beta
-        b = -model * (c_spec / beta)
+        if with_solids:
+            M[: self.nc, self.nc : nt] = self.solid_model
+
+            M[self.nc : nt, : self.nc] = self.solid_model.T * (
+                np.tile(saturation_index, (self.nc, 1)).T
+                / np.tile(c_spec[: self.nc], (nt - self.nc, 1))
+            )
+
+            f = np.concatenate((f, np.diag(saturation_index / ks)), axis=0)
+            b = np.concatenate(
+                (b, [[0 for _ in range(self.ns)] for _ in range(self.nf)])
+            )
+            d = np.concatenate(
+                (d, [[0 for _ in range(self.nc)] for _ in range(self.nf)])
+            )
+
+            der_solid_beta = np.delete(der_solid_beta, c_solid == 0, axis=0)
+            der_solid_tot = np.delete(der_solid_tot, c_solid == 0, axis=0)
+            der_solid_ks = np.delete(der_solid_ks, c_solid == 0, axis=0)
+
+            M = np.delete(M, to_skip, axis=0)
+            M = np.delete(M, to_skip, axis=1)
+
+            b = np.delete(b, to_skip, axis=0)
+
+            d = np.delete(d, to_skip, axis=0)
+
+            f = np.delete(f, to_skip, axis=0)
 
         if self.distribution:
-            M = np.delete(M, self.ind_comp, 0)
-            M = np.delete(M, self.ind_comp, 1)
+            M = np.delete(M, self.ind_comp, axis=0)
+            M = np.delete(M, self.ind_comp, axis=1)
 
-            b = np.delete(b, self.ind_comp, 0)
-            d = np.delete(d, self.ind_comp, 0)
+            b = np.delete(b, self.ind_comp, axis=0)
+            d = np.delete(d, self.ind_comp, axis=0)
+            f = np.delete(f, self.ind_comp, axis=0)
 
             der_free_beta = np.delete(der_free_beta, self.ind_comp, 0)
             der_free_tot = np.delete(der_free_tot, self.ind_comp, 0)
+            der_free_ks = np.delete(der_free_ks, self.ind_comp, 0)
 
         # Solve the systems of equations
         for i in range(self.ns):
-            der_free_beta[:, i] = np.linalg.solve(M, b[:, i])
+            solution = np.linalg.solve(M, b[:, i])
+            der_free_beta[:, i] = solution[: (self.nc - 1 if self.distribution else 0)]
+            if with_solids:
+                der_solid_beta[:, i] = solution[
+                    (self.nc - 1 if self.distribution else 0) :
+                ]
 
         for r in range(self.nc):
-            der_free_tot[:, r] = np.linalg.solve(M, d[:, r])
+            solution = np.linalg.solve(M, d[:, r])
+            der_free_tot[:, r] = solution[: (self.nc - 1 if self.distribution else 0)]
+            if with_solids:
+                der_solid_tot[:, r] = solution[
+                    (self.nc - 1 if self.distribution else 0) :
+                ]
+
+        if with_solids:
+            for k, skip in enumerate(
+                to_skip[(self.nc - 1 if self.distribution else 0) :]
+            ):
+                if skip:
+                    continue
+                solution = np.linalg.solve(M, f[:, k])
+                der_free_ks[:, k] = solution[
+                    : (self.nc - 1 if self.distribution else 0)
+                ]
+                der_solid_ks[:, k] = solution[
+                    (self.nc - 1 if self.distribution else 0) :
+                ]
+
+        if with_solids:
+            der_solid_beta = np.insert(
+                der_solid_beta, np.argwhere(c_solid == 0)[0], 0, axis=0
+            )
+            der_solid_tot = np.insert(
+                der_solid_tot, np.argwhere(c_solid == 0)[0], 0, axis=0
+            )
+            der_solid_ks = np.insert(
+                der_solid_ks, np.argwhere(c_solid == 0)[0], 0, axis=0
+            )
 
         if self.distribution:
             der_free_beta = np.insert(der_free_beta, self.ind_comp, 0, axis=0)
             der_free_tot = np.insert(der_free_tot, self.ind_comp, 0, axis=0)
+            der_free_ks = np.insert(der_free_ks, self.ind_comp, 0, axis=0)
 
         # Compute derivatives for the species
         der_spec_beta = (
@@ -1459,20 +1548,39 @@ class Distribution:
             * np.tile(der_free_tot.T, (self.ns, 1, 1))
         ).sum(axis=-1)
 
+        der_spec_ks = (
+            np.rot90(np.tile(model.T, (self.nf, 1, 1)), -1)
+            * (
+                np.stack(
+                    [np.tile(c_spec, (self.nf, 1)).T for _ in range(self.nc)], axis=-1
+                )
+                / free_c
+            )
+            * np.tile(der_free_ks.T, (self.ns, 1, 1))
+        ).sum(axis=-1)
+
         # Calculate uncertanity for components and species given the input
         comp_sigma = np.sqrt(
             ((der_free_beta**2) * (self.beta_sigma**2)).sum(axis=1)
             + ((der_free_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
+            + ((der_free_ks**2) * (self.ks_sigma**2)).sum(axis=1)
         )
 
         species_sigma = np.sqrt(
             ((der_spec_beta**2) * (self.beta_sigma**2)).sum(axis=1)
             + ((der_spec_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
+            + ((der_spec_ks**2) * (self.ks_sigma**2)).sum(axis=1)
         )
         species_sigma = np.concatenate((comp_sigma, species_sigma))
 
-        # TODO: we need to implement propagation error for solid concentrations
-        solid_sigma = np.array([None for _ in range(self.nf)])
+        if with_solids:
+            solid_sigma = np.sqrt(
+                ((der_solid_beta**2) * (self.beta_sigma**2)).sum(axis=1)
+                + ((der_solid_tot**2) * (self.conc_sigma[point] ** 2)).sum(axis=1)
+                + ((der_solid_ks**2) * (self.ks_sigma**2)).sum(axis=1)
+            )
+        else:
+            solid_sigma = []
 
         return species_sigma, solid_sigma
 
