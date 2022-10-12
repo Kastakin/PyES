@@ -35,9 +35,6 @@ src = "src/main/python/ui/PyES_about.ui"
 search = "PyES Version {current_version}"
 
 [[file]]
-src = "release_text.md"
-
-[[file]]
 src = "src/build/settings/base.json"
 
 # You can specify a list of commands to
