@@ -1580,7 +1580,7 @@ class Distribution:
                 + ((der_solid_ks**2) * (self.ks_sigma**2)).sum(axis=1)
             )
         else:
-            solid_sigma = []
+            solid_sigma = np.array([0 for i in range(self.nf)])
 
         return species_sigma, solid_sigma
 
