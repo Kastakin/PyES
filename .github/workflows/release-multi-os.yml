@@ -8,7 +8,7 @@ name: Release Multi Platform
 jobs:
   build-linux:
     name: Compile/Upload Ubuntu
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10"]
