@@ -9,6 +9,8 @@
     "--exclude-module",
     "PySide6.QtQuick",
     "--exclude-module",
+    "matplotlib",
+    "--exclude-module",
     "_bootlocale"
   ]
 }
