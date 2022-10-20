@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 
 class Distribution:
     """
-    Newton-Raphson method to solve iterativly mass balance equations.
+    Newton-Raphson method to solve iteratively mass balance equations.
     """
 
     def __init__(self):
@@ -37,73 +37,73 @@ class Distribution:
         # Charge values of comps
         self.comp_charge = pd.DataFrame(data["compModel"])["Charge"]
         # Data relative to the species and solid species
-        self.species_data: pd.DataFrame = pd.DataFrame(data["speciesModel"])
-        self.solid_data: pd.DataFrame = pd.DataFrame(data["solidSpeciesModel"])
+        species_data: pd.DataFrame = pd.DataFrame(data["speciesModel"])
+        solid_data: pd.DataFrame = pd.DataFrame(data["solidSpeciesModel"])
         # Data relative to comp concentrations
-        self.conc_data = pd.DataFrame(data["concModel"])
+        conc_data = pd.DataFrame(data["concModel"])
 
         if self.distribution:
-            # Indipendent comp
+            # Independent comp
             self.ind_comp = data["ind_comp"]
             # Initial log value
-            self.initl = data["initialLog"]
+            initial_log = data["initialLog"]
             # Final log value
-            self.finall = data["finalLog"]
+            final_log = data["finalLog"]
             # log increments at each point
-            self.linc = data["logInc"]
+            log_increments = data["logInc"]
 
-            # Final log value should be higher then the initial one
-            if self.initl >= self.finall:
+            # Final log value should be higher than the initial one
+            if initial_log >= final_log:
                 raise Exception("Initial -log[A] should be lower then final -log[A].")
 
-            if self.linc == 0:
+            if log_increments == 0:
                 raise Exception("Increment of -log[A] should be more then zero.")
-            # Create two arrays (log and conc. of indipendent component)
+            # Create two arrays (log and conc. of independent component)
             self.ind_comp_logs = np.arange(
-                self.initl, (self.finall + self.linc), self.linc
+                initial_log, (final_log + log_increments), log_increments
             )
             self.ind_comp_c = 10 ** (-self.ind_comp_logs)
 
             # Calculate the number of points in the interval
             self.nop = len(self.ind_comp_c)
         else:
-            self.c_added = self.conc_data.iloc[:, 1].copy().to_numpy(dtype="float")
+            self.c_added = conc_data.iloc[:, 1].copy().to_numpy(dtype="float")
             # Initial volume
-            self.v0 = data["v0"] * 1e-3
+            v0 = data["v0"] * 1e-3
             # First titration point volume
-            self.initv = data["initv"] * 1e-3
+            initial_volume = data["initv"] * 1e-3
             # Volume increment at each point
-            self.vinc = data["vinc"] * 1e-3
+            volume_increments = data["vinc"] * 1e-3
             # number of points
             self.nop = int(data["nop"])
 
-            if self.v0 <= 0:
+            if v0 <= 0:
                 raise Exception("Initial volume can't be zero")
 
-            if self.vinc <= 0:
+            if volume_increments <= 0:
                 raise Exception("Volume increments should be higher then 0.")
 
-            if self.v0 > self.initv:
+            if v0 > initial_volume:
                 raise Exception(
                     "Initial titration volume should be higer or equal to initial volume."
                 )
 
-            self.v_added = np.array([self.vinc * x for x in range(self.nop)])
-            v1_diff = self.initv - self.v0
+            self.v_added = np.array([volume_increments * x for x in range(self.nop)])
+            v1_diff = initial_volume - v0
             self.v_added += v1_diff
-            self.v_tot = self.v0 + self.v_added
+            v_tot = v0 + self.v_added
 
         # Check if the number of points in the range of pH is greater then 0
         if self.nop == 0:
             raise Exception("Number of points in the -log[A] range shouldn't be 0.")
 
         # Analytical concentration of each component (including the ones that will be ignored)
-        self.c_tot = self.conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
+        self.c_tot = conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
 
         if self.distribution:
             self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
 
-        # Check if thay are all zero
+        # Check if they are all zero
         if (self.c_tot == 0).all():
             raise Exception(
                 "Analytical concentration shouldn't be zero for all components."
@@ -120,11 +120,11 @@ class Distribution:
         self.comp_charge = np.delete(self.comp_charge, ignored_comps)
 
         # get number of effective components
-        self.nc = int(len(self.conc_data)) - len(ignored_comps)
+        self.nc = int(len(conc_data)) - len(ignored_comps)
 
         if self.distribution:
             # for every ignored comp which index is lower
-            # of the designated indipendent comp
+            # of the designated independent comp
             # reduce its index by one (they "slide over")
             self.ind_comp = self.ind_comp - (ignored_comps < self.ind_comp).sum()
             # Assign total concentrations for each point
@@ -132,19 +132,18 @@ class Distribution:
         else:
             self.initial_c = self.c_tot
             self.c_tot = (
-                (np.tile(self.c_tot, [self.nop, 1]) * self.v0)
+                (np.tile(self.c_tot, [self.nop, 1]) * v0)
                 + (np.tile(self.v_added, [self.nc, 1]).T * self.c_added)
-            ) / (np.tile(self.v_tot, [self.nc, 1]).T)
+            ) / np.tile(v_tot, [self.nc, 1]).T
 
-        # Store the stechiometric coefficients for the components
+        # Store the stoichiometric coefficients for the components
         # IMPORTANT: each component is considered as a species with logB = 0
         comp_model = np.identity(self.nc, dtype="int")
 
         # Ignore the rows relative to the flagged as ignored species and ignored solid species
-        species_not_ignored = self.species_data.loc[
-            self.species_data["Ignored"] == False
-        ]
-        solid_not_ignored = self.solid_data.loc[self.solid_data["Ignored"] == False]
+        print(species_data["Ignored"])
+        species_not_ignored = species_data.loc[species_data["Ignored"] == False]
+        solid_not_ignored = solid_data.loc[solid_data["Ignored"] == False]
 
         species_duplicates = species_not_ignored.loc[
             species_not_ignored.duplicated(subset="Name", keep="first").to_list(),
@@ -164,7 +163,7 @@ class Distribution:
                 f"Solids {', '.join(solids_duplicates.to_list())} with indices {', '.join(solids_duplicates.index.astype(str).to_list())} appear to be duplicates, you can and should remove them to avoid ambiguities in the results."
             )
 
-        # Store the stechiometric coefficients for the species and solid species
+        # Store the stoichiometric coefficients for the species and solid species
         base_model = species_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
         solid_model = solid_not_ignored.iloc[:, 8:-1].to_numpy(dtype="int").T
 
@@ -173,7 +172,7 @@ class Distribution:
         base_log_ks = solid_not_ignored.iloc[:, 2].to_numpy(dtype="float")
 
         # Store comp_names
-        self.comp_names = self.conc_data.index
+        self.comp_names = conc_data.index
         ignored_comp_names = self.comp_names[ignored_comps]
         self.comp_names = np.delete(self.comp_names, ignored_comps, 0)
 
@@ -200,7 +199,7 @@ class Distribution:
 
         # Transforms the component used to calculate percentages from string to the corresponding index
         # If any of the species or solid species would use one of the ignored comps
-        # assign the index for computation as if the indipendent comp
+        # assign the index for computation as if the independent comp
         # would be used instead (its percent value will be zero)
         self.species_perc_int, self.solid_perc_int = self._percEncoder(
             ignored_comp_names
@@ -225,13 +224,13 @@ class Distribution:
             )
 
         if self.errors:
-            self.c0_sigma = self.conc_data.iloc[:, 2].copy().to_numpy(dtype="float")
+            self.c0_sigma = conc_data.iloc[:, 2].copy().to_numpy(dtype="float")
             self.c0_sigma = np.delete(self.c0_sigma, ignored_comps)
             if self.distribution:
                 self.c0_sigma[self.ind_comp] = 0
                 self.conc_sigma = np.tile(self.c0_sigma, [self.nop, 1])
             else:
-                self.ct_sigma = self.conc_data.iloc[:, 3].copy().to_numpy(dtype="float")
+                self.ct_sigma = conc_data.iloc[:, 3].copy().to_numpy(dtype="float")
                 self.ct_sigma = np.delete(self.ct_sigma, ignored_comps)
                 self.conc_sigma = np.tile(self.c0_sigma, [self.nop, 1]) + (
                     np.tile(self.v_added, [self.nc, 1]).T * self.ct_sigma
@@ -259,7 +258,7 @@ class Distribution:
             self.species_ris = species_not_ignored.iloc[:, 4].to_numpy(dtype="float")
             self.solid_ris = solid_not_ignored.iloc[:, 4].to_numpy(dtype="float")
 
-            # Remove ionic strenght for species/solids that are ignored
+            # Remove ionic strength for species/solids that are ignored
             self.species_ris = np.delete(self.species_ris, species_to_remove, axis=0)
             self.solid_ris = np.delete(self.solid_ris, solid_to_remove, axis=0)
 
@@ -284,8 +283,7 @@ class Distribution:
                 background_c0 = data["c0back"]
                 background_ct = data["ctback"]
                 self.background_c = np.array(
-                    ((background_c0 * self.v0) + (background_ct * self.v_added))
-                    / self.v_tot
+                    ((background_c0 * v0) + (background_ct * self.v_added)) / v_tot
                 )
 
             a = data["a"]
@@ -509,7 +507,7 @@ class Distribution:
         """
         Returns the species concentration table.
         """
-        if self.done_flag == True:
+        if self.done_flag:
             return self.species_distribution
         else:
             return False
@@ -518,7 +516,7 @@ class Distribution:
         """
         Returns the solid species concentration table.
         """
-        if self.done_flag == True:
+        if self.done_flag:
             return self.solid_distribution
         else:
             return False
@@ -527,7 +525,7 @@ class Distribution:
         """
         Returns the table containing formation constants and the ionic strength.
         """
-        if self.done_flag == True:
+        if self.done_flag:
             return self.log_beta
         else:
             return False
@@ -536,7 +534,7 @@ class Distribution:
         """
         Returns the table containing the LogKps for the solid species present in the model.
         """
-        if self.done_flag == True:
+        if self.done_flag:
             return self.log_ks
         else:
             return False
@@ -545,7 +543,7 @@ class Distribution:
         """
         Return percentages of species with respect to the desired component.
         """
-        if self.done_flag == True:
+        if self.done_flag:
             return self.species_percentages, self.solid_percentages
         else:
             return False
@@ -554,7 +552,7 @@ class Distribution:
         """
         Return percentages of species with respect to the desired component.
         """
-        if self.done_flag == True:
+        if self.done_flag:
             return self.species_sigma, self.solid_sigma
         else:
             return False
@@ -563,7 +561,7 @@ class Distribution:
         """
         Returns relevant data that was used for the computation
         """
-        if self.done_flag == True:
+        if self.done_flag:
             species_info = pd.DataFrame(
                 {
                     "logB": self.log_beta_ris[self.nc :],
@@ -649,7 +647,7 @@ class Distribution:
                 fixed_c = None
                 c = self._titrationGuess(point, for_estimation_c)
 
-            # Initial guess for solids conentrations should always be zero
+            # Initial guess for solids concentrations should always be zero
             cp = np.zeros(self.nf)
 
             logging.debug("INITIAL ESTIMATED FREE C: %s", c)
@@ -662,7 +660,7 @@ class Distribution:
             shifts_to_calculate, shifts_to_skip = self._getComputableShifts(
                 shifts_to_calculate
             )
-            # Calculate species concentration for acqueous species only
+            # Calculate species concentration for aqueous species only
             (
                 species_conc_calc,
                 solid_conc_calc,
@@ -783,7 +781,7 @@ class Distribution:
         iteration = 0
 
         if not with_solids:
-            # If working with variable ionic strength ompute initial guess for species concentration
+            # If working with variable ionic strength compute initial guess for species concentration
             if self.imode == 1:
                 if point == 0:
                     log_beta, log_ks, _ = self._updateConstants(
@@ -869,7 +867,7 @@ class Distribution:
             # J, delta = self._scaleMatrix(J, delta, with_solids)
 
             if self.distribution:
-                # Ignore row and column relative to the indipendent component
+                # Ignore row and column relative to the independent component
                 J = np.delete(J, self.ind_comp, axis=0)
                 J = np.delete(J, self.ind_comp, axis=1)
 
@@ -975,11 +973,11 @@ class Distribution:
     ):
 
         negative_cp = solid_concentrations < 0
-        superaturated_solid = saturation_index > 1 + 1e-9
+        supersaturated_solid = saturation_index > 1 + 1e-9
 
         if negative_cp.any():
             shifts_to_calculate[-self.nf :] = ~negative_cp
-        elif superaturated_solid.any():
+        elif supersaturated_solid.any():
             shifts_to_calculate[-self.nf :][np.argmax(saturation_index)] = True
         else:
             shifts_to_calculate = np.array(
@@ -1008,7 +1006,7 @@ class Distribution:
             solid_delta = []
 
         delta = np.concatenate((can_delta, solid_delta))
-        # delta = can_delta
+
         return delta, can_delta, solid_delta
 
     def _computeJacobian(self, c_spec, saturation_index, with_solids, to_skip):
@@ -1021,7 +1019,7 @@ class Distribution:
         J = np.zeros(shape=(nt, nt))
 
         # Compute Jacobian
-        # Jacobian for acqueous species
+        # Jacobian for aqueous species
         J[: self.nc, : self.nc] = (
             (
                 np.tile(c_spec, (self.nc, self.nc, 1))
@@ -1096,7 +1094,7 @@ class Distribution:
             c_tot_calc += np.sum(self.solid_model * np.tile(cp, (self.nc, 1)), axis=1)
 
         if self.distribution:
-            # Take out the analytical concentration relative to the indipendent component
+            # Take out the analytical concentration relative to the independent component
             c_tot_calc = np.delete(c_tot_calc, self.ind_comp, 0)
 
         logging.debug("Calculated Total Concentration: %s", c_tot_calc)
@@ -1120,7 +1118,7 @@ class Distribution:
             # If two subsequent points present the same concentration
             # avoid the issue by using simply the previous point concentration
             c = np.where(lp2 == lp3, lp1, (lp1 + ((lp1 - lp2) ** 2) / (lp2 - lp3)))
-            # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
+            # If the extrapolation returns values that would cause under/overflow adjust them accordingly
             c = self._checkOverUnderFlow(c, d=2)
 
             if (c < 0).any():
@@ -1128,7 +1126,7 @@ class Distribution:
 
             # Convert logs back to concentrations
             c = 10 ** (-c)
-            # Free C of indipendent component is set as defined in the settings tab
+            # Free C of independent component is set as defined in the settings tab
             c[self.ind_comp] = fixed_c
             logging.debug("ESTIMATED C WITH INTERPOLATION")
         elif point > 0:
@@ -1170,7 +1168,7 @@ class Distribution:
                     * (v - v1)
                 ),
             )
-            # If the extrapolation returns valuse that would cause under/overflow adjust them accordingly
+            # If the extrapolation returns values that would cause under/overflow adjust them accordingly
             c = self._checkOverUnderFlow(c, d=2)
 
             if (c < 0).any():
