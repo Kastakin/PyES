@@ -141,7 +141,6 @@ class Distribution:
         comp_model = np.identity(self.nc, dtype="int")
 
         # Ignore the rows relative to the flagged as ignored species and ignored solid species
-        print(species_data["Ignored"])
         species_not_ignored = species_data.loc[species_data["Ignored"] == False]
         solid_not_ignored = solid_data.loc[solid_data["Ignored"] == False]
 
@@ -695,7 +694,6 @@ class Distribution:
                 )
 
                 if shifts_to_calculate[-self.nf :].any():
-                    counter += 1
                     (
                         species_conc_calc,
                         solid_conc_calc,
@@ -716,7 +714,6 @@ class Distribution:
                     saturation_index_calc = saturation_index
                     adjust_solids = False
 
-            print(point, counter)
             if self.errors:
                 species_sigma, solid_sigma = self._computeErrors(
                     species_conc_calc,
