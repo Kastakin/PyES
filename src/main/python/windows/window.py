@@ -220,7 +220,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
 
         if output_path:
-            file_name = output_path.split(".")
+            file_name = Path(output_path).parents[0]
+            file_name = file_name.joinpath(Path(output_path).stem)
+            file_name = file_name.with_suffix(".json")
 
             # Store the file path
             self.project_path = output_path
@@ -233,7 +235,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             data = {**self.check_line, **data_list}
 
             with open(
-                file_name[0] + ".json",
+                file_name,
                 "w",
             ) as out_file:
                 json.dump(data, out_file)

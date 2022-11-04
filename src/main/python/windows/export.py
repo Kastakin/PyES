@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
 from pandas import ExcelWriter
 from PySide6.QtWidgets import QFileDialog, QWidget
@@ -41,11 +42,11 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         )
 
         if output_path:
-            output_path = output_path.split(".")[0]
-            if not (output_path.endswith(".xlsx")):
-                output_path += ".xlsx"
+            file_name = Path(output_path).parents[0]
+            file_name = file_name.joinpath(Path(output_path).stem)
+            file_name = file_name.with_suffix(".xlsx")
 
-            with ExcelWriter(output_path, engine="openpyxl") as writer:
+            with ExcelWriter(file_name, engine="openpyxl") as writer:
                 wb = writer.book
 
                 if self.input_check_excel.isChecked():
