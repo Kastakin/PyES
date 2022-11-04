@@ -35,7 +35,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>PyES Version 0.4.0</string>
+      <string>PyES Version 0.4.1</string>
      </property>
     </widget>
    </item>
