@@ -1,17 +1,14 @@
 import sys
 
-from fbs_runtime.application_context import cached_property
-from fbs_runtime.application_context.PyQt5 import ApplicationContext
-
-from MainWindow import MainWindow
-
-# from PyQt5.QtWidgets import QMainWindow
+from ppg_runtime.application_context import cached_property
+from ppg_runtime.application_context.PySide6 import ApplicationContext
+from windows.window import MainWindow
 
 
 class AppContext(ApplicationContext):
     def run(self):
         self.main_window.show()
-        return self.app.exec_()
+        return self.app.exec()
 
     @cached_property
     def app(self):
@@ -22,6 +19,7 @@ class AppContext(ApplicationContext):
         """
         result = self._qt_binding.QApplication(sys.argv)
         result.setApplicationName(self.build_settings["app_name"])
+        result.setOrganizationName(self.build_settings["app_name"])
         result.setApplicationVersion(self.build_settings["version"])
         return result
 

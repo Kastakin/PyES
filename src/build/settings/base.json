@@ -1,6 +1,16 @@
 {
-    "app_name": "SSSC",
-    "author": "Lorenzo Castellino",
-    "main_module": "src/main/python/main.py",
-    "version": "0.0.0"
+  "app_name": "PyES",
+  "author": "Lorenzo Castellino",
+  "main_module": "src/main/python/main.py",
+  "version": "0.4.1",
+  "extra_pyinstaller_args": [
+    "--exclude-module",
+    "PySide6.QtQml",
+    "--exclude-module",
+    "PySide6.QtQuick",
+    "--exclude-module",
+    "matplotlib",
+    "--exclude-module",
+    "_bootlocale"
+  ]
 }
