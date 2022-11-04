@@ -34,23 +34,23 @@ if __name__ == "__main__":
         match commit_type:
             case "[chore]":
                 organized_commits["Chores"].append(
-                    f"* {message} ([{sha[:8]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
+                    f"* {message} ([{sha[:7]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
                 )
             case "[feat]":
                 organized_commits["Features"].append(
-                    f"* {message} ([{sha[:8]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
+                    f"* {message} ([{sha[:7]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
                 )
             case "[fix]":
                 organized_commits["Fixes"].append(
-                    f"* {message} ([{sha[:8]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
+                    f"* {message} ([{sha[:7]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
                 )
             case "[enh]":
                 organized_commits["Enhancements"].append(
-                    f"* {message} ([{sha[:8]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
+                    f"* {message} ([{sha[:7]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
                 )
             case other:
                 organized_commits["Others"].append(
-                    f"* {message} ([{sha[:8]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
+                    f"* {message} ([{sha[:7]}](https://github.com/Kastakin/PyES/commit/{sha}))\n"
                 )
 
     with open(f"{os.path.dirname(sys.argv[0])}/../CHANGELOG.md") as old_file:
