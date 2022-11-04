@@ -3,7 +3,6 @@ import time
 from datetime import datetime
 
 from optimizers.distribution import Distribution
-from optimizers.titration import Titration
 from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 
 

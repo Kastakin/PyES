@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 
 from pandas import ExcelWriter
 from PySide6.QtWidgets import QFileDialog, QWidget
@@ -41,11 +42,11 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         )
 
         if output_path:
-            output_path = output_path.split(".")[0]
-            if not (output_path.endswith(".xlsx")):
-                output_path += ".xlsx"
+            file_name = Path(output_path).parents[0]
+            file_name = file_name.joinpath(Path(output_path).stem)
+            file_name = file_name.with_suffix(".xlsx")
 
-            with ExcelWriter(output_path, engine="openpyxl") as writer:
+            with ExcelWriter(file_name, engine="openpyxl") as writer:
                 wb = writer.book
 
                 if self.input_check_excel.isChecked():
@@ -126,14 +127,14 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                         wb, "Species Percentages", self.result["species_percentages"]
                     )
 
-                    # if "solid_percentages" in self.result:
-                    #     self.result["solid_percentages"].to_excel(
-                    #         writer, sheet_name="Solid Percentages"
-                    #     )
+                    if "solid_percentages" in self.result:
+                        self.result["solid_percentages"].to_excel(
+                            writer, sheet_name="Solid Percentages"
+                        )
 
-                    #     adjustColumnWidths(
-                    #         wb, "Solid Percentages", self.result["solid_percentages"]
-                    #     )
+                        adjustColumnWidths(
+                            wb, "Solid Percentages", self.result["solid_percentages"]
+                        )
 
                 if self.adjlogb_check_excel.isChecked():
                     self.result["formation_constants"].to_excel(
@@ -191,10 +192,10 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                     base_name + "_species_percentages.csv"
                 )
 
-                # if "solid_percentages" in self.result:
-                #     self.result["solid_percentages"].to_csv(
-                #         base_name + "_solid_percentages.csv"
-                #     )
+                if "solid_percentages" in self.result:
+                    self.result["solid_percentages"].to_csv(
+                        base_name + "_solid_percentages.csv"
+                    )
 
             if self.adjlogb_check_csv.isChecked():
                 self.result["formation_constants"].to_csv(base_name + "_logb.csv")

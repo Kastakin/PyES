@@ -2,7 +2,7 @@
 # github_url = "https://github.com/<user or organization>/<project>/"
 
 [version]
-current = "0.3.1"
+current = "0.4.1"
 
 # Example of a semver regexp.
 # Make sure this matches current_version before
@@ -35,21 +35,8 @@ src = "src/main/python/ui/PyES_about.ui"
 search = "PyES Version {current_version}"
 
 [[file]]
-src = "release_text.md"
-
-[[file]]
 src = "src/build/settings/base.json"
 
-# You can specify a list of commands to
-# run after the files have been patched
-# and before the git commit is made
-
-#  [[before_commit]]
-#  name = "check changelog"
-#  cmd = "grep -q {new_version} Changelog.rst"
-
-# Or run some commands after the git tag and the branch
-# have been pushed:
-#  [[after_push]]
-#  name = "publish"
-#  cmd = "./publish.sh"
+[[before_commit]]
+name = "Update Changelog"
+cmd = "poetry run python scripts/changelog_generator.py v{current_version} v{new_version}"
