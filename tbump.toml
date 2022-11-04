@@ -37,16 +37,6 @@ search = "PyES Version {current_version}"
 [[file]]
 src = "src/build/settings/base.json"
 
-# You can specify a list of commands to
-# run after the files have been patched
-# and before the git commit is made
-
-#  [[before_commit]]
-#  name = "check changelog"
-#  cmd = "grep -q {new_version} Changelog.rst"
-
-# Or run some commands after the git tag and the branch
-# have been pushed:
-#  [[after_push]]
-#  name = "publish"
-#  cmd = "./publish.sh"
+[[before_commit]]
+name = "Update Changelog"
+cmd = "poetry run python scripts/changelog_generator.py v{current_version} v{new_version}"
