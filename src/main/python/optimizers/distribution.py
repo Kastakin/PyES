@@ -1277,11 +1277,11 @@ class Distribution:
         Calculate ionic strength given concentrations of species and their charges.
         """
         if first_guess:
-            I = ((c * (charges**2)).sum() / 2) + self.background_c[point]
+            ionic_strength = ((c * (charges**2)).sum() / 2) + self.background_c[point]
         else:
-            I = ((c * (charges**2)).sum() + self.background_c[point]) / 2
+            ionic_strength = ((c * (charges**2)).sum() + self.background_c[point]) / 2
 
-        return I
+        return ionic_strength
 
     def _updateConstants(self, c, log_beta, log_ks, charges, point, first_guess=False):
         if first_guess and self.distribution:
