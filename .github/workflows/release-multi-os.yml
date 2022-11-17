@@ -6,44 +6,49 @@ on:
 name: Release Multi Platform
 
 jobs:
-  build-linux:
-    name: Compile/Upload Ubuntu
+  create-release:
+    name: Create Release
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create Release # Creates the release, assets will be added after building
         id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-          body_path: release_text.md # uncomment if not used
+          body_path: release_text.md
           draft: false
           prerelease: false
+
+  build-linux:
+    name: Build Ubuntu
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Install fpm
         run: |
           sudo apt-get install ruby ruby-dev rubygems build-essential
           sudo gem install --no-document --minimal-deps fpm
           fpm --version
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: "requirements/base.txt"
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/base.txt
+        run: pip install -r requirements/base.txt
       - name: Run ppg
         run: |
           ppg freeze
           ppg installer
-      - name: Upload binaries to release
+      - name: Upload to Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -53,27 +58,25 @@ jobs:
           overwrite: true
 
   build-macos:
-    name: Compile/Upload macOS
+    name: Build macOS
+    needs: create-release
     runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: "requirements/base.txt"
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/base.txt
+        run: pip install -r requirements/base.txt
       - name: Run ppg
         run: |
           ppg freeze
           ppg installer
-      - name: Upload binaries to release
+      - name: Upload to Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -83,27 +86,25 @@ jobs:
           overwrite: true
 
   build-windows:
-    name: Compile/Upload Windows
+    name: Build Windows
+    needs: create-release
     runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: "requirements/base.txt"
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/base.txt
+        run: pip install -r requirements/base.txt
       - name: Run ppg
         run: |
           ppg freeze
           ppg installer
-      - name: Upload binaries to release
+      - name: Upload to Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -111,3 +112,19 @@ jobs:
           asset_name: PyES-${{ github.ref }}.exe
           tag: ${{ github.ref }}
           overwrite: true
+
+  rollback-release:
+    name: Rollback
+    if: ${{ failure() }}
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Rollback
+        uses: author/action-rollback@stable
+        with:
+          tag: ${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
