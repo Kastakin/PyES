@@ -1379,14 +1379,15 @@ class Distribution:
 
         return species_perc_int.astype(int), solid_perc_int.astype(int)
 
-    def _computeErrors(self, c_spec, c_solid, saturation_index, log_b, log_ks, point):
+    def _computeErrors(
+        self, c_all_spec, c_solid, saturation_index, log_b, log_ks, point
+    ):
         # Get betas from log betas
         beta = 10 ** log_b[self.nc :]
         ks = 10**log_ks
         model = self.model[:, self.nc :]
-        solid_model = self.solid_model
-        free_c = c_spec[: self.nc]
-        c_spec = c_spec[self.nc :]
+        free_c = c_all_spec[: self.nc]
+        c_spec = c_all_spec[self.nc :]
 
         with_solids = any(c_solid > 0)
 
@@ -1424,10 +1425,9 @@ class Distribution:
 
         if with_solids:
             M[: self.nc, self.nc : nt] = self.solid_model
-
             M[self.nc : nt, : self.nc] = self.solid_model.T * (
                 np.tile(saturation_index, (self.nc, 1)).T
-                / np.tile(c_spec[: self.nc], (nt - self.nc, 1))
+                / np.tile(free_c, (nt - self.nc, 1))
             )
 
             f = np.concatenate((f, np.diag(saturation_index / ks)), axis=0)
@@ -1466,44 +1466,42 @@ class Distribution:
         # Solve the systems of equations
         for i in range(self.ns):
             solution = np.linalg.solve(M, b[:, i])
-            der_free_beta[:, i] = solution[: (self.nc - 1 if self.distribution else 0)]
+            der_free_beta[:, i] = solution[
+                : (self.nc - 1 if self.distribution else self.nc)
+            ]
             if with_solids:
                 der_solid_beta[:, i] = solution[
-                    (self.nc - 1 if self.distribution else 0) :
+                    (self.nc - 1 if self.distribution else self.nc) :
                 ]
 
         for r in range(self.nc):
             solution = np.linalg.solve(M, d[:, r])
-            der_free_tot[:, r] = solution[: (self.nc - 1 if self.distribution else 0)]
+            der_free_tot[:, r] = solution[
+                : (self.nc - 1 if self.distribution else self.nc)
+            ]
             if with_solids:
                 der_solid_tot[:, r] = solution[
-                    (self.nc - 1 if self.distribution else 0) :
+                    (self.nc - 1 if self.distribution else self.nc) :
                 ]
 
         if with_solids:
-            for k, skip in enumerate(
-                to_skip[(self.nc - 1 if self.distribution else 0) :]
-            ):
+            for k, skip in enumerate(to_skip[-self.nf :]):
                 if skip:
                     continue
                 solution = np.linalg.solve(M, f[:, k])
                 der_free_ks[:, k] = solution[
-                    : (self.nc - 1 if self.distribution else 0)
+                    : (self.nc - 1 if self.distribution else self.nc)
                 ]
                 der_solid_ks[:, k] = solution[
-                    (self.nc - 1 if self.distribution else 0) :
+                    (self.nc - 1 if self.distribution else self.nc) :
                 ]
 
         if with_solids:
-            der_solid_beta = np.insert(
-                der_solid_beta, np.argwhere(c_solid == 0)[0], 0, axis=0
-            )
-            der_solid_tot = np.insert(
-                der_solid_tot, np.argwhere(c_solid == 0)[0], 0, axis=0
-            )
-            der_solid_ks = np.insert(
-                der_solid_ks, np.argwhere(c_solid == 0)[0], 0, axis=0
-            )
+            null_solids_index = np.nonzero(c_solid == 0)[0]
+            if null_solids_index.size:
+                der_solid_beta = np.insert(der_solid_beta, null_solids_index, 0, axis=0)
+                der_solid_tot = np.insert(der_solid_tot, null_solids_index, 0, axis=0)
+                der_solid_ks = np.insert(der_solid_ks, null_solids_index, 0, axis=0)
 
         if self.distribution:
             der_free_beta = np.insert(der_free_beta, self.ind_comp, 0, axis=0)
@@ -1565,7 +1563,7 @@ class Distribution:
                 + ((der_solid_ks**2) * (self.ks_sigma**2)).sum(axis=1)
             )
         else:
-            solid_sigma = np.array([0 for i in range(self.nf)])
+            solid_sigma = np.zeros(shape=self.nf)
 
         return species_sigma, solid_sigma
 
