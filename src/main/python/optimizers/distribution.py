@@ -1043,32 +1043,6 @@ class Distribution:
 
         return J
 
-    # def _scaleMatrix(self, J, delta, with_solids):
-    #     if with_solids:
-    #         nt = self.nc + self.nf
-    #         to_skip = np.concatenate(
-    #             (np.array([False for i in range(self.nc)]), to_skip)
-    #         )
-    #     else:
-    #         nt = self.nc
-
-    #     print(nt)
-
-    #     for j in range(nt):
-    #         for k in range(nt):
-    #             J[j, k] = J[j, k] * ((J[k, k] * J[j, j]) ** -0.5)
-
-    #     print(J)
-
-    #     print(delta)
-
-    #     for k in range(nt - (1 if self.distribution else 0)):
-    #         delta[k] = delta[k] * ((J[k, k]) ** -0.5)
-
-    #     print(delta)
-
-    #     return J, delta
-
     def _speciesConcentration(self, c, cp, log_beta):
         """
         Calculate species concentration it returns c_spec and c_tot_calc:
@@ -1251,7 +1225,6 @@ class Distribution:
             ).sum(axis=1)
 
             conv_criteria = (sum_reac - sum_prod) / (sum_reac + sum_prod)
-            # print(conv_criteria)
 
             if all(i < epsilon for i in conv_criteria):
                 logging.debug("EXITING DAMP ROUTINE")

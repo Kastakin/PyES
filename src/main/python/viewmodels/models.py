@@ -370,8 +370,6 @@ class SpeciesModel(QAbstractTableModel):
 
     def insertColumns(self, position, columns=1, index=QModelIndex()):
         """Add columns to the model"""
-        start = position + 1
-        finish = position + columns
         self.beginInsertColumns(index, position, position + columns - 1)
 
         for column in range(columns):
@@ -586,8 +584,6 @@ class SolidSpeciesModel(QAbstractTableModel):
 
     def insertColumns(self, position, columns=1, index=QModelIndex()):
         """Add columns to the model"""
-        start = position + 1
-        finish = position + columns
         self.beginInsertColumns(index, position, position + columns - 1)
 
         for column in range(columns):
