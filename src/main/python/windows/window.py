@@ -728,6 +728,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def moveCompUp(self):
         if self.compView.selectedIndexes():
+            current_ind_comp = self.indComp.currentData(0)
             row = self.compView.selectedIndexes()[0].row()
             if row == 0:
                 return
@@ -738,8 +739,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.compModel.swapRows(row, row - 1)
             self.compView.selectRow(row - 1)
 
+            self.updateCompName()
+
+            self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
+
     def moveCompDown(self):
         if self.compView.selectedIndexes():
+            current_ind_comp = self.indComp.currentData(0)
             row = self.compView.selectedIndexes()[0].row()
             if row == self.compModel.rowCount() - 1:
                 return
@@ -751,6 +757,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.compView.selectRow(row + 1)
 
             self.updateCompName()
+
+            self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
 
     def insertSpeciesAbove(self):
         if self.species.isVisible():
