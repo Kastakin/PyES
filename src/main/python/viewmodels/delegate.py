@@ -1,5 +1,4 @@
 from PySide6.QtCore import QEvent, QPoint, QRect, Qt, QTimer
-from PySide6.QtGui import QBrush, QColor, QPainter, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemDelegate,
     QApplication,

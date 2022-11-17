@@ -3,7 +3,6 @@ import typing
 from itertools import cycle
 
 import numpy as np
-import pandas as pd
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
