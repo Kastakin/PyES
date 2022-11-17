@@ -8,9 +8,9 @@ license = "GPLv3"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 ppg = {git = "ssh://git@github.com/Kastakin/ppg.git", rev = "main"}
-pandas = "^1.3.5"
+pandas = "^1.5.0"
 openpyxl = "^3.0.9"
-PySide6-Essentials = "^6.3.1"
+PySide6-Essentials = "~6.3.0"
 pyqtgraph = "^0.13.1"
 
 [tool.poetry.group.dev.dependencies]
