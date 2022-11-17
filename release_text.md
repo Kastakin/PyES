@@ -18,12 +18,14 @@
 * Relax damping routine convergence ([26922a5](https://github.com/Kastakin/PyES/commit/26922a56bc99548a3320a54dd2280c796337afe2))
 
 ## Chores
+* Rollback due to incorrect CI ([707a4e4](https://github.com/Kastakin/PyES/commit/707a4e4cf59045eaaf0b75d87e626dc95e2afbd7))
 * Bump requirements ([3d45733](https://github.com/Kastakin/PyES/commit/3d457336464f3e7bb2d8568976ca536c4de82edc))
 * Update release workflow ([784fe30](https://github.com/Kastakin/PyES/commit/784fe30f39dea79a6dc9aaded8188e89668de593))
 * Add `ruff` to dev dependencies ([22b19bf](https://github.com/Kastakin/PyES/commit/22b19bffcf68f8bc795dbdc769767ccc62cbff64))
 * Delete unused script ([4da8353](https://github.com/Kastakin/PyES/commit/4da83531acfb4faa2ec23b7124313faaa876a39f))
 
 ## Others
+* to 0.4.2 ([78ec1ee](https://github.com/Kastakin/PyES/commit/78ec1ee6fd5b3109abad3001308f86a4cc44cb4d))
 * branch 'multi_module' into dev ([dbd5a41](https://github.com/Kastakin/PyES/commit/dbd5a417ae4ae0b99b91b25bbf5029b29e4d42f7))
 * Remove unused import ([b6a5bd7](https://github.com/Kastakin/PyES/commit/b6a5bd7ae913f5af3bdf5b87c6493f38c7874c74))
 * Relax conv condition for c~=0 ([d5f52ca](https://github.com/Kastakin/PyES/commit/d5f52caf91d8f9b833181293ebd4b6b950fd7828))
