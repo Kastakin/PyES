@@ -38,7 +38,7 @@ class CheckBoxDelegate(QStyledItemDelegate):
         checked = index.data()  # .toBool()
         check_box_style_option = QStyleOptionButton()
 
-        if (index.flags() & Qt.ItemIsEditable) > 0:
+        if (index.flags() & Qt.ItemFlag.ItemIsEditable) != False:
             check_box_style_option.state |= QStyle.State_Enabled
         else:
             check_box_style_option.state |= QStyle.State_ReadOnly
@@ -65,7 +65,7 @@ class CheckBoxDelegate(QStyledItemDelegate):
         if the user presses the left mousebutton or presses
         Key_Space or Key_Select and this cell is editable. Otherwise do nothing.
         """
-        if not (index.flags() & Qt.ItemIsEditable) > 0:
+        if not (index.flags() & Qt.ItemIsEditable) != 0:
             return False
 
         # Do not change the checkbox-state
