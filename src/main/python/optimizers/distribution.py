@@ -351,8 +351,12 @@ class Distribution:
             )
 
         # Compose species names from the model
-        self.species_names = self._speciesNames(self.model)
-        self.solid_names = self._speciesNames(self.solid_model)
+        self.species_names = (
+            list(self.comp_names)
+            + species_not_ignored.iloc[~species_to_remove, 1].to_list()
+        )
+        self.solid_names = solid_not_ignored.iloc[~solid_to_remove, 1].to_list()
+
         logging.info("--- DATA LOADED ---")
 
     def predict(self):
@@ -1566,30 +1570,6 @@ class Distribution:
             solid_sigma = np.zeros(shape=self.nf)
 
         return species_sigma, solid_sigma
-
-    def _speciesNames(self, model):
-        """
-        Returns species names as brute formula from comp names and coefficients
-        """
-        model = model.T
-        names = []
-
-        # TODO: vectorize the operation
-        for i in range(len(model)):
-            names.append("")
-            for j, comp in enumerate(self.comp_names):
-                if model[i][j] < 0:
-                    names[i] = names[i] + ("(OH)")
-                else:
-                    names[i] = names[i] + ("(" + comp + ")") * (
-                        1 if model[i][j] != 0 else 0
-                    )
-                if model[i][j] >= 2 or model[i][j] < -1:
-                    names[i] = names[i] + str(abs(model[i][j]))
-                else:
-                    pass
-
-        return names
 
     def _setDataframeIndex(self, dataframe):
         if self.distribution:
