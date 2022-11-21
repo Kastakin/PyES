@@ -15,14 +15,14 @@ jobs:
       - name: Create Release # Creates the release, assets will be added after building
         id: create_release
         uses: ncipollo/release-action@v1.11.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body_path: release_text.md
+          tag: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          bodyFile: release_text.md
           draft: false
           prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-linux:
     name: Build Ubuntu

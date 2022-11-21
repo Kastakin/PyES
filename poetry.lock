@@ -360,7 +360,7 @@ upload = ["boto3"]
 type = "git"
 url = "ssh://git@github.com/Kastakin/ppg.git"
 reference = "main"
-resolved_reference = "f542d3b0d727388eaa31da81fff21eff98c689de"
+resolved_reference = "cfc92681717b3a0e1ff799f37324eb8aa693d8b2"
 
 [[package]]
 name = "pre-commit"
