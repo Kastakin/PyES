@@ -5,7 +5,7 @@ import re
 
 import pandas as pd
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
-from PySide6.QtGui import QColorConstants
+from PySide6.QtGui import QColorConstants, QPalette
 from utils_func import getName
 
 
@@ -215,15 +215,13 @@ class SpeciesModel(QAbstractTableModel):
 
         if role == Qt.BackgroundRole:
             if (index.column() >= 8) & (index.column() < self.columnCount() - 1):
-                return QColorConstants.LightGray
+                return QPalette().midlight()
             elif index.column() == 2:
                 return QColorConstants.DarkCyan
             elif index.column() == 3:
-                return QColorConstants.LightGray
-            elif index.column() == self.columnCount() - 1:
-                return False
+                return QPalette().midlight()
             else:
-                return QColorConstants.White
+                return False
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
@@ -431,15 +429,13 @@ class SolidSpeciesModel(QAbstractTableModel):
 
         if role == Qt.BackgroundRole:
             if (index.column() >= 8) & (index.column() < self.columnCount() - 1):
-                return QColorConstants.LightGray
+                return QPalette().midlight()
             elif index.column() == 2:
                 return QColorConstants.DarkCyan
             elif index.column() == 3:
-                return QColorConstants.LightGray
-            elif index.column() == self.columnCount() - 1:
-                return False
+                return QPalette().midlight()
             else:
-                return QColorConstants.White
+                return False
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
