@@ -100,9 +100,6 @@ class Distribution:
         # Analytical concentration of each component (including the ones that will be ignored)
         self.c_tot = conc_data.iloc[:, 0].copy().to_numpy(dtype="float")
 
-        if self.distribution:
-            self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
-
         # Check if they are all zero
         if (self.c_tot == 0).all():
             raise Exception(
@@ -113,21 +110,26 @@ class Distribution:
         self.comp_charge = self.comp_charge.copy().to_numpy(dtype="int")
 
         # Find which components have to be ignored (c0 = 0)
-        ignored_comps = np.where(self.c_tot == 0)[0]
+        ignored_comps = (
+            (self.c_tot == 0) & (np.arange(len(self.c_tot)) != self.ind_comp)
+            if self.distribution
+            else (self.c_tot == 0)
+        )
 
         # Remove the concentration and charge data relative to those
         self.c_tot = np.delete(self.c_tot, ignored_comps, 0)
         self.comp_charge = np.delete(self.comp_charge, ignored_comps)
 
         # get number of effective components
-        self.nc = int(len(conc_data)) - len(ignored_comps)
+        self.nc = int(len(conc_data)) - ignored_comps.sum()
 
         if self.distribution:
             # for every ignored comp which index is lower
             # of the designated independent comp
             # reduce its index by one (they "slide over")
-            self.ind_comp = self.ind_comp - (ignored_comps < self.ind_comp).sum()
+            self.ind_comp = self.ind_comp - ignored_comps[: self.ind_comp].sum()
             # Assign total concentrations for each point
+            self.c_tot = np.delete(self.c_tot, self.ind_comp, 0)
             self.c_tot = np.tile(self.c_tot, [self.nop, 1])
         else:
             self.initial_c = self.c_tot
@@ -135,6 +137,7 @@ class Distribution:
                 (np.tile(self.c_tot, [self.nop, 1]) * v0)
                 + (np.tile(self.v_added, [self.nc, 1]).T * self.c_added)
             ) / np.tile(v_tot, [self.nc, 1]).T
+            self.c_tot[self.c_tot == 0] = -1e-9
 
         # Store the stoichiometric coefficients for the components
         # IMPORTANT: each component is considered as a species with logB = 0
@@ -1213,7 +1216,7 @@ class Distribution:
         a0 = np.max(np.where(model == 0, 1, np.abs(model)), axis=1)
 
         iteration = 0
-        while iteration < 10000:
+        while True:
             _, c_spec = self._speciesConcentration(c, cp, log_beta)
 
             if self.distribution:
@@ -1230,7 +1233,7 @@ class Distribution:
 
             conv_criteria = (sum_reac - sum_prod) / (sum_reac + sum_prod)
 
-            if all(i < epsilon for i in conv_criteria):
+            if all(i < epsilon for i in conv_criteria) or iteration >= 10000:
                 logging.debug("EXITING DAMP ROUTINE")
                 if self.distribution:
                     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
@@ -1256,12 +1259,15 @@ class Distribution:
 
             iteration += 1
 
+        # # if self.distribution:
+        # #     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
+        # logging.debug("EXITING DAMP ROUTINE, MAX N ITERATIONS REACHED")
         # if self.distribution:
         #     c_spec = np.insert(c_spec, self.ind_comp, fixed_c)
         # return c, c_spec
-        raise Exception(
-            "Dampening routine couldn't find a solution at point {}".format(point)
-        )
+        # raise Exception(
+        #     "Dampening routine couldn't find a solution at point {}".format(point)
+        # )
 
         # raise Exception(
         #     "Dampening routine couldn't find a solution at point %s", point
