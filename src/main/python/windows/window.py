@@ -700,7 +700,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.compView.selectedIndexes():
             row = self.compView.selectedIndexes()[0].row() + 1
         else:
-            row = self.compModel.rowCount()
+            row = self.compModel.rowCount() + 1
         self.compModel.insertRows(row - 1, 1)
         self.addSpeciesComp(row + 7, 1)
         self.concModel.insertRows(row - 1)
