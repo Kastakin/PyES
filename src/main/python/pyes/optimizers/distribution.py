@@ -390,58 +390,15 @@ class Distribution:
         ).rename_axis(columns="Species Conc. [mol/L]")
         self.species_distribution = self._setDataframeIndex(self.species_distribution)
 
-        # Create the table containing the solid species "concentration"
-        self.solid_distribution = pd.DataFrame(
-            solid, columns=self.solid_names
-        ).rename_axis(columns="Solid Conc. [mol/L]")
-        check = self.solid_distribution.apply(
-            lambda x: pd.Series(
-                ["*" if i > 0 else "" for i in x],
-                index=["Prec." + name for name in self.solid_distribution.columns],
-                dtype=str,
-            ),
-            axis=1,
-        )
-        saturation_index = pd.DataFrame(
-            si, columns=["SI" + name for name in self.solid_names]
-        )
-
-        self.solid_distribution = pd.merge(
-            self.solid_distribution, check, left_index=True, right_index=True, sort=True
-        )
-
-        self.solid_distribution = pd.merge(
-            self.solid_distribution,
-            saturation_index,
-            left_index=True,
-            right_index=True,
-            sort=True,
-        )
-
-        self.solid_distribution = self.solid_distribution[
-            list(
-                sum(
-                    zip(
-                        check.columns, saturation_index, self.solid_distribution.columns
-                    ),
-                    (),
-                )
-            )
-        ]
-        self.solid_distribution = self._setDataframeIndex(self.solid_distribution)
-
-        # Compute and create table with percentages of species with respect to component
-        # As defined with the input
         if self.distribution:
             cans = np.insert(self.c_tot, self.ind_comp, 0, axis=1)
         else:
             cans = self.c_tot
 
+        # Compute and create table with percentages of species with respect to component
+        # As defined with the input
         species_perc_table = self._computePercTable(
             cans, species, self.model, self.species_perc_int
-        )
-        solid_perc_table = self._computePercTable(
-            cans, solid, self.solid_model, self.solid_perc_int, solids=True
         )
 
         # Percentages are rounded two the second decimal and stored in a dataframe
@@ -455,35 +412,86 @@ class Distribution:
         )
         self.species_percentages = self._setDataframeIndex(self.species_percentages)
 
-        self.solid_percentages = (
-            pd.DataFrame(
-                solid_perc_table,
-                columns=[self.solid_names, self.solid_perc_str],
+        if self.nf > 0:
+            # Create the table containing the solid species "concentration"
+            self.solid_distribution = pd.DataFrame(
+                solid, columns=self.solid_names
+            ).rename_axis(columns="Solid Conc. [mol/L]")
+            check = self.solid_distribution.apply(
+                lambda x: pd.Series(
+                    ["*" if i > 0 else "" for i in x],
+                    index=["Prec." + name for name in self.solid_distribution.columns],
+                    dtype=str,
+                ),
+                axis=1,
             )
-            .rename_axis(columns=["Solids", r"% relative to comp."])
-            .round(2)
-        )
-        self.solid_percentages = self._setDataframeIndex(self.solid_percentages)
+            saturation_index = pd.DataFrame(
+                si, columns=["SI" + name for name in self.solid_names]
+            )
 
-        # For error propagation create the corresponding tables
-        self.species_sigma = pd.DataFrame(
-            species_sigma, columns=self.species_names
-        ).rename_axis(columns="Species Std. Dev. [mol/L]")
-        self.species_sigma = self._setDataframeIndex(self.species_sigma)
+            self.solid_distribution = pd.merge(
+                self.solid_distribution,
+                check,
+                left_index=True,
+                right_index=True,
+                sort=True,
+            )
 
-        self.solid_sigma = pd.DataFrame(
-            solid_sigma, columns=self.solid_names
-        ).rename_axis(columns="Solid Std. Dev. [mol]")
-        self.solid_sigma = self._setDataframeIndex(self.solid_sigma)
+            self.solid_distribution = pd.merge(
+                self.solid_distribution,
+                saturation_index,
+                left_index=True,
+                right_index=True,
+                sort=True,
+            )
+
+            self.solid_distribution = self.solid_distribution[
+                list(
+                    sum(
+                        zip(
+                            check.columns,
+                            saturation_index,
+                            self.solid_distribution.columns,
+                        ),
+                        (),
+                    )
+                )
+            ]
+            self.solid_distribution = self._setDataframeIndex(self.solid_distribution)
+
+            # Compute solid percentages as for species percentages
+            solid_perc_table = self._computePercTable(
+                cans, solid, self.solid_model, self.solid_perc_int, solids=True
+            )
+
+            self.solid_percentages = (
+                pd.DataFrame(
+                    solid_perc_table,
+                    columns=[self.solid_names, self.solid_perc_str],
+                )
+                .rename_axis(columns=["Solids", r"% relative to comp."])
+                .round(2)
+            )
+            self.solid_percentages = self._setDataframeIndex(self.solid_percentages)
+
+        if self.errors:
+            # For error propagation create the corresponding tables
+            self.species_sigma = pd.DataFrame(
+                species_sigma, columns=self.species_names
+            ).rename_axis(columns="Species Std. Dev. [mol/L]")
+            self.species_sigma = self._setDataframeIndex(self.species_sigma)
+
+            if self.nf > 0:
+                self.solid_sigma = pd.DataFrame(
+                    solid_sigma, columns=self.solid_names
+                ).rename_axis(columns="Solid Std. Dev. [mol]")
+                self.solid_sigma = self._setDataframeIndex(self.solid_sigma)
 
         # If working at variable ionic strength
         if self.imode == 1:
             # Add multi index to the species distribution containing the ionic strength
             self.species_distribution.insert(0, "I", ionic_strength)
             self.species_distribution.set_index("I", append=True, inplace=True)
-            if self.nf > 0:
-                self.solid_distribution.insert(0, "I", ionic_strength)
-                self.solid_distribution.set_index("I", append=True, inplace=True)
 
             # Create table containing adjusted LogB for each point
             self.log_beta = pd.DataFrame(
@@ -495,15 +503,18 @@ class Distribution:
             self.log_beta.insert(0, "I", ionic_strength)
             self.log_beta.set_index("I", append=True, inplace=True)
 
-            # Create table containing adjusted LogKs for each point
-            self.log_ks = pd.DataFrame(
-                log_ks,
-                columns=self.solid_names,
-            ).rename_axis(columns="Solubility Products")
-            self.log_ks = self._setDataframeIndex(self.log_ks)
+            if self.nf > 0:
+                self.solid_distribution.insert(0, "I", ionic_strength)
+                self.solid_distribution.set_index("I", append=True, inplace=True)
+                # Create table containing adjusted LogKs for each point
+                self.log_ks = pd.DataFrame(
+                    log_ks,
+                    columns=self.solid_names,
+                ).rename_axis(columns="Solubility Products")
+                self.log_ks = self._setDataframeIndex(self.log_ks)
 
-            self.log_ks.insert(0, "I", ionic_strength)
-            self.log_ks.set_index("I", append=True, inplace=True)
+                self.log_ks.insert(0, "I", ionic_strength)
+                self.log_ks.set_index("I", append=True, inplace=True)
 
         logging.info("--- CALCULATION TERMINATED ---")
 
@@ -523,7 +534,10 @@ class Distribution:
         Returns the solid species concentration table.
         """
         if self.done_flag:
-            return self.solid_distribution
+            try:
+                return self.solid_distribution
+            except AttributeError:
+                return pd.DataFrame()
         else:
             return False
 
@@ -532,7 +546,10 @@ class Distribution:
         Returns the table containing formation constants and the ionic strength.
         """
         if self.done_flag:
-            return self.log_beta
+            try:
+                return self.log_beta
+            except AttributeError:
+                return pd.DataFrame()
         else:
             return False
 
@@ -541,25 +558,56 @@ class Distribution:
         Returns the table containing the LogKps for the solid species present in the model.
         """
         if self.done_flag:
-            return self.log_ks
+            try:
+                return self.log_ks
+            except AttributeError:
+                return pd.DataFrame()
         else:
             return False
 
-    def percentages(self):
+    def speciesPercentages(self):
         """
         Return percentages of species with respect to the desired component.
         """
         if self.done_flag:
-            return self.species_percentages, self.solid_percentages
+            return self.species_percentages
         else:
             return False
 
-    def sigmas(self):
+    def solidPercentages(self):
+        """
+        Return percentages of solids with respect to the desired component.
+        """
+        if self.done_flag:
+            try:
+                return self.solid_percentages
+            except AttributeError:
+                return pd.DataFrame()
+
+        else:
+            return False
+
+    def speciesSigmas(self):
         """
         Return percentages of species with respect to the desired component.
         """
         if self.done_flag:
-            return self.species_sigma, self.solid_sigma
+            try:
+                return self.species_sigma
+            except AttributeError:
+                return pd.DataFrame()
+        else:
+            return False
+
+    def solidSigmas(self):
+        """
+        Return percentages of solids with respect to the desired component.
+        """
+        if self.done_flag:
+            try:
+                return self.solid_sigma
+            except AttributeError:
+                return pd.DataFrame()
         else:
             return False
 

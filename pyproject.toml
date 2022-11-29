@@ -23,7 +23,18 @@ scipy = "^1.9.1"
 pyinstrument = "^4.3.0"
 Pillow = "^9.2.0"
 ruff = "^0.0.124"
+pytest = "^7.2.0"
+pytest-sugar = "^0.9.6"
+pytest-cov = "^4.0.0"
+pytest-qt = "^4.2.0"
+pytest-xvfb = "^2.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+pythonpath = "src/main/python/pyes"
+addopts = "--cov=src/main/python/pyes --cov-report=html"
+qt_api = "pyside6"

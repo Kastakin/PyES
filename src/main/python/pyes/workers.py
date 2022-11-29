@@ -72,8 +72,6 @@ class optimizeWorker(QRunnable):
             self.signals.aborted.emit(str(e))
             return None
 
-        species_sigma, solid_sigma = optimizer.sigmas()
-        species_percentages, solid_percentages = optimizer.percentages()
         species_info, solid_info, comp_info = optimizer.parameters()
 
         # Store input info
@@ -86,12 +84,14 @@ class optimizeWorker(QRunnable):
         )
 
         # Print and store species percentages
-        self._storeResult(species_percentages, "species_percentages", log=True)
+        self._storeResult(
+            optimizer.speciesPercentages(), "species_percentages", log=True
+        )
 
         if self.data["emode"] == 0:
-            self._storeResult(species_sigma, "species_sigma", log=True)
+            self._storeResult(optimizer.speciesSigmas(), "species_sigma", log=True)
 
-        if self.data["np"] > 0:
+        if not optimizer.solidDistribution().empty:
             # Store input info regarding solids
             self._storeResult(solid_info, "solid_info")
             # Print and store solid species results
@@ -100,10 +100,12 @@ class optimizeWorker(QRunnable):
             )
 
             # Print and store solid species percentages
-            self._storeResult(solid_percentages, "solid_percentages", log=True)
+            self._storeResult(
+                optimizer.solidPercentages(), "solid_percentages", log=True
+            )
 
             if self.data["emode"] == 0:
-                self._storeResult(solid_sigma, "solid_sigma", log=True)
+                self._storeResult(optimizer.solidSigmas(), "solid_sigma", log=True)
 
         # If working at variable ionic strength print and store formation constants/solubility products aswell
         if self.data["imode"] == 1:
@@ -111,7 +113,7 @@ class optimizeWorker(QRunnable):
                 optimizer.formationConstants(), "formation_constants", log=True
             )
 
-            if self.data["np"] > 0:
+            if not optimizer.solidDistribution().empty:
                 self._storeResult(
                     optimizer.solubilityProducts(), "solubility_products", log=True
                 )

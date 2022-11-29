@@ -14,3 +14,5 @@ if __name__ == "__main__":
     opt = Distribution()
     opt.fit(data)
     opt.predict()
+
+    print(opt.formationConstants())
