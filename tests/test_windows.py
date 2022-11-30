@@ -1,17 +1,20 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
-from pytest import MonkeyPatch
+from pytest import MonkeyPatch, fixture
 from pytestqt.qtbot import QtBot
 
 from src.main.python.pyes.main import MainWindow
 
 
-class TestMainWindow:
-    def test_init(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
+@fixture
+def window(qtbot):
+    window = MainWindow()
+    qtbot.addWidget(window)
+    return window
 
+
+class TestMainWindow:
+    def test_init(self, window: MainWindow):
         assert window.relErrorMode.currentIndex() == 1
         assert window.imode.currentIndex() == 0
 
@@ -32,11 +35,7 @@ class TestMainWindow:
         assert window.compView.model().rowCount() == 1
         assert window.solidSpeciesView.model().rowCount() == 0
 
-    def test_add_comp_above_unselected(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_add_comp_above_unselected(self, window: MainWindow, qtbot: QtBot):
         qtbot.mouseClick(window.insert_above_comp_button, Qt.MouseButton.LeftButton)
 
         assert window.numComp.value() == 2
@@ -46,11 +45,7 @@ class TestMainWindow:
             window.compView.model().data(window.compView.model().index(0, 0)) == "COMP0"
         )
 
-    def test_add_comp_below_unselected(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_add_comp_below_unselected(self, window: MainWindow, qtbot: QtBot):
         qtbot.mouseClick(window.insert_below_comp_button, Qt.MouseButton.LeftButton)
 
         assert window.numComp.value() == 2
@@ -60,11 +55,7 @@ class TestMainWindow:
             window.compView.model().data(window.compView.model().index(1, 0)) == "COMP2"
         )
 
-    def test_add_comp_above_selected(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_add_comp_above_selected(self, window: MainWindow, qtbot: QtBot):
         window.numComp.setValue(2)
         window.compView.selectRow(2)
         qtbot.mouseClick(window.insert_above_comp_button, Qt.MouseButton.LeftButton)
@@ -76,11 +67,7 @@ class TestMainWindow:
             window.compView.model().data(window.compView.model().index(1, 0)) == "COMP1"
         )
 
-    def test_add_comp_below_selected(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_add_comp_below_selected(self, window: MainWindow, qtbot: QtBot):
         window.numComp.setValue(3)
         window.compView.selectRow(1)
         qtbot.mouseClick(window.insert_below_comp_button, Qt.MouseButton.LeftButton)
@@ -92,11 +79,7 @@ class TestMainWindow:
             window.compView.model().data(window.compView.model().index(2, 0)) == "COMP2"
         )
 
-    def test_increase_comp_key(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_increase_comp_key(self, window: MainWindow, qtbot: QtBot):
         qtbot.keyClick(window.numComp, Qt.Key.Key_Up)
 
         assert window.numComp.value() == 2
@@ -107,11 +90,7 @@ class TestMainWindow:
             == "COMP2"
         )
 
-    def test_decrease_comp_key(self, qtbot: QtBot):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_decrease_comp_key(self, window: MainWindow, qtbot: QtBot):
         qtbot.keyClick(window.numComp, Qt.Key.Key_Down)
         assert window.numComp.value() == 1
 
@@ -120,11 +99,9 @@ class TestMainWindow:
         qtbot.keyClick(window.numComp, Qt.Key.Key_Down)
         assert window.numComp.value() == 1
 
-    def test_remove_comp(self, qtbot: QtBot, monkeypatch: MonkeyPatch):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_remove_comp(
+        self, window: MainWindow, qtbot: QtBot, monkeypatch: MonkeyPatch
+    ):
         window.numComp.setValue(3)
         window.compView.selectRow(1)
 
@@ -139,11 +116,9 @@ class TestMainWindow:
             == "COMP3"
         )
 
-    def test_abort_remove_comp(self, qtbot: QtBot, monkeypatch: MonkeyPatch):
-        window = MainWindow()
-        window.show()
-        qtbot.addWidget(window)
-
+    def test_abort_remove_comp(
+        self, window: MainWindow, qtbot: QtBot, monkeypatch: MonkeyPatch
+    ):
         window.numComp.setValue(3)
         window.compView.selectRow(1)
 
