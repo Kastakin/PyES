@@ -706,7 +706,7 @@
                <number>2</number>
               </property>
               <item>
-               <widget class="QToolButton" name="insert_above_button_2">
+               <widget class="QToolButton" name="insert_above_comp_button">
                 <property name="toolTip">
                  <string>Add Component Above</string>
                 </property>
@@ -717,7 +717,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/table-insert-row-before.png</normaloff>:/icons/table-insert-row-before.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -732,7 +732,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="insert_below_button_2">
+               <widget class="QToolButton" name="insert_below_comp_button">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -749,7 +749,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/table-insert-row-after.png</normaloff>:/icons/table-insert-row-after.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -764,7 +764,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="remove_button_2">
+               <widget class="QToolButton" name="remove_comp_button">
                 <property name="toolTip">
                  <string>Remove Component</string>
                 </property>
@@ -775,7 +775,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/table-delete-row.png</normaloff>:/icons/table-delete-row.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -797,7 +797,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="move_up_button_2">
+               <widget class="QToolButton" name="move_up_comp_button">
                 <property name="toolTip">
                  <string>Move Component Up</string>
                 </property>
@@ -808,7 +808,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/row_up.png</normaloff>:/icons/row_up.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -823,7 +823,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="move_down_button_2">
+               <widget class="QToolButton" name="move_down_comp_button">
                 <property name="toolTip">
                  <string>Move Component Down</string>
                 </property>
@@ -834,7 +834,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/row_down.png</normaloff>:/icons/row_down.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -944,7 +944,7 @@
                <number>2</number>
               </property>
               <item>
-               <widget class="QToolButton" name="insert_above_button">
+               <widget class="QToolButton" name="insert_above_species_button">
                 <property name="toolTip">
                  <string>Add Species Above</string>
                 </property>
@@ -955,7 +955,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/table-insert-row-before.png</normaloff>:/icons/table-insert-row-before.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -970,7 +970,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="insert_below_button">
+               <widget class="QToolButton" name="insert_below_species_button">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -987,7 +987,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/table-insert-row-after.png</normaloff>:/icons/table-insert-row-after.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -1002,7 +1002,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="remove_button">
+               <widget class="QToolButton" name="remove_species_button">
                 <property name="toolTip">
                  <string>Remove Species</string>
                 </property>
@@ -1013,7 +1013,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/table-delete-row.png</normaloff>:/icons/table-delete-row.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -1035,7 +1035,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="move_up_button">
+               <widget class="QToolButton" name="move_up_species_button">
                 <property name="toolTip">
                  <string>Move Species Up</string>
                 </property>
@@ -1046,7 +1046,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/row_up.png</normaloff>:/icons/row_up.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -1061,7 +1061,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QToolButton" name="move_down_button">
+               <widget class="QToolButton" name="move_down_species_button">
                 <property name="toolTip">
                  <string>Move Species Down</string>
                 </property>
@@ -1072,7 +1072,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../resources/base/resources.qrc">
+                 <iconset resource="../../../resources/base/resources.qrc">
                   <normaloff>:/icons/row_down.png</normaloff>:/icons/row_down.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -1121,7 +1121,7 @@
              </property>
              <widget class="QWidget" name="species">
               <attribute name="icon">
-               <iconset resource="../../resources/base/resources.qrc">
+               <iconset resource="../../../resources/base/resources.qrc">
                 <normaloff>:/icons/flask.png</normaloff>:/icons/flask.png</iconset>
               </attribute>
               <attribute name="title">
@@ -1169,7 +1169,7 @@
              </widget>
              <widget class="QWidget" name="solidspecies">
               <attribute name="icon">
-               <iconset resource="../../resources/base/resources.qrc">
+               <iconset resource="../../../resources/base/resources.qrc">
                 <normaloff>:/icons/beaker-empty.png</normaloff>:/icons/beaker-empty.png</iconset>
               </attribute>
               <attribute name="title">
@@ -1961,7 +1961,7 @@
            <string>Calculate</string>
           </property>
           <property name="icon">
-           <iconset resource="../../resources/base/resources.qrc">
+           <iconset resource="../../../resources/base/resources.qrc">
             <normaloff>:/icons/control.png</normaloff>:/icons/control.png</iconset>
           </property>
          </widget>
@@ -1996,7 +1996,7 @@
               <string>Export Results</string>
              </property>
              <property name="icon">
-              <iconset resource="../../resources/base/resources.qrc">
+              <iconset resource="../../../resources/base/resources.qrc">
                <normaloff>:/icons/application-export.png</normaloff>:/icons/application-export.png</iconset>
              </property>
             </widget>
@@ -2013,7 +2013,7 @@
               <string>Plot Results</string>
              </property>
              <property name="icon">
-              <iconset resource="../../resources/base/resources.qrc">
+              <iconset resource="../../../resources/base/resources.qrc">
                <normaloff>:/icons/pencil-ruler.png</normaloff>:/icons/pencil-ruler.png</iconset>
              </property>
             </widget>
@@ -2095,7 +2095,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/document.png</normaloff>:/icons/document.png</iconset>
    </property>
    <property name="text">
@@ -2107,7 +2107,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/folder-open-document.png</normaloff>:/icons/folder-open-document.png</iconset>
    </property>
    <property name="text">
@@ -2119,7 +2119,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/disk.png</normaloff>:/icons/disk.png</iconset>
    </property>
    <property name="text">
@@ -2131,7 +2131,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/question-frame.png</normaloff>:/icons/question-frame.png</iconset>
    </property>
    <property name="text">
@@ -2153,7 +2153,7 @@
   </action>
   <action name="actionCalculate">
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/control.png</normaloff>:/icons/control.png</iconset>
    </property>
    <property name="text">
@@ -2168,7 +2168,7 @@
   </action>
   <action name="actionExport_Results">
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/application-export.png</normaloff>:/icons/application-export.png</iconset>
    </property>
    <property name="text">
@@ -2183,7 +2183,7 @@
   </action>
   <action name="actionPlot_Results">
    <property name="icon">
-    <iconset resource="../../resources/base/resources.qrc">
+    <iconset resource="../../../resources/base/resources.qrc">
      <normaloff>:/icons/pencil-ruler.png</normaloff>:/icons/pencil-ruler.png</iconset>
    </property>
    <property name="text">
@@ -2198,7 +2198,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../../resources/base/resources.qrc"/>
+  <include location="../../../resources/base/resources.qrc"/>
  </resources>
  <connections>
   <connection>
@@ -2394,7 +2394,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>insert_above_button</sender>
+   <sender>insert_above_species_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>insertSpeciesAbove()</slot>
@@ -2410,7 +2410,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>insert_below_button</sender>
+   <sender>insert_below_species_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>insertSpeciesBelow()</slot>
@@ -2426,7 +2426,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>remove_button</sender>
+   <sender>remove_species_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>removeSpecies()</slot>
@@ -2442,7 +2442,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>move_up_button</sender>
+   <sender>move_up_species_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>moveSpeciesUp()</slot>
@@ -2458,7 +2458,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>move_down_button</sender>
+   <sender>move_down_species_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>moveSpeciesDown()</slot>
@@ -2474,7 +2474,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>insert_above_button_2</sender>
+   <sender>insert_above_comp_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>insertCompAbove()</slot>
@@ -2490,7 +2490,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>insert_below_button_2</sender>
+   <sender>insert_below_comp_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>insertCompBelow()</slot>
@@ -2506,7 +2506,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>remove_button_2</sender>
+   <sender>remove_comp_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>removeComp()</slot>
@@ -2522,7 +2522,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>move_up_button_2</sender>
+   <sender>move_up_comp_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>moveCompUp()</slot>
@@ -2538,7 +2538,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>move_down_button_2</sender>
+   <sender>move_down_comp_button</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>moveCompDown()</slot>

@@ -83,7 +83,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../resources/base/resources.qrc"/>
+  <include location="../../../resources/base/resources.qrc"/>
  </resources>
  <connections>
   <connection>

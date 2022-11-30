@@ -20,7 +20,7 @@
    <string>Export Results</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../resources/base/resources.qrc">
+   <iconset resource="../../../resources/base/resources.qrc">
     <normaloff>:/icons/application-export.png</normaloff>:/icons/application-export.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -37,7 +37,7 @@
        </sizepolicy>
       </property>
       <attribute name="icon">
-       <iconset resource="../../resources/base/resources.qrc">
+       <iconset resource="../../../resources/base/resources.qrc">
         <normaloff>:/icons/document-excel.png</normaloff>:/icons/document-excel.png</iconset>
       </attribute>
       <attribute name="title">
@@ -181,7 +181,7 @@
      </widget>
      <widget class="QWidget" name="csv_tab">
       <attribute name="icon">
-       <iconset resource="../../resources/base/resources.qrc">
+       <iconset resource="../../../resources/base/resources.qrc">
         <normaloff>:/icons/table.png</normaloff>:/icons/table.png</iconset>
       </attribute>
       <attribute name="title">
@@ -328,7 +328,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../resources/base/resources.qrc"/>
+  <include location="../../../resources/base/resources.qrc"/>
  </resources>
  <connections>
   <connection>
