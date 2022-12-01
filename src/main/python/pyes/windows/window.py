@@ -761,7 +761,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
 
     def insertSpeciesAbove(self):
-        if self.species.isVisible():
+        if self.tablesTab.isTabVisible(0):
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
             else:
@@ -769,7 +769,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.speciesModel.insertRows(row - 1, 1)
             self.numSpecies.setValue(self.numSpecies.value() + 1)
             self.speciesView.selectRow(row)
-        elif self.solidspecies.isVisible():
+        elif self.tablesTab.isTabVisible(1):
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
             else:
@@ -782,7 +782,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
     def insertSpeciesBelow(self):
-        if self.species.isVisible():
+        if self.tablesTab.isTabVisible(0):
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
             else:
@@ -790,7 +790,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.speciesModel.insertRows(row, 1)
             self.numSpecies.setValue(self.numSpecies.value() + 1)
             self.speciesView.selectRow(row + 1)
-        elif self.solidspecies.isVisible():
+        elif self.tablesTab.isTabVisible(1):
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
             else:
@@ -803,7 +803,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
     def removeSpecies(self):
-        if self.species.isVisible():
+        if self.tablesTab.isTabVisible(0):
             if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
                 if (
                     QMessageBox.question(
@@ -817,7 +817,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.speciesView.selectedIndexes()[0].row() + 1, 1
                     )
                     self.numSpecies.setValue(self.numSpecies.value() - 1)
-        elif self.solidspecies.isVisible():
+        elif self.tablesTab.isTabVisible(1):
             if self.solidSpeciesView.selectedIndexes():
                 if (
                     QMessageBox.question(
@@ -835,12 +835,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
     def moveSpeciesUp(self):
-        if self.species.isVisible():
+        if self.tablesTab.isTabVisible(0):
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
                 self.speciesModel.swapRows(row, row - 1)
                 self.speciesView.selectRow(row - 1)
-        elif self.solidspecies.isVisible():
+        elif self.tablesTab.isTabVisible(1):
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
                 self.solidSpeciesModel.swapRows(row, row - 1)
@@ -849,12 +849,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
     def moveSpeciesDown(self):
-        if self.species.isVisible():
+        if self.tablesTab.isTabVisible(0):
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
                 self.speciesModel.swapRows(row, row + 1)
                 self.speciesView.selectRow(row + 1)
-        elif self.solidspecies.isVisible():
+        elif self.tablesTab.isTabVisible(1):
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
                 self.solidSpeciesModel.swapRows(row, row + 1)
