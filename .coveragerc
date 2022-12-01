@@ -1,0 +1,3 @@
+[run]
+omit =  src/main/python/pyes/ui/*
+        src/main/python/*/__init__.py

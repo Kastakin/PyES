@@ -36,5 +36,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 testpaths = "tests"
 pythonpath = "src/main/python/pyes"
-addopts = "--cov=src/main/python/pyes --cov-report=html"
+addopts = "--cov=src/main/python/pyes --cov-report=html --cov-config=.coveragerc"
 qt_api = "pyside6"
