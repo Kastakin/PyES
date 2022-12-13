@@ -95,6 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionPlot_Results.triggered.connect(self.plotDist)
 
         self.actionAbout.triggered.connect(self.help_about)
+        self.actionAbout_Qt.triggered.connect(self.help_about_qt)
         self.actionWebsite.triggered.connect(self.help_website)
 
         # Sets the tabelview for the component concentrations in titration
@@ -201,6 +202,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Display about dialog
         """
         dialog = AboutDialog(self)
+        dialog.exec()
+
+    def help_about_qt(self):
+        """
+        Display about dialog
+        """
+        dialog = QMessageBox.aboutQt(self)
         dialog.exec()
 
     def file_save(self):

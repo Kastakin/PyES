@@ -125,6 +125,8 @@ class Ui_MainWindow(object):
         icon6 = QIcon()
         icon6.addFile(":/icons/pencil-ruler.png", QSize(), QIcon.Normal, QIcon.Off)
         self.actionPlot_Results.setIcon(icon6)
+        self.actionAbout_Qt = QAction(MainWindow)
+        self.actionAbout_Qt.setObjectName("actionAbout_Qt")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_5 = QVBoxLayout(self.centralwidget)
@@ -1124,6 +1126,7 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionWebsite)
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.actionAbout)
+        self.menuHelp.addAction(self.actionAbout_Qt)
         self.toolBar.addAction(self.actionNew)
         self.toolBar.addAction(self.actionOpen)
         self.toolBar.addAction(self.actionSave)
@@ -1245,6 +1248,9 @@ class Ui_MainWindow(object):
             QCoreApplication.translate("MainWindow", "Ctrl+P", None)
         )
         # endif // QT_CONFIG(shortcut)
+        self.actionAbout_Qt.setText(
+            QCoreApplication.translate("MainWindow", "About Qt", None)
+        )
         self.sys_opt_label.setText(
             QCoreApplication.translate(
                 "MainWindow",
