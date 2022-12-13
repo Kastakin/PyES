@@ -27,11 +27,11 @@ src = "pyproject.toml"
 search = 'version = "{current_version}"'
 
 [[file]]
-src = "src/main/python/ui/PyES_about.py"
+src = "src/main/python/pyes/ui/PyES_about.py"
 search = "PyES Version {current_version}"
 
 [[file]]
-src = "src/main/python/ui/PyES_about.ui"
+src = "src/main/python/pyes/ui/PyES_about.ui"
 search = "PyES Version {current_version}"
 
 [[file]]
