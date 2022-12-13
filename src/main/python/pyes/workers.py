@@ -1,6 +1,8 @@
 import logging
+import os
 import time
 from datetime import datetime
+from pathlib import Path
 
 from optimizers.distribution import Distribution
 from PySide6.QtCore import QObject, QRunnable, Signal, Slot
@@ -25,8 +27,12 @@ class optimizeWorker(QRunnable):
     def run(self):
         # If run with debug enabled create the logging istance
         if self.debug:
+            log_path = Path.home().joinpath("pyes_logs")
+            os.makedirs(log_path, exist_ok=True)
             date_time = datetime.now()
-            log_file = "logs/" + date_time.strftime("%d_%m_%Y-%H:%M:%S") + "_logS4.log"
+            log_file = log_path.joinpath(
+                "pyes_" + date_time.strftime("%d_%m_%Y-%H:%M:%S") + ".log"
+            )
             filehandler = logging.FileHandler(log_file)
             formatter = logging.Formatter("%(levelname)s:%(message)s")
             filehandler.setFormatter(formatter)
