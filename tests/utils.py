@@ -61,7 +61,11 @@ def compare_results(opt, input_data, true_result):
     )
 
     assert_allclose(
-        result["solid_distribution"].replace("", np.nan).dropna(axis=1).to_numpy(),
+        result["solid_distribution"]
+        .replace("", np.nan)
+        .replace("*", np.nan)
+        .dropna(axis=1)
+        .to_numpy(),
         true_result["solid_distribution"].to_numpy(),
         rtol=RTOL,
     )
