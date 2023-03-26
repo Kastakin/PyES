@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyes"
-version = "0.4.1"
+version = "0.4.4"
 description = ""
 authors = ["Lorenzo Castellino <castellino96@gmail.com>"]
 license = "GPLv3"
@@ -8,9 +8,9 @@ license = "GPLv3"
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 ppg = {git = "ssh://git@github.com/Kastakin/ppg.git", rev = "main"}
-pandas = "^1.3.5"
+pandas = "^1.5.0"
 openpyxl = "^3.0.9"
-PySide6-Essentials = "^6.3.1"
+PySide6-Essentials = "~6.4.0"
 pyqtgraph = "^0.13.1"
 
 [tool.poetry.group.dev.dependencies]
@@ -22,7 +22,19 @@ matplotlib = "^3.6.0"
 scipy = "^1.9.1"
 pyinstrument = "^4.3.0"
 Pillow = "^9.2.0"
+ruff = "^0.0.124"
+pytest = "^7.2.0"
+pytest-sugar = "^0.9.6"
+pytest-cov = "^4.0.0"
+pytest-qt = "^4.2.0"
+pytest-xvfb = "^2.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+pythonpath = "src/main/python/pyes"
+addopts = "--cov=src/main/python/pyes --cov-report=html --cov-config=.coveragerc"
+qt_api = "pyside6"

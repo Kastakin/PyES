@@ -1,7 +1,7 @@
 import argparse
 import json
 
-from src.main.python.optimizers.distribution import Distribution
+from src.main.python.pyes.optimizers.distribution import Distribution
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
