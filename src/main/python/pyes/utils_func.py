@@ -15,7 +15,7 @@ def returnDataDict(self, saving=True):
         "nc": self.numComp.value(),
         "ns": self.numSpecies.value(),
         "np": self.numPhases.value(),
-        "emode": self.relErrorMode.currentIndex(),
+        "emode": self.uncertaintyMode.currentIndex(),
         "imode": self.imode.currentIndex(),
         "ris": self.refIonicStr.value(),
         "a": self.A.value(),

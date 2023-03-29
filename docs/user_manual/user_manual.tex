@@ -10,6 +10,7 @@
 \usepackage{chemformula}
 \usepackage{subfig}
 \usepackage{siunitx}
+\usepackage{microtype}
 
 
 \usepackage{xcolor}
@@ -142,7 +143,7 @@ In particular the interface presents the following input fields:
     \item Number of components, soluble and precipitable species.
     \item Computation of ```Uncertainty Estimation'' deriving from uncertainties of inputs and effect of ionic strength on stability constants.
     \item Table for defining components names and charges.
-    \item Tables to input soluble and precipitable species.
+    \item Tables to input soluble and precipitable species depending on whether the "Solution Species" or "Solid Species" pages has been selected.
     \item Quick commands to move/insert/remove species and components from their corresponding tables.
 \end{enumerate}
 
@@ -176,7 +177,7 @@ They are very similar, requiring the user to provide the following information f
 \end{figure}
 
 \subsection{Settings Tab}
-In the ``Setting'' tab  the user can select the work mode for the calculation and provide the quantitative information of the system described in the ``Species'' tab.
+In the ``Setting'' tab the user can select the work mode for the calculation and provide the quantitative information of the system described in the ``Species'' tab.
 
 \begin{figure}[h]
 	\centering
@@ -214,7 +215,7 @@ Depending on the selected work mode different inputs are required from the user 
 The ``Calculation'' tab (Figure \ref{fig:calculate}) is reserved to calculation launching and reporting
 
 \begin{enumerate}[label=\protect\circled{\arabic*}]
-    \item The text box in the center is where results and errors are reported in textual form to the user.
+    \item The text box in the center is where results and uncertainties are reported in textual form to the user.
     \item Buttons dedicated to starting the calculation, exporting results and showing results in graphical form.
     \item Toggle to allow writing a log file for debugging purposes.
 \end{enumerate}
@@ -240,7 +241,7 @@ After a successful calculation, using the dedicated buttons in the menu bar or t
 \subsubsection{Plot Window}
 \begin{enumerate}[label=\protect\circled{\arabic*}]
     \item The tabs allow to select the type of plot shown (concentration or percentages relative to components as defined in the tables in the ``Species'' tab).
-    \item The plot itself; the legend can be moved by dragging it around with the mouse. right-clicking on the plot allow to change some options (i.e. axis scale, scaling, exporting as image, \ldots).
+    \item The plot itself; the legend can be moved by dragging it around with the mouse; right-clicking on the plot allow to change some options (i.e. axis scale, scaling, exporting as image, \ldots).
     \item The table on the left lists all the soluble and precipitable species in two different tabs; ticking/unticking any species allow to display/hide them; clicking the colored square on the right of each species name it is possible to change the color used to plot it.
     \item The buttons allow to select/deselect all the species and, clicking the ``Filter'' button, to select only the ones that contains a particular component; it is also possible, using the chekbox present to show the intervals of precipitation formation instead of the concentration of precipitates in the plot.
 \end{enumerate}
