@@ -260,17 +260,19 @@ class Ui_MainWindow(object):
 
         self.formLayout_3.setWidget(3, QFormLayout.SpanningRole, self.line_7)
 
-        self.relErrorMode_label = QLabel(self.widget_8)
-        self.relErrorMode_label.setObjectName("relErrorMode_label")
+        self.uncertaintyMode_label = QLabel(self.widget_8)
+        self.uncertaintyMode_label.setObjectName("uncertaintyMode_label")
 
-        self.formLayout_3.setWidget(6, QFormLayout.LabelRole, self.relErrorMode_label)
+        self.formLayout_3.setWidget(
+            6, QFormLayout.LabelRole, self.uncertaintyMode_label
+        )
 
-        self.relErrorMode = QComboBox(self.widget_8)
-        self.relErrorMode.addItem("")
-        self.relErrorMode.addItem("")
-        self.relErrorMode.setObjectName("relErrorMode")
+        self.uncertaintyMode = QComboBox(self.widget_8)
+        self.uncertaintyMode.addItem("")
+        self.uncertaintyMode.addItem("")
+        self.uncertaintyMode.setObjectName("uncertaintyMode")
 
-        self.formLayout_3.setWidget(6, QFormLayout.FieldRole, self.relErrorMode)
+        self.formLayout_3.setWidget(6, QFormLayout.FieldRole, self.uncertaintyMode)
 
         self.line = QFrame(self.widget_8)
         self.line.setObjectName("line")
@@ -1100,7 +1102,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1283, 24))
+        self.menubar.setGeometry(QRect(0, 0, 1283, 23))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -1144,7 +1146,7 @@ class Ui_MainWindow(object):
         self.dmode.currentIndexChanged.connect(MainWindow.dmodeUpdater)
         self.indComp.currentIndexChanged.connect(MainWindow.indipendentUpdater)
         self.v0.valueChanged.connect(MainWindow.v0Updater)
-        self.relErrorMode.currentIndexChanged.connect(MainWindow.relErrorsUpdater)
+        self.uncertaintyMode.currentIndexChanged.connect(MainWindow.relErrorsUpdater)
         self.imode.currentIndexChanged.connect(MainWindow.imodeUpdater)
         self.numComp.valueChanged.connect(MainWindow.updateComp)
         self.numSpecies.valueChanged.connect(MainWindow.updateSpecies)
@@ -1288,13 +1290,13 @@ class Ui_MainWindow(object):
             )
         )
         # endif // QT_CONFIG(statustip)
-        self.relErrorMode_label.setText(
-            QCoreApplication.translate("MainWindow", "Relative Errors", None)
+        self.uncertaintyMode_label.setText(
+            QCoreApplication.translate("MainWindow", "Uncertainty Estimation", None)
         )
-        self.relErrorMode.setItemText(
+        self.uncertaintyMode.setItemText(
             0, QCoreApplication.translate("MainWindow", "Yes", None)
         )
-        self.relErrorMode.setItemText(
+        self.uncertaintyMode.setItemText(
             1, QCoreApplication.translate("MainWindow", "No", None)
         )
 

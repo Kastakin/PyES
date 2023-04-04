@@ -49,7 +49,7 @@ def assert_comp_names_headers(window: MainWindow, pos: int, value: str):
 
 class TestMainWindow:
     def test_default_values(self, window: MainWindow):
-        assert window.relErrorMode.currentIndex() == 1
+        assert window.uncertaintyMode.currentIndex() == 1
         assert window.imode.currentIndex() == 0
 
         assert window.dmode.currentIndex() == 0
