@@ -37,9 +37,7 @@ Based on the previous work of Professor Sammartano of the University of Messina,
 
 ## Usage
 
-<p align="center">
-**COMING SOON**
-</p>
+A [User Manual](https://raw.githubusercontent.com/Kastakin/PyES/master/docs/user_manual/user_manual.pdf "PyES User Manual") containing examples and a detailed description of the interface is available in PDF format.
 
 
 [^1]: For the time being we are not able to sign our installers, this might prompt with some security alerts on Windows and macOS. Our software does not execute any code whose purpose is other then solving solution and precipation equilibria.
