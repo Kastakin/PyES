@@ -96,10 +96,10 @@ class TitrationComponentsModel(QAbstractTableModel):
             self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
-        return self._data.shape[0]
+        return self._data.index.size
 
     def columnCount(self, index=QModelIndex()):
-        return self._data.shape[1]
+        return self._data.columns.size
 
 
 class ComponentsModel(QAbstractTableModel):
@@ -194,10 +194,10 @@ class ComponentsModel(QAbstractTableModel):
             self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
-        return self._data.shape[0]
+        return self._data.index.size
 
     def columnCount(self, index=QModelIndex()):
-        return self._data.shape[1]
+        return self._data.columns.size
 
 
 class SpeciesModel(QAbstractTableModel):
@@ -408,10 +408,10 @@ class SpeciesModel(QAbstractTableModel):
             self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
-        return self._data.shape[0]
+        return self._data.index.size
 
     def columnCount(self, index=QModelIndex()):
-        return self._data.shape[1]
+        return self._data.columns.size
 
 
 class SolidSpeciesModel(QAbstractTableModel):
@@ -619,7 +619,7 @@ class SolidSpeciesModel(QAbstractTableModel):
             self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
-        return self._data.shape[0]
+        return self._data.index.size
 
     def columnCount(self, index=QModelIndex()):
-        return self._data.shape[1]
+        return self._data.columns.size
