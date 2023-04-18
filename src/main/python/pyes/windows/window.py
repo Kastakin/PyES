@@ -268,217 +268,225 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
 
         if input_path:
-            with open(
-                input_path,
-                "r",
-            ) as input_file:
-                jsdata = json.load(input_file)
+            return self.load_project_file(input_path)
 
-            # TODO: better and more robust validation of project files
-            # The loaded file has to be a valid project file, discard it if not
-            if jsdata["check"] != self.check_line["check"]:
+    def load_project_file(self, input_path):
+        with open(
+            input_path,
+            "r",
+        ) as input_file:
+            try:
+                jsdata: dict = json.load(input_file)
+
+                # TODO: better and more robust validation of project files
+                # The loaded file has to be a valid project file, discard it if not
+                checksum = jsdata["check"]
+                assert checksum == self.check_line["check"]
+            except (json.JSONDecodeError, UnicodeDecodeError, KeyError, AssertionError):
+                if not self.isVisible():
+                    self.show()
                 dialog = WrongFileDialog(self)
                 dialog.exec()
                 return False
 
-            self.resetFields()
-            # Resets results
-            self.result = {}
-            # Get file path from the open project file
-            self.project_path = input_path
-            # Set window title accordingly
-            self.setWindowTitle("PyES - " + self.project_path)
+        self.resetFields()
+        # Resets results
+        self.result = {}
+        # Get file path from the open project file
+        self.project_path = input_path
+        # Set window title accordingly
+        self.setWindowTitle("PyES - " + self.project_path)
 
-            # Disable results windows
-            if self.PlotWindow:
-                self.PlotWindow.close()
-            if self.ExportWindow:
-                self.ExportWindow.close()
+        # Disable results windows
+        if self.PlotWindow:
+            self.PlotWindow.close()
+        if self.ExportWindow:
+            self.ExportWindow.close()
 
             # Disable buttons to show results
-            self.exportButton.setEnabled(False)
-            self.plotDistButton.setEnabled(False)
-            self.actionExport_Results.setEnabled(False)
-            self.actionPlot_Results.setEnabled(False)
+        self.exportButton.setEnabled(False)
+        self.plotDistButton.setEnabled(False)
+        self.actionExport_Results.setEnabled(False)
+        self.actionPlot_Results.setEnabled(False)
 
-            try:
-                self.numComp.setValue(jsdata["nc"])
-            except:
-                self.numComp.setValue(1)
+        try:
+            self.numComp.setValue(jsdata.get["nc"])
+        except:
+            self.numComp.setValue(1)
 
-            try:
-                self.numSpecies.setValue(jsdata["ns"])
-            except:
-                self.numSpecies.setValue(1)
+        try:
+            self.numSpecies.setValue(jsdata["ns"])
+        except:
+            self.numSpecies.setValue(1)
 
-            try:
-                self.numPhases.setValue(jsdata["np"])
-            except:
-                self.numPhases.setValue(0)
+        try:
+            self.numPhases.setValue(jsdata["np"])
+        except:
+            self.numPhases.setValue(0)
 
-            try:
-                self.uncertaintyMode.setCurrentIndex(jsdata["emode"])
-            except:
-                self.uncertaintyMode.setCurrentIndex(1)
+        try:
+            self.uncertaintyMode.setCurrentIndex(jsdata["emode"])
+        except:
+            self.uncertaintyMode.setCurrentIndex(1)
 
-            try:
-                self.imode.setCurrentIndex(jsdata["imode"])
-            except:
-                self.imode.setCurrentIndex(0)
+        try:
+            self.imode.setCurrentIndex(jsdata["imode"])
+        except:
+            self.imode.setCurrentIndex(0)
 
-            try:
-                self.refIonicStr.setValue(jsdata["ris"])
-            except:
-                self.refIonicStr.setValue(0)
+        try:
+            self.refIonicStr.setValue(jsdata["ris"])
+        except:
+            self.refIonicStr.setValue(0)
 
-            try:
-                self.A.setValue(jsdata["a"])
-            except:
-                self.A.setValue(0)
+        try:
+            self.A.setValue(jsdata["a"])
+        except:
+            self.A.setValue(0)
 
-            try:
-                self.B.setValue(jsdata["b"])
-            except:
-                self.B.setValue(0)
+        try:
+            self.B.setValue(jsdata["b"])
+        except:
+            self.B.setValue(0)
 
-            try:
-                self.c0.setValue(jsdata["c0"])
-            except:
-                self.c0.setValue(0)
+        try:
+            self.c0.setValue(jsdata["c0"])
+        except:
+            self.c0.setValue(0)
 
-            try:
-                self.c1.setValue(jsdata["c1"])
-            except:
-                self.c1.setValue(0)
+        try:
+            self.c1.setValue(jsdata["c1"])
+        except:
+            self.c1.setValue(0)
 
-            try:
-                self.d0.setValue(jsdata["d0"])
-            except:
-                self.d0.setValue(0)
+        try:
+            self.d0.setValue(jsdata["d0"])
+        except:
+            self.d0.setValue(0)
 
-            try:
-                self.d1.setValue(jsdata["d1"])
-            except:
-                self.d1.setValue(0)
+        try:
+            self.d1.setValue(jsdata["d1"])
+        except:
+            self.d1.setValue(0)
 
-            try:
-                self.e0.setValue(jsdata["e0"])
-            except:
-                self.e0.setValue(0)
+        try:
+            self.e0.setValue(jsdata["e0"])
+        except:
+            self.e0.setValue(0)
 
-            try:
-                self.dmode.setCurrentIndex(jsdata["dmode"])
-            except:
-                self.dmode.setCurrentIndex(0)
+        try:
+            self.dmode.setCurrentIndex(jsdata["dmode"])
+        except:
+            self.dmode.setCurrentIndex(0)
 
-            try:
-                self.v0.setValue(jsdata["v0"])
-            except:
-                self.v0.setValue(0)
+        try:
+            self.v0.setValue(jsdata["v0"])
+        except:
+            self.v0.setValue(0)
 
-            try:
-                self.initv.setValue(jsdata["initv"])
-            except:
-                self.initv.setValue(0)
+        try:
+            self.initv.setValue(jsdata["initv"])
+        except:
+            self.initv.setValue(0)
 
-            try:
-                self.vinc.setValue(jsdata["vinc"])
-            except:
-                self.vinc.setValue(0)
+        try:
+            self.vinc.setValue(jsdata["vinc"])
+        except:
+            self.vinc.setValue(0)
 
-            try:
-                self.nop.setValue(jsdata["nop"])
-            except:
-                self.nop.setValue(1)
+        try:
+            self.nop.setValue(jsdata["nop"])
+        except:
+            self.nop.setValue(1)
 
-            try:
-                self.c0back.setValue(jsdata["c0back"])
-            except:
-                self.c0back.setValue(0)
+        try:
+            self.c0back.setValue(jsdata["c0back"])
+        except:
+            self.c0back.setValue(0)
 
-            try:
-                self.ctback.setValue(jsdata["ctback"])
-            except:
-                self.ctback.setValue(0)
+        try:
+            self.ctback.setValue(jsdata["ctback"])
+        except:
+            self.ctback.setValue(0)
 
-            try:
-                self.initialLog.setValue(jsdata["initialLog"])
-            except:
-                self.initialLog.setValue(0)
+        try:
+            self.initialLog.setValue(jsdata["initialLog"])
+        except:
+            self.initialLog.setValue(0)
 
-            try:
-                self.finalLog.setValue(jsdata["finalLog"])
-            except:
-                self.finalLog.setValue(0)
+        try:
+            self.finalLog.setValue(jsdata["finalLog"])
+        except:
+            self.finalLog.setValue(0)
 
-            try:
-                self.logInc.setValue(jsdata["logInc"])
-            except:
-                self.logInc.setValue(0)
+        try:
+            self.logInc.setValue(jsdata["logInc"])
+        except:
+            self.logInc.setValue(0)
 
-            try:
-                self.cback.setValue(jsdata["cback"])
-            except:
-                self.cback.setValue(0)
+        try:
+            self.cback.setValue(jsdata["cback"])
+        except:
+            self.cback.setValue(0)
 
-            try:
-                self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
-                self.compModel._data.index = range(jsdata["nc"])
-            except:
-                self.compModel._data = self.comp_data
+        try:
+            self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
+            self.compModel._data.index = range(jsdata["nc"])
+        except:
+            self.compModel._data = self.comp_data
 
-            try:
-                self.speciesModel._data = pd.DataFrame.from_dict(jsdata["speciesModel"])
-                self.speciesModel._data.index = range(jsdata["ns"])
-            except:
-                self.speciesModel._data = self.species_data
+        try:
+            self.speciesModel._data = pd.DataFrame.from_dict(jsdata["speciesModel"])
+            self.speciesModel._data.index = range(jsdata["ns"])
+        except:
+            self.speciesModel._data = self.species_data
 
-            try:
-                self.solidSpeciesModel._data = pd.DataFrame.from_dict(
-                    jsdata["solidSpeciesModel"]
-                )
-                self.solidSpeciesModel._data.index = range(jsdata["np"])
-            except:
-                self.solidSpeciesModel._data = self.solid_species_data
-
-            try:
-                self.concModel._data = pd.DataFrame.from_dict(jsdata["concModel"])
-            except:
-                self.concModel._data = self.conc_data
-
-            try:
-                ind_comp = jsdata["ind_comp"]
-            except:
-                ind_comp = 0
-
-            indCompUpdater(self)
-            updated_comps = self.compModel._data["Name"].tolist()
-            self.speciesModel.updateHeader(updated_comps)
-            self.speciesModel.updateCompName(updated_comps)
-            self.solidSpeciesModel.updateHeader(updated_comps)
-            self.solidSpeciesModel.updateCompName(updated_comps)
-            self.indComp.setCurrentIndex(ind_comp)
-            self.speciesView.setItemDelegateForColumn(
-                self.speciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.speciesView, self.compModel._data["Name"].tolist()
-                ),
+        try:
+            self.solidSpeciesModel._data = pd.DataFrame.from_dict(
+                jsdata["solidSpeciesModel"]
             )
-            self.solidSpeciesView.setItemDelegateForColumn(
-                self.solidSpeciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
-                ),
-            )
+            self.solidSpeciesModel._data.index = range(jsdata["np"])
+        except:
+            self.solidSpeciesModel._data = self.solid_species_data
 
-            # The model layout changed so it has to be updated
-            self.compModel.layoutChanged.emit()
-            self.speciesModel.layoutChanged.emit()
-            self.solidSpeciesModel.layoutChanged.emit()
-            self.concModel.layoutChanged.emit()
+        try:
+            self.concModel._data = pd.DataFrame.from_dict(jsdata["concModel"])
+        except:
+            self.concModel._data = self.conc_data
 
-            # Clear logger output
-            self.consoleOutput.clear()
+        try:
+            ind_comp = jsdata["ind_comp"]
+        except:
+            ind_comp = 0
+
+        indCompUpdater(self)
+        updated_comps = self.compModel._data["Name"].tolist()
+        self.speciesModel.updateHeader(updated_comps)
+        self.speciesModel.updateCompName(updated_comps)
+        self.solidSpeciesModel.updateHeader(updated_comps)
+        self.solidSpeciesModel.updateCompName(updated_comps)
+        self.indComp.setCurrentIndex(ind_comp)
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.speciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
+
+        # The model layout changed so it has to be updated
+        self.compModel.layoutChanged.emit()
+        self.speciesModel.layoutChanged.emit()
+        self.solidSpeciesModel.layoutChanged.emit()
+        self.concModel.layoutChanged.emit()
+
+        # Clear logger output
+        self.consoleOutput.clear()
 
     def help_website(self):
         """
