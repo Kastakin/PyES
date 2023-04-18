@@ -3,7 +3,13 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
+from dialogs import (
+    AboutDialog,
+    CompletedCalculation,
+    IssuesLoadingDialog,
+    NewDialog,
+    WrongFileDialog,
+)
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
@@ -309,155 +315,167 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionExport_Results.setEnabled(False)
         self.actionPlot_Results.setEnabled(False)
 
-        try:
-            self.numComp.setValue(jsdata.get["nc"])
-        except:
-            self.numComp.setValue(1)
+        problems = []
 
-        try:
-            self.numSpecies.setValue(jsdata["ns"])
-        except:
-            self.numSpecies.setValue(1)
+        # Species Tab
+        self.numComp.setValue(
+            value_or_problem(jsdata, "nc", 1, "Number of components", problems)
+        )
+        self.numSpecies.setValue(
+            value_or_problem(jsdata, "ns", 1, "Number of species", problems)
+        )
+        self.numPhases.setValue(
+            value_or_problem(jsdata, "np", 0, "Number of phases", problems)
+        )
+        self.uncertaintyMode.setCurrentIndex(
+            value_or_problem(jsdata, "emode", 1, "Uncertainty estimation", problems)
+        )
+        self.imode.setCurrentIndex(
+            value_or_problem(jsdata, "imode", 0, "Ionic strength effect", problems)
+        )
+        self.refIonicStr.setValue(
+            value_or_problem(jsdata, "ris", 0, "Reference ionic strength", problems)
+        )
+        self.A.setValue(
+            value_or_problem(jsdata, "a", 0, "A parameter D-H equation", problems)
+        )
+        self.B.setValue(
+            value_or_problem(jsdata, "b", 0, "B parameter D-H equation", problems),
+        )
+        self.c0.setValue(
+            value_or_problem(jsdata, "c0", 0, "c0 parameter D-H equation", problems)
+        )
+        self.c1.setValue(
+            value_or_problem(jsdata, "c1", 0, "c1 parameter D-H equation", problems)
+        )
+        self.d0.setValue(
+            value_or_problem(jsdata, "d0", 0, "d0 parameter D-H equation", problems)
+        )
+        self.d1.setValue(
+            value_or_problem(jsdata, "d1", 0, "d1 parameter D-H equation", problems)
+        )
+        self.e0.setValue(
+            value_or_problem(jsdata, "e0", 0, "e0 parameter D-H equation", problems)
+        )
 
-        try:
-            self.numPhases.setValue(jsdata["np"])
-        except:
-            self.numPhases.setValue(0)
+        self.e1.setValue(
+            value_or_problem(jsdata, "e1", 0, "e1 parameter D-H equation", problems)
+        )
 
-        try:
-            self.uncertaintyMode.setCurrentIndex(jsdata["emode"])
-        except:
-            self.uncertaintyMode.setCurrentIndex(1)
+        # Settings tabs
+        self.dmode.setCurrentIndex(
+            value_or_problem(jsdata, "dmode", 0, "Work mode", problems)
+        )
 
-        try:
-            self.imode.setCurrentIndex(jsdata["imode"])
-        except:
-            self.imode.setCurrentIndex(0)
-
-        try:
-            self.refIonicStr.setValue(jsdata["ris"])
-        except:
-            self.refIonicStr.setValue(0)
-
-        try:
-            self.A.setValue(jsdata["a"])
-        except:
-            self.A.setValue(0)
-
-        try:
-            self.B.setValue(jsdata["b"])
-        except:
-            self.B.setValue(0)
-
-        try:
-            self.c0.setValue(jsdata["c0"])
-        except:
-            self.c0.setValue(0)
-
-        try:
-            self.c1.setValue(jsdata["c1"])
-        except:
-            self.c1.setValue(0)
-
-        try:
-            self.d0.setValue(jsdata["d0"])
-        except:
-            self.d0.setValue(0)
-
-        try:
-            self.d1.setValue(jsdata["d1"])
-        except:
-            self.d1.setValue(0)
-
-        try:
-            self.e0.setValue(jsdata["e0"])
-        except:
-            self.e0.setValue(0)
-
-        try:
-            self.dmode.setCurrentIndex(jsdata["dmode"])
-        except:
-            self.dmode.setCurrentIndex(0)
-
-        try:
-            self.v0.setValue(jsdata["v0"])
-        except:
-            self.v0.setValue(0)
-
-        try:
-            self.initv.setValue(jsdata["initv"])
-        except:
-            self.initv.setValue(0)
-
-        try:
-            self.vinc.setValue(jsdata["vinc"])
-        except:
-            self.vinc.setValue(0)
-
-        try:
-            self.nop.setValue(jsdata["nop"])
-        except:
-            self.nop.setValue(1)
-
-        try:
-            self.c0back.setValue(jsdata["c0back"])
-        except:
-            self.c0back.setValue(0)
-
-        try:
-            self.ctback.setValue(jsdata["ctback"])
-        except:
-            self.ctback.setValue(0)
-
-        try:
-            self.initialLog.setValue(jsdata["initialLog"])
-        except:
-            self.initialLog.setValue(0)
-
-        try:
-            self.finalLog.setValue(jsdata["finalLog"])
-        except:
-            self.finalLog.setValue(0)
-
-        try:
-            self.logInc.setValue(jsdata["logInc"])
-        except:
-            self.logInc.setValue(0)
-
-        try:
-            self.cback.setValue(jsdata["cback"])
-        except:
-            self.cback.setValue(0)
-
-        try:
-            self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
-            self.compModel._data.index = range(jsdata["nc"])
-        except:
-            self.compModel._data = self.comp_data
-
-        try:
-            self.speciesModel._data = pd.DataFrame.from_dict(jsdata["speciesModel"])
-            self.speciesModel._data.index = range(jsdata["ns"])
-        except:
-            self.speciesModel._data = self.species_data
-
-        try:
-            self.solidSpeciesModel._data = pd.DataFrame.from_dict(
-                jsdata["solidSpeciesModel"]
+        self.v0.setValue(
+            value_or_problem(jsdata, "v0", 0, "Initial titration volume", problems)
+        )
+        self.initv.setValue(
+            value_or_problem(jsdata, "initv", 0, "First point of titration", problems),
+        )
+        self.vinc.setValue(
+            value_or_problem(
+                jsdata,
+                "vinc",
+                0,
+                "Volume increments for each titration point",
+                problems,
             )
-            self.solidSpeciesModel._data.index = range(jsdata["np"])
-        except:
-            self.solidSpeciesModel._data = self.solid_species_data
+        )
+        self.nop.setValue(
+            value_or_problem(jsdata, "nop", 1, "Number of titration points", problems)
+        )
+        self.c0back.setValue(
+            value_or_problem(
+                jsdata,
+                "c0back",
+                0,
+                "Concentration of background ions in titration vessel",
+                problems,
+            )
+        )
+        self.ctback.setValue(
+            value_or_problem(
+                jsdata,
+                "ctback",
+                0,
+                "Concentration of background ions in titrant",
+                problems,
+            )
+        )
 
-        try:
-            self.concModel._data = pd.DataFrame.from_dict(jsdata["concModel"])
-        except:
-            self.concModel._data = self.conc_data
+        ind_comp = value_or_problem(
+            jsdata, "ind_comp", 0, "Independent component", problems
+        )
 
-        try:
-            ind_comp = jsdata["ind_comp"]
-        except:
-            ind_comp = 0
+        self.initialLog.setValue(
+            value_or_problem(
+                jsdata,
+                "initialLog",
+                0,
+                "Initial Log of concentration of independent component",
+                problems,
+            )
+        )
+        self.finalLog.setValue(
+            value_or_problem(
+                jsdata,
+                "finalLog",
+                0,
+                "Final Log of concentration of independent component",
+                problems,
+            )
+        )
+        self.logInc.setValue(
+            value_or_problem(
+                jsdata,
+                "logInc",
+                0,
+                "Increments in Log of concentration of independent component",
+                problems,
+            )
+        )
+        self.cback.setValue(
+            value_or_problem(
+                jsdata, "cback", 0, "Concentration of background ions", problems
+            )
+        )
+
+        # Models
+        self.compModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata, "compModel", self.comp_data, "Components model", problems
+            )
+        )
+        self.compModel._data.index = range(self.numComp.value())
+
+        self.speciesModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata,
+                "speciesModel",
+                self.species_data,
+                "Species model",
+                problems,
+            )
+        )
+        self.speciesModel._data.index = range(self.numSpecies.value())
+
+        self.solidSpeciesModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata,
+                "solidSpeciesModel",
+                self.solid_species_data,
+                "Solid species model",
+                problems,
+            )
+        )
+        self.solidSpeciesModel._data.index = range(self.numPhases.value())
+
+        self.concModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata, "concModel", self.conc_data, "Concentrations model", problems
+            )
+        )
 
         indCompUpdater(self)
         updated_comps = self.compModel._data["Name"].tolist()
@@ -487,6 +505,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear logger output
         self.consoleOutput.clear()
+        if problems:
+            problems_dialog = IssuesLoadingDialog(self)
+            problems_dialog.setText(
+                "The following fields had problems being imported:\n"
+                + "\n".join([f"- {p}" for p in problems])
+                + "\n" * 2
+                + "Default values have been used in their place."
+            )
+            problems_dialog.exec()
 
     def help_website(self):
         """
@@ -1033,3 +1060,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.PlotWindow.close()
 
         event.accept()
+
+
+def value_or_problem(d: dict, field: str, default, message: str, problems: list[str]):
+    value = d.get(field)
+    if value is None:
+        value = default
+        problems.append(message + f" ({field})")
+    return value

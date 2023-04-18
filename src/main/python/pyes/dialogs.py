@@ -32,8 +32,18 @@ class WrongFileDialog(QMessageBox):
         Dialog signaling that the selected file is not a valid project file.
         """
         super().__init__(parent)
-        self.setWindowTitle("Error")
+        self.setWindowTitle("Wrong File")
         self.setText("The file you tried to open is not a valid PyES project file")
+        self.setIcon(QMessageBox.Icon.Critical)
+
+
+class IssuesLoadingDialog(QMessageBox):
+    def __init__(self, parent=None):
+        """
+        Dialog signaling that the selected file is not a valid project file.
+        """
+        super().__init__(parent)
+        self.setWindowTitle("Issues in Project File")
         self.setIcon(QMessageBox.Warning)
 
 
