@@ -127,6 +127,10 @@ class Ui_MainWindow(object):
         self.actionPlot_Results.setIcon(icon6)
         self.actionAbout_Qt = QAction(MainWindow)
         self.actionAbout_Qt.setObjectName("actionAbout_Qt")
+        self.actionUndo = QAction(MainWindow)
+        self.actionUndo.setObjectName("actionUndo")
+        self.actionRedo = QAction(MainWindow)
+        self.actionRedo.setObjectName("actionRedo")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_5 = QVBoxLayout(self.centralwidget)
@@ -659,7 +663,6 @@ class Ui_MainWindow(object):
         self.tablesTab.setTabPosition(QTabWidget.North)
         self.tablesTab.setTabShape(QTabWidget.Rounded)
         self.tablesTab.setUsesScrollButtons(False)
-        self.tablesTab.setTabBarAutoHide(False)
         self.species = QWidget()
         self.species.setObjectName("species")
         self.verticalLayout_3 = QVBoxLayout(self.species)
@@ -1107,6 +1110,8 @@ class Ui_MainWindow(object):
         self.menuFile.setObjectName("menuFile")
         self.menuHelp = QMenu(self.menubar)
         self.menuHelp.setObjectName("menuHelp")
+        self.menuEdit = QMenu(self.menubar)
+        self.menuEdit.setObjectName("menuEdit")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -1119,6 +1124,7 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(Qt.TopToolBarArea, self.toolBar)
 
         self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
@@ -1129,6 +1135,8 @@ class Ui_MainWindow(object):
         self.menuHelp.addSeparator()
         self.menuHelp.addAction(self.actionAbout)
         self.menuHelp.addAction(self.actionAbout_Qt)
+        self.menuEdit.addAction(self.actionUndo)
+        self.menuEdit.addAction(self.actionRedo)
         self.toolBar.addAction(self.actionNew)
         self.toolBar.addAction(self.actionOpen)
         self.toolBar.addAction(self.actionSave)
@@ -1164,7 +1172,6 @@ class Ui_MainWindow(object):
         self.move_down_comp_button.clicked.connect(MainWindow.moveCompDown)
 
         self.tabWidget.setCurrentIndex(0)
-        self.tablesTab.setCurrentIndex(0)
         self.dmode.setCurrentIndex(1)
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1253,6 +1260,8 @@ class Ui_MainWindow(object):
         self.actionAbout_Qt.setText(
             QCoreApplication.translate("MainWindow", "About Qt", None)
         )
+        self.actionUndo.setText(QCoreApplication.translate("MainWindow", "Undo", None))
+        self.actionRedo.setText(QCoreApplication.translate("MainWindow", "Redo", None))
         self.sys_opt_label.setText(
             QCoreApplication.translate(
                 "MainWindow",
@@ -1772,6 +1781,7 @@ class Ui_MainWindow(object):
         )
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", "File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", "?", None))
+        self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", "Edit", None))
         self.toolBar.setWindowTitle(
             QCoreApplication.translate("MainWindow", "toolBar", None)
         )

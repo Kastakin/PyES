@@ -1110,13 +1110,7 @@
              <property name="tabShape">
               <enum>QTabWidget::Rounded</enum>
              </property>
-             <property name="currentIndex">
-              <number>0</number>
-             </property>
              <property name="usesScrollButtons">
-              <bool>false</bool>
-             </property>
-             <property name="tabBarAutoHide">
               <bool>false</bool>
              </property>
              <widget class="QWidget" name="species">
@@ -2055,7 +2049,15 @@
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -2202,6 +2204,16 @@
     <string>About Qt</string>
    </property>
   </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../../../resources/base/resources.qrc"/>
@@ -2278,8 +2290,8 @@
    <slot>indipendentUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>530</x>
-     <y>535</y>
+     <x>557</x>
+     <y>534</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
@@ -2294,8 +2306,8 @@
    <slot>v0Updater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>524</x>
-     <y>224</y>
+     <x>563</x>
+     <y>219</y>
     </hint>
     <hint type="destinationlabel">
      <x>804</x>
@@ -2310,8 +2322,8 @@
    <slot>relErrorsUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>251</x>
-     <y>277</y>
+     <x>281</x>
+     <y>270</y>
     </hint>
     <hint type="destinationlabel">
      <x>1203</x>
@@ -2326,8 +2338,8 @@
    <slot>imodeUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>251</x>
-     <y>325</y>
+     <x>281</x>
+     <y>317</y>
     </hint>
     <hint type="destinationlabel">
      <x>1203</x>
@@ -2342,8 +2354,8 @@
    <slot>updateComp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>251</x>
-     <y>155</y>
+     <x>281</x>
+     <y>151</y>
     </hint>
     <hint type="destinationlabel">
      <x>382</x>
@@ -2358,8 +2370,8 @@
    <slot>updateSpecies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>251</x>
-     <y>189</y>
+     <x>281</x>
+     <y>184</y>
     </hint>
     <hint type="destinationlabel">
      <x>548</x>
@@ -2378,8 +2390,8 @@
      <y>505</y>
     </hint>
     <hint type="destinationlabel">
-     <x>477</x>
-     <y>560</y>
+     <x>896</x>
+     <y>737</y>
     </hint>
    </hints>
   </connection>
@@ -2390,8 +2402,8 @@
    <slot>updateSolid()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>249</x>
-     <y>223</y>
+     <x>281</x>
+     <y>217</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -2406,8 +2418,8 @@
    <slot>insertSpeciesAbove()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>483</x>
-     <y>149</y>
+     <x>513</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
      <x>715</x>
@@ -2422,8 +2434,8 @@
    <slot>insertSpeciesBelow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>515</x>
-     <y>149</y>
+     <x>545</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
      <x>888</x>
@@ -2438,8 +2450,8 @@
    <slot>removeSpecies()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>547</x>
-     <y>149</y>
+     <x>577</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
      <x>1026</x>
@@ -2454,8 +2466,8 @@
    <slot>moveSpeciesUp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>588</x>
-     <y>149</y>
+     <x>618</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
      <x>855</x>
@@ -2470,8 +2482,8 @@
    <slot>moveSpeciesDown()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>620</x>
-     <y>149</y>
+     <x>650</x>
+     <y>146</y>
     </hint>
     <hint type="destinationlabel">
      <x>673</x>
@@ -2486,8 +2498,8 @@
    <slot>insertCompAbove()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>291</x>
-     <y>140</y>
+     <x>327</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel">
      <x>367</x>
@@ -2502,8 +2514,8 @@
    <slot>insertCompBelow()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>141</y>
+     <x>360</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel">
      <x>335</x>
@@ -2518,8 +2530,8 @@
    <slot>removeComp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>346</x>
-     <y>139</y>
+     <x>393</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel">
      <x>301</x>
@@ -2534,8 +2546,8 @@
    <slot>moveCompUp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>386</x>
-     <y>135</y>
+     <x>436</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel">
      <x>505</x>
@@ -2550,8 +2562,8 @@
    <slot>moveCompDown()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>427</x>
-     <y>133</y>
+     <x>469</x>
+     <y>147</y>
     </hint>
     <hint type="destinationlabel">
      <x>663</x>

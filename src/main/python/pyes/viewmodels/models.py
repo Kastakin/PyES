@@ -321,7 +321,9 @@ class SpeciesModel(QAbstractTableModel):
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """Insert a row into the model."""
         self.beginInsertRows(
-            index, (0 if position == -1 else position), position + rows - 1
+            index,
+            (0 if position == -1 else position),
+            position + rows - 1,
         )
 
         empty_rows = pd.DataFrame(
@@ -355,8 +357,11 @@ class SpeciesModel(QAbstractTableModel):
 
     def removeRows(self, position, rows=1, index=QModelIndex()):
         """Remove rows from the model."""
-        self.beginRemoveRows(index, position, position + rows - 1)
-
+        self.beginRemoveRows(
+            index,
+            (0 if position == -1 else position),
+            (0 if position == -1 else position) + rows - 1,
+        )
         self._data = self._data.drop(
             self._data.index[position - rows : position], axis=0
         ).reset_index(drop=True)
@@ -535,7 +540,9 @@ class SolidSpeciesModel(QAbstractTableModel):
     def insertRows(self, position, rows=1, index=QModelIndex()):
         """Insert a row into the model."""
         self.beginInsertRows(
-            index, (0 if position == -1 else position), position + rows - 1
+            index,
+            (0 if position == -1 else position),
+            position + rows - 1,
         )
         empty_rows = pd.DataFrame(
             [
@@ -567,7 +574,11 @@ class SolidSpeciesModel(QAbstractTableModel):
 
     def removeRows(self, position, rows=1, index=QModelIndex()):
         """Remove rows from the model."""
-        self.beginRemoveRows(index, position, position + rows - 1)
+        self.beginRemoveRows(
+            index,
+            (0 if position == -1 else position),
+            (0 if position == -1 else position) + rows - 1,
+        )
 
         self._data = self._data.drop(
             self._data.index[position - rows : position], axis=0

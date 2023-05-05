@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
+from commands import AddSpeciesRows, RemoveSpeciesRows
 from dialogs import (
     AboutDialog,
     CompletedCalculation,
@@ -11,7 +12,7 @@ from dialogs import (
     WrongFileDialog,
 )
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QKeySequence, QUndoCommand, QUndoStack
 from PySide6.QtWidgets import (
     QFileDialog,
     QHeaderView,
@@ -41,6 +42,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Initiate threadpool
         self.threadpool = QThreadPool()
+        self.undostack = QUndoStack()
+
+        self.actionUndo.triggered.connect(self.undostack.undo)
+        self.actionUndo.setShortcut(QKeySequence.StandardKey.Undo)
+        self.actionRedo.triggered.connect(self.undostack.redo)
+        self.actionRedo.setShortcut(QKeySequence.StandardKey.Redo)
 
         # Initiate settings context
         self.settings = QSettings()
@@ -172,6 +179,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Sets the components names in the QComboBox
         indCompUpdater(self)
+
+        self.solidSpeciesModel.layoutChanged.connect(self.check_solid_presence)
 
         # declare the checkline used to validate project files
         self.check_line = {"check": "PyES project file --- DO NOT MODIFY THIS LINE!"}
@@ -505,6 +514,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear logger output
         self.consoleOutput.clear()
+
+        # Clear undo stack after loading
+        self.undostack.clear()
+
         if problems:
             problems_dialog = IssuesLoadingDialog(self)
             problems_dialog.setText(
@@ -670,16 +683,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ),
         )
 
-    def updateSpecies(self, s):
+    def updateSpecies(self):
         """
         Handles the updating species model due to changes in the number of species present.
         """
-        if self.speciesModel.rowCount() < s:
-            added_rows = s - self.speciesModel.rowCount()
-            self.speciesModel.insertRows(self.speciesModel.rowCount(), added_rows)
-        elif self.speciesModel.rowCount() > s:
-            removed_rows = self.speciesModel.rowCount() - s
-            self.speciesModel.removeRows(self.speciesModel.rowCount(), removed_rows)
+        new_value = self.numSpecies.value()
+        if self.speciesModel.rowCount() < new_value:
+            added_rows = new_value - self.speciesModel.rowCount()
+            self.undostack.push(
+                AddSpeciesRows(
+                    self.speciesModel,
+                    self.numSpecies,
+                    self.speciesModel.rowCount() - 1,
+                    added_rows,
+                    update=False,
+                )
+            )
+        elif self.speciesModel.rowCount() > new_value:
+            removed_rows = self.speciesModel.rowCount() - new_value
+            self.undostack.push(
+                RemoveSpeciesRows(
+                    self.speciesModel,
+                    self.numSpecies,
+                    self.speciesModel.rowCount(),
+                    removed_rows,
+                    update=False,
+                )
+            )
         else:
             pass
 
@@ -689,20 +719,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         if self.solidSpeciesModel.rowCount() < s:
             added_rows = s - self.solidSpeciesModel.rowCount()
-            self.solidSpeciesModel.insertRows(
-                self.solidSpeciesModel.rowCount(), added_rows
+            self.undostack.push(
+                AddSpeciesRows(
+                    self.solidSpeciesModel,
+                    self.numPhases,
+                    self.solidSpeciesModel.rowCount() - 1,
+                    added_rows,
+                    update=False,
+                )
             )
         elif self.solidSpeciesModel.rowCount() > s:
             removed_rows = self.solidSpeciesModel.rowCount() - s
-            self.solidSpeciesModel.removeRows(
-                self.solidSpeciesModel.rowCount(), removed_rows
+            self.undostack.push(
+                RemoveSpeciesRows(
+                    self.solidSpeciesModel,
+                    self.numPhases,
+                    self.solidSpeciesModel.rowCount(),
+                    removed_rows,
+                    update=False,
+                )
             )
         else:
             pass
-        if self.solidSpeciesModel.rowCount() == 0:
-            self.solidSpeciesView.setEnabled(False)
-        else:
-            self.solidSpeciesView.setEnabled(True)
 
     def updateCompName(self):
         """
@@ -804,49 +842,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
 
     def insertSpeciesAbove(self):
-        if self.tablesTab.isTabVisible(0):
+        if self.tablesTab.currentIndex() == 0:
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
             else:
                 row = 0
-            self.speciesModel.insertRows(row - 1, 1)
-            self.numSpecies.setValue(self.numSpecies.value() + 1)
+            self.undostack.push(
+                AddSpeciesRows(self.speciesModel, self.numSpecies, row - 1, 1)
+            )
             self.speciesView.selectRow(row)
-        elif self.tablesTab.isTabVisible(1):
+        elif self.tablesTab.currentIndex() == 1:
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
             else:
                 row = 0
-
-            self.solidSpeciesModel.insertRows(row - 1, 1)
-            self.numPhases.setValue(self.numPhases.value() + 1)
-            self.speciesView.selectRow(row)
+            self.undostack.push(
+                AddSpeciesRows(self.solidSpeciesModel, self.numPhases, row - 1, 1)
+            )
+            self.solidSpeciesView.selectRow(row)
         else:
             pass
 
     def insertSpeciesBelow(self):
-        if self.tablesTab.isTabVisible(0):
+        if self.tablesTab.currentIndex() == 0:
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
             else:
                 row = self.speciesModel.rowCount()
-            self.speciesModel.insertRows(row, 1)
-            self.numSpecies.setValue(self.numSpecies.value() + 1)
+            self.undostack.push(
+                AddSpeciesRows(self.speciesModel, self.numSpecies, row, 1)
+            )
             self.speciesView.selectRow(row + 1)
-        elif self.tablesTab.isTabVisible(1):
+        elif self.tablesTab.currentIndex() == 1:
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
             else:
                 row = self.solidSpeciesModel.rowCount()
 
-            self.solidSpeciesModel.insertRows(row, 1)
-            self.numPhases.setValue(self.numPhases.value() + 1)
+            self.undostack.push(
+                AddSpeciesRows(self.solidSpeciesModel, self.numPhases, row, 1)
+            )
             self.speciesView.selectRow(row + 1)
         else:
             pass
 
     def removeSpecies(self):
-        if self.tablesTab.isTabVisible(0):
+        if self.tablesTab.currentIndex() == 0:
             if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
                 if (
                     QMessageBox.question(
@@ -856,11 +897,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     )
                     == QMessageBox.Yes
                 ):
-                    self.speciesModel.removeRows(
-                        self.speciesView.selectedIndexes()[0].row() + 1, 1
+                    self.undostack.push(
+                        RemoveSpeciesRows(
+                            self.speciesModel,
+                            self.numSpecies,
+                            self.speciesView.selectedIndexes()[0].row() + 1,
+                            1,
+                        )
                     )
-                    self.numSpecies.setValue(self.numSpecies.value() - 1)
-        elif self.tablesTab.isTabVisible(1):
+        elif self.tablesTab.currentIndex() == 1:
             if self.solidSpeciesView.selectedIndexes():
                 if (
                     QMessageBox.question(
@@ -870,20 +915,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     )
                     == QMessageBox.Yes
                 ):
-                    self.solidSpeciesModel.removeRows(
-                        self.solidSpeciesView.selectedIndexes()[0].row() + 1, 1
+                    self.undostack.push(
+                        RemoveSpeciesRows(
+                            self.solidSpeciesModel,
+                            self.numPhases,
+                            self.solidSpeciesView.selectedIndexes()[0].row() + 1,
+                            1,
+                        )
                     )
-                    self.numPhases.setValue(self.numPhases.value() - 1)
         else:
             pass
 
     def moveSpeciesUp(self):
-        if self.tablesTab.isTabVisible(0):
+        if self.tablesTab.currentIndex() == 0:
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
                 self.speciesModel.swapRows(row, row - 1)
                 self.speciesView.selectRow(row - 1)
-        elif self.tablesTab.isTabVisible(1):
+        elif self.tablesTab.currentIndex() == 1:
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
                 self.solidSpeciesModel.swapRows(row, row - 1)
@@ -892,12 +941,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
 
     def moveSpeciesDown(self):
-        if self.tablesTab.isTabVisible(0):
+        if self.tablesTab.currentIndex() == 0:
             if self.speciesView.selectedIndexes():
                 row = self.speciesView.selectedIndexes()[0].row()
                 self.speciesModel.swapRows(row, row + 1)
                 self.speciesView.selectRow(row + 1)
-        elif self.tablesTab.isTabVisible(1):
+        elif self.tablesTab.currentIndex() == 1:
             if self.solidSpeciesView.selectedIndexes():
                 row = self.solidSpeciesView.selectedIndexes()[0].row()
                 self.solidSpeciesModel.swapRows(row, row + 1)
@@ -1060,6 +1109,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.PlotWindow.close()
 
         event.accept()
+
+    def check_solid_presence(self):
+        if self.solidSpeciesModel.rowCount() == 0:
+            self.solidSpeciesView.setEnabled(False)
+        else:
+            self.solidSpeciesView.setEnabled(True)
 
 
 def value_or_problem(d: dict, field: str, default, message: str, problems: list[str]):
