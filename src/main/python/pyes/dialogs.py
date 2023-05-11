@@ -1,9 +1,12 @@
 # This file handles the creation of all the custom dialogs
 # used by the software
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QDialog, QMessageBox
 from ui.PyES_about import Ui_dialogAbout
+from ui.PyES_ionicStrengthInfo import Ui_IonicStrengthInfoDialog
 from ui.PyES_newDialog import Ui_dialogNew
+from ui.PyES_uncertaintyInfo import Ui_UncertaintyInfoDialog
 
 
 class NewDialog(QDialog):
@@ -63,3 +66,32 @@ class CompletedCalculation(QMessageBox):
                 'Calculation was aborted, see the "Calculate" Tab for more info.'
             )
             self.setIcon(QMessageBox.Critical)
+
+
+class IonicStrengthInfoDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_IonicStrengthInfoDialog()
+        self.ui.setupUi(self)
+
+        self.ui.widget.load(":/equations/dh_equation.svg")
+        self.ui.widget.renderer().setAspectRatioMode(Qt.KeepAspectRatio)
+
+        self.ui.widget_2.load(":/equations/dh_expansion.svg")
+        self.ui.widget_2.renderer().setAspectRatioMode(Qt.KeepAspectRatio)
+
+
+class UncertaintyInfoDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_UncertaintyInfoDialog()
+        self.ui.setupUi(self)
+
+        self.ui.widget.load(":/equations/error_components.svg")
+        self.ui.widget.renderer().setAspectRatioMode(Qt.KeepAspectRatio)
+
+        self.ui.widget_2.load(":/equations/error_soluble.svg")
+        self.ui.widget_2.renderer().setAspectRatioMode(Qt.KeepAspectRatio)
+
+        self.ui.widget_3.load(":/equations/error_precipitate.svg")
+        self.ui.widget_3.renderer().setAspectRatioMode(Qt.KeepAspectRatio)

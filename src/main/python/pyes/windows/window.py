@@ -7,8 +7,10 @@ from commands import AddSpeciesRows, RemoveSpeciesRows
 from dialogs import (
     AboutDialog,
     CompletedCalculation,
+    IonicStrengthInfoDialog,
     IssuesLoadingDialog,
     NewDialog,
+    UncertaintyInfoDialog,
     WrongFileDialog,
 )
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
@@ -336,7 +338,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.numPhases.setValue(
             value_or_problem(jsdata, "np", 0, "Number of phases", problems)
         )
-        self.uncertaintyMode.setCurrentIndex(
+        self.uncertaintyMode.setChecked(
             value_or_problem(jsdata, "emode", 1, "Uncertainty estimation", problems)
         )
         self.imode.setCurrentIndex(
@@ -555,7 +557,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesView.setEnabled(False)
 
         # Reset rel. error settings
-        self.uncertaintyMode.setCurrentIndex(1)
+        self.uncertaintyMode.setChecked(False)
 
         # Reset Ionic strenght params
         self.imode.setCurrentIndex(0)
@@ -1075,12 +1077,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.logInc_label.setText(f"-log[{self.indComp.currentText()}] Increment:")
 
-    def relErrorsUpdater(self, mode):
+    def relErrorsUpdater(self, checked):
         """
         If relative errors aren't requested
         gray out the corresponding columns in tableviews.
         """
-        if mode == 0:
+        if checked:
             self.speciesView.model().setColumnReadOnly([3], False)
             self.solidSpeciesView.model().setColumnReadOnly([3], False)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
@@ -1115,6 +1117,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.solidSpeciesView.setEnabled(False)
         else:
             self.solidSpeciesView.setEnabled(True)
+
+    def displayUncertaintyInfo(self):
+        UncertaintyInfoDialog(parent=self).exec()
+
+    def displayIonicStrengthInfo(self):
+        IonicStrengthInfoDialog(parent=self).exec()
 
 
 def value_or_problem(d: dict, field: str, default, message: str, problems: list[str]):

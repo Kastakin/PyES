@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>information-frame.png</file>
     <file>row_down.png</file>
     <file>row_up.png</file>
     <file>table-insert-row-after.png</file>
@@ -18,5 +19,11 @@
     <file>document.png</file>
     <file>disk.png</file>
   </qresource>
-  <qresource prefix="img"/>
+  <qresource prefix="equations">
+    <file>dh_expansion.svg</file>
+    <file>error_soluble.svg</file>
+    <file>error_precipitate.svg</file>
+    <file>error_components.svg</file>
+    <file>dh_equation.svg</file>
+  </qresource>
 </RCC>
