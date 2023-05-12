@@ -480,6 +480,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 problems,
             )
         )
+
+        if self.solidSpeciesModel._data.empty:
+            self.solidSpeciesModel._data = self.solid_species_data
+
         self.solidSpeciesModel._data.index = range(self.numPhases.value())
 
         self.concModel._data = pd.DataFrame.from_dict(
