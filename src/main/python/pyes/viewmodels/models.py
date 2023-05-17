@@ -63,7 +63,7 @@ class TitrationComponentsModel(QAbstractTableModel):
         else:
             # for row in range(rows):
             self._data = pd.concat(
-                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                [self._data[:position], empty_rows, self._data[position:]],
                 ignore_index=True,
             )
 
@@ -72,15 +72,19 @@ class TitrationComponentsModel(QAbstractTableModel):
         return True
 
     def removeRows(self, position, rows=1, index=QModelIndex()):
-        """Remove a row from the model."""
-        self.beginRemoveRows(index, position, position + rows - 1)
-
-        self._data = pd.concat(
-            [self._data.iloc[0 : position - rows, :], self._data.iloc[position:, :]]
+        """Remove rows from the model."""
+        self.beginRemoveRows(
+            index,
+            (0 if position == -1 else position),
+            (0 if position == -1 else position) + rows - 1,
+        )
+        self._data = self._data.drop(
+            self._data.index[position - rows : position], axis=0
         )
 
         self.endRemoveRows()
         self.layoutChanged.emit()
+
         return True
 
     def swapRows(self, first: int, second: int):
@@ -148,10 +152,7 @@ class ComponentsModel(QAbstractTableModel):
 
         empty_rows = pd.DataFrame(
             [["COMP" + str(position + row + 1)] + [0] for row in range(rows)],
-            columns=[
-                "Name",
-                "Charge",
-            ],
+            columns=self._data.columns,
         )
 
         if position == -1:
@@ -162,7 +163,7 @@ class ComponentsModel(QAbstractTableModel):
         else:
             # for row in range(rows):
             self._data = pd.concat(
-                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                [self._data[:position], empty_rows, self._data[position:]],
                 ignore_index=True,
             )
 
@@ -171,8 +172,11 @@ class ComponentsModel(QAbstractTableModel):
 
     def removeRows(self, position, rows=1, index=QModelIndex()):
         """Remove a row from the model."""
-        self.beginRemoveRows(index, position, position + rows - 1)
-
+        self.beginRemoveRows(
+            index,
+            (0 if position == -1 else position),
+            (0 if position == -1 else position) + rows - 1,
+        )
         self._data = self._data.drop(
             self._data.index[position - rows : position], axis=0
         )
@@ -376,7 +380,9 @@ class SpeciesModel(QAbstractTableModel):
         self.beginInsertColumns(index, position, position + columns - 1)
 
         for column in range(columns):
-            self._data.insert(position + column, "COMP" + str(position + column), 0)
+            self._data.insert(
+                position + column, "COMP" + str(position + column), int(0)
+            )
 
         self.endInsertColumns()
         self.layoutChanged.emit()
@@ -391,7 +397,7 @@ class SpeciesModel(QAbstractTableModel):
 
         # self._data = self._data.drop(self._data.columns[start:finish], axis=1)
         self._data = pd.concat(
-            [self._data.iloc[:, 0 : finish - columns], self._data.iloc[:, finish:]],
+            [self._data.iloc[:, : finish - columns], self._data.iloc[:, finish:]],
             axis=1,
         )
 

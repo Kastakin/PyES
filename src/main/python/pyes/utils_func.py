@@ -1,6 +1,28 @@
 import numpy as np
 import pandas as pd
 from openpyxl.utils import get_column_letter
+from PySide6.QtCore import QAbstractItemModel
+from PySide6.QtWidgets import QComboBox, QTableView
+from viewmodels.delegate import ComboBoxDelegate
+
+
+def addSpeciesComp(position: int, added_rows: int, view: QTableView):
+    view.setItemDelegateForColumn(view.model().columnCount() - 1, None)
+    view.model().insertColumns(position, added_rows)
+    view.setItemDelegateForColumn(
+        view.model().columnCount() - 1,
+        ComboBoxDelegate(view, view.model().sourceModel()._data["Name"].tolist()),
+    )
+
+
+def removeSpeciesComp(position: int, removed_rows: int, view: QTableView):
+    model = view.model().sourceModel()
+    view.setItemDelegateForColumn(model.columnCount() - 1, None)
+    model.removeColumns(position, removed_rows)
+    view.setItemDelegateForColumn(
+        model.columnCount() - 1,
+        ComboBoxDelegate(view, model._data["Name"].tolist()),
+    )
 
 
 # TODO: has to be updated from legacy code
@@ -60,20 +82,48 @@ def returnDataDict(self, saving=True):
     return data_list
 
 
-def indCompUpdater(self):
+def updateCompNames(
+    comp_model: QAbstractItemModel,
+    species_table: QTableView,
+    solids_table: QTableView,
+    conc_model: QAbstractItemModel,
+    ind_comp: QComboBox,
+):
+    """
+    Handles the displayed names in the species table when edited in the components one
+    """
+    species_tables = [species_table, solids_table]
+    species_models = [table.model().sourceModel() for table in species_tables]
+
+    updated_comps = comp_model._data["Name"].tolist()
+
+    for table, model in zip(species_tables, species_models):
+        table.setItemDelegateForColumn(
+            model.columnCount() - 1,
+            ComboBoxDelegate(table, updated_comps),
+        )
+        model.updateHeader(updated_comps)
+        model.updateCompName(updated_comps)
+
+    conc_model.updateIndex(updated_comps)
+
+    updateIndComponent(comp_model, ind_comp)
+
+
+def updateIndComponent(comp_model: QAbstractItemModel, components_combobox: QComboBox):
     """
     Update the selected indipendent component, tries to preserve the last one picked.
     """
-    old_selected = self.indComp.currentIndex()
+    old_selected = components_combobox.currentIndex()
     if old_selected < 0:
         old_selected = 0
-    self.indComp.clear()
-    self.indComp.addItems(self.compModel._data["Name"])
-    num_elements = self.indComp.count()
+    components_combobox.clear()
+    components_combobox.addItems(comp_model._data["Name"])
+    num_elements = components_combobox.count()
     if num_elements >= old_selected:
-        self.indComp.setCurrentIndex(old_selected)
+        components_combobox.setCurrentIndex(old_selected)
     else:
-        self.indComp.setCurrentIndex(num_elements)
+        components_combobox.setCurrentIndex(num_elements)
 
 
 def cleanData():
@@ -95,7 +145,7 @@ def cleanData():
         ],
     )
     species_data = pd.DataFrame(
-        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
+        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["COMP1"]],
         columns=[
             "Ignored",
             "Name",
@@ -110,7 +160,7 @@ def cleanData():
         ],
     )
     solid_species_data = pd.DataFrame(
-        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
+        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["COMP1"]],
         columns=[
             "Ignored",
             "Name",
@@ -132,6 +182,7 @@ def getName(vector):
     """
     Get name of species given their coefficients.
     """
+    # TODO: rewrite, this is garbage and difficult to understand, maybe refactor
     comps = vector.index.to_numpy(copy=True)
     coeff = vector.to_numpy(copy=True)
     comps = comps[coeff != 0]
@@ -141,7 +192,7 @@ def getName(vector):
     comps = np.where(
         coeff > 1, "(" + comps + ")" + coeff.astype(str), "(" + comps + ")"
     )
-    return comps.sum()
+    return "".join(comps)
 
 
 def getColWidths(dataframe):

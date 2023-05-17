@@ -1,10 +1,13 @@
-from PySide6.QtCore import QEvent, QPoint, QRect, Qt, QTimer
+from PySide6.QtCore import QEvent, QLocale, QObject, QPoint, QRect, Qt, QTimer
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
     QAbstractItemDelegate,
+    QAbstractSpinBox,
     QApplication,
     QColorDialog,
     QComboBox,
     QItemDelegate,
+    QLineEdit,
     QStyle,
     QStyledItemDelegate,
     QStyleOptionButton,
