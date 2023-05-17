@@ -111,6 +111,59 @@ class SpeciesRemoveRows(QUndoCommand):
         self.counter.blockSignals(False)
 
 
+class ComponentsSwapRows(QUndoCommand):
+    def __init__(
+        self,
+        comp_table: QTableView,
+        species_table: QTableView,
+        solids_table: QTableView,
+        conc_model: QAbstractItemModel,
+        ind_comp: QComboBox,
+        prev_ind_comp: str,
+        first_row: int,
+        second_row: int,
+    ):
+        QUndoCommand.__init__(self)
+        self.comp_table = comp_table
+        self.comp_model = comp_table.model().sourceModel()
+        self.conc_model = conc_model
+        self.species_tables = [species_table, solids_table]
+        self.species_models = [
+            table.model().sourceModel() for table in self.species_tables
+        ]
+        self.ind_comp = ind_comp
+        self.prev_ind_comp = prev_ind_comp
+        self.first_row = first_row
+        self.second_row = second_row
+
+    def undo(self) -> None:
+        for table, model in zip(self.species_tables, self.species_models):
+            model.swapColumns(self.second_row + 8, self.first_row + 8)
+
+        self.conc_model.swapRows(self.second_row, self.first_row)
+        self.comp_model.swapRows(self.second_row, self.first_row)
+
+        self.cleanup()
+        self.comp_table.selectRow(self.first_row)
+
+    def redo(self) -> None:
+        for table, model in zip(self.species_tables, self.species_models):
+            model.swapColumns(self.first_row + 8, self.second_row + 8)
+
+        self.conc_model.swapRows(self.first_row, self.second_row)
+        self.comp_model.swapRows(self.first_row, self.second_row)
+
+        self.cleanup()
+        self.comp_table.selectRow(self.second_row)
+
+    def cleanup(self):
+        updateCompNames(
+            self.comp_model, *self.species_tables, self.conc_model, self.ind_comp
+        )
+
+        self.ind_comp.setCurrentIndex(self.ind_comp.findData(self.prev_ind_comp, 0))
+
+
 class ComponentsAddRows(QUndoCommand):
     def __init__(
         self,

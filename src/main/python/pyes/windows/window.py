@@ -6,6 +6,7 @@ import pandas as pd
 from commands import (
     ComponentsAddRows,
     ComponentsRemoveRows,
+    ComponentsSwapRows,
     SpeciesAddRows,
     SpeciesRemoveRows,
     SpeciesSwapRows,
@@ -794,49 +795,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def moveCompUp(self):
         if self.compView.selectedIndexes():
-            current_ind_comp = self.indComp.currentData(0)
+            selected_ind_comp = self.indComp.currentData(0)
             row = self.compView.selectedIndexes()[0].row()
-            if row == 0:
-                return
-
-            self.speciesModel.swapColumns(row + 8, row + 7)
-            self.solidSpeciesModel.swapColumns(row + 8, row + 7)
-            self.concModel.swapRows(row, row - 1)
-            self.compModel.swapRows(row, row - 1)
-            self.compView.selectRow(row - 1)
-
-            updateCompNames(
-                self.compModel,
-                self.speciesView,
-                self.solidSpeciesView,
-                self.concModel,
-                self.indComp,
-            )
-
-            self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
+            if row != 0:
+                self.undostack.push(
+                    ComponentsSwapRows(
+                        self.compView,
+                        self.speciesView,
+                        self.solidSpeciesView,
+                        self.concModel,
+                        self.indComp,
+                        selected_ind_comp,
+                        row,
+                        row - 1,
+                    )
+                )
 
     def moveCompDown(self):
         if self.compView.selectedIndexes():
-            current_ind_comp = self.indComp.currentData(0)
+            selected_ind_comp = self.indComp.currentData(0)
             row = self.compView.selectedIndexes()[0].row()
-            if row == self.compModel.rowCount() - 1:
-                return
-
-            self.speciesModel.swapColumns(row + 8, row + 9)
-            self.solidSpeciesModel.swapColumns(row + 8, row + 9)
-            self.concModel.swapRows(row, row + 1)
-            self.compModel.swapRows(row, row + 1)
-            self.compView.selectRow(row + 1)
-
-            updateCompNames(
-                self.compModel,
-                self.speciesView,
-                self.solidSpeciesView,
-                self.concModel,
-                self.indComp,
-            )
-
-            self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
+            if row != self.compModel.rowCount() - 1:
+                self.undostack.push(
+                    ComponentsSwapRows(
+                        self.compView,
+                        self.speciesView,
+                        self.solidSpeciesView,
+                        self.concModel,
+                        self.indComp,
+                        selected_ind_comp,
+                        row,
+                        row + 1,
+                    )
+                )
 
     def insertSpeciesAbove(self):
         if self.tablesTab.currentIndex() == 0:
@@ -917,31 +908,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def moveSpeciesUp(self):
         if self.tablesTab.currentIndex() == 0:
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-                self.speciesModel.swapRows(row, row - 1)
-                self.speciesView.selectRow(row - 1)
+            table = self.speciesView
         elif self.tablesTab.currentIndex() == 1:
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-                self.solidSpeciesModel.swapRows(row, row - 1)
-                self.solidSpeciesView.selectRow(row - 1)
+            table = self.solidSpeciesView
         else:
-            pass
+            return
+
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row()
+            if row != 0:
+                self.undostack.push(SpeciesSwapRows(table, row, row - 1))
 
     def moveSpeciesDown(self):
         if self.tablesTab.currentIndex() == 0:
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-                self.speciesModel.swapRows(row, row + 1)
-                self.speciesView.selectRow(row + 1)
+            table = self.speciesView
         elif self.tablesTab.currentIndex() == 1:
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-                self.solidSpeciesModel.swapRows(row, row + 1)
-                self.solidSpeciesView.selectRow(row + 1)
+            table = self.solidSpeciesView
         else:
-            pass
+            return
+
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row()
+            if row != (table.model().rowCount() - 1):
+                self.undostack.push(SpeciesSwapRows(table, row, row + 1))
 
     def calculate(self):
         # Disable the button, one omptimization calculation at the time

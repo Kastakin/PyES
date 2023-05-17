@@ -88,16 +88,14 @@ class TitrationComponentsModel(QAbstractTableModel):
         return True
 
     def swapRows(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
-            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+        self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+        self.layoutChanged.emit()
 
     def swapColumns(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
-            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+        self._data.iloc[:, first], self._data.iloc[:, second] = b, a
+        self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.index.size
@@ -186,16 +184,14 @@ class ComponentsModel(QAbstractTableModel):
         return True
 
     def swapRows(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
-            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+        self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+        self.layoutChanged.emit()
 
     def swapColumns(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
-            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+        self._data.iloc[:, first], self._data.iloc[:, second] = b, a
+        self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.index.size
@@ -407,16 +403,14 @@ class SpeciesModel(QAbstractTableModel):
         return True
 
     def swapRows(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
-            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+        self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+        self.layoutChanged.emit()
 
     def swapColumns(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
-            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+        self._data.iloc[:, first], self._data.iloc[:, second] = b, a
+        self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.index.size
@@ -570,7 +564,7 @@ class SolidSpeciesModel(QAbstractTableModel):
         else:
             # for row in range(rows):
             self._data = pd.concat(
-                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                [self._data[:position], empty_rows, self._data[position:]],
                 ignore_index=True,
             )
         self.endInsertRows()
@@ -624,16 +618,14 @@ class SolidSpeciesModel(QAbstractTableModel):
         return True
 
     def swapRows(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
-            self._data.iloc[first, :], self._data.iloc[second, :] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
+        self._data.iloc[first, :], self._data.iloc[second, :] = b, a
+        self.layoutChanged.emit()
 
     def swapColumns(self, first: int, second: int):
-        if second != -1 and second != self.rowCount():
-            a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
-            self._data.iloc[:, first], self._data.iloc[:, second] = b, a
-            self.layoutChanged.emit()
+        a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
+        self._data.iloc[:, first], self._data.iloc[:, second] = b, a
+        self.layoutChanged.emit()
 
     def rowCount(self, index=QModelIndex()):
         return self._data.index.size
