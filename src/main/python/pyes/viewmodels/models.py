@@ -259,8 +259,6 @@ class SpeciesModel(QAbstractTableModel):
 
         for row in self._data.index:
             self._data.iloc[row, 1] = str(getName(self._data.iloc[row, 8:-1]))
-            if self._data.iloc[row, 1] == "0":
-                self._data.iloc[row, 1] = ""
 
         self.layoutChanged.emit()
 
