@@ -43,7 +43,7 @@ from viewmodels.model_proxy import ProxyModel
 from viewmodels.models import (
     ComponentsModel,
     SolidSpeciesModel,
-    SpeciesModel,
+    SolubleSpeciesModel,
     TitrationComponentsModel,
 )
 from windows.export import ExportWindow
@@ -165,28 +165,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         # Sets the tableview for the species
-        self.speciesModel = SpeciesModel(self.species_data)
+        self.speciesModel = SolubleSpeciesModel(self.species_data, self.undostack)
         self.speciesProxy = ProxyModel(self)
         self.speciesProxy.setSourceModel(self.speciesModel)
         self.speciesView.setModel(self.speciesProxy)
         self.speciesView.setItemDelegateForColumn(0, CheckBoxDelegate(self.speciesView))
+        self.speciesView.setItemDelegate(NumberFormatDelegate(self.speciesView))
         # assign combobox delegate to last column
         self.speciesView.setItemDelegateForColumn(
             self.speciesModel.columnCount() - 1,
-            ComboBoxDelegate(
-                self, self.speciesView, self.compModel._data["Name"].tolist()
-            ),
+            ComboBoxDelegate(self.speciesView, self.compModel._data["Name"].tolist()),
         )
         speciesHeader = self.speciesView.horizontalHeader()
         speciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # Sets the tableview for the solid species
-        self.solidSpeciesModel = SolidSpeciesModel(self.solid_species_data)
+        self.solidSpeciesModel = SolidSpeciesModel(
+            self.solid_species_data, self.undostack
+        )
         self.solidSpeciesProxy = ProxyModel(self)
         self.solidSpeciesProxy.setSourceModel(self.solidSpeciesModel)
         self.solidSpeciesView.setModel(self.solidSpeciesProxy)
         self.solidSpeciesView.setItemDelegateForColumn(
             0, CheckBoxDelegate(self.solidSpeciesView)
+        )
+        self.solidSpeciesView.setItemDelegate(
+            NumberFormatDelegate(self.solidSpeciesView)
         )
         # assign combobox delegate to last column
         self.solidSpeciesView.setItemDelegateForColumn(

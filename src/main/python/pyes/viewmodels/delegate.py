@@ -16,6 +16,51 @@ from PySide6.QtWidgets import (
 )
 
 
+class DotDoubleValidator(QDoubleValidator):
+    def __init__(
+        self,
+        bottom: float = -float("inf"),
+        top: float = float("inf"),
+        decimals: int = -1,
+        parent=None,
+    ) -> None:
+        return super().__init__(bottom, top, decimals, parent)
+
+    def validate(self, input: str, pos: int) -> object:
+        if "," in input:
+            return QDoubleValidator.Intermediate
+        return super().validate(input, pos)
+
+    def fixup(self, input: str) -> str:
+        return input.replace(",", ".")
+
+
+class CustomDoubleSpinbox(QLineEdit):
+    def __init__(self, parent):
+        QLineEdit.__init__(self, parent)
+        float_validator = DotDoubleValidator(bottom=0)
+        float_validator.setLocale(QLocale("UnitedStates"))
+        float_validator.setNotation(DotDoubleValidator.StandardNotation)
+
+        self.setValidator(float_validator)
+
+
+class NumberFormatDelegate(QItemDelegate):
+    def __init__(self, parent=None):
+        QItemDelegate.__init__(self, parent)
+
+    def createEditor(self, parent, option, index):
+        editor = CustomDoubleSpinbox(parent)
+        return editor
+
+    def setEditorData(self, editor, index):
+        data = index.data(Qt.DisplayRole)
+        editor.setText(data)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.text(), Qt.EditRole)
+
+
 class CheckBoxDelegate(QStyledItemDelegate):
     """
     A delegate that places a fully functioning QCheckBox in every
