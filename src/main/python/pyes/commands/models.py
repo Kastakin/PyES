@@ -59,6 +59,7 @@ class SpeciesAddRows(QUndoCommand):
         number: int,
     ):
         QUndoCommand.__init__(self)
+        self.table = table
         self.model = table.model().sourceModel()
         self.counter = counter
         self.position = position
@@ -66,12 +67,13 @@ class SpeciesAddRows(QUndoCommand):
 
     def undo(self) -> None:
         self.model.removeRows(position=self.position + self.number, rows=self.number)
-        self.counter.blockSignals(True)
-        self.counter.setValue(self.model.rowCount())
-        self.counter.blockSignals(False)
+        self.cleanup()
 
     def redo(self) -> None:
         self.model.insertRows(position=self.position, rows=self.number)
+        self.cleanup()
+
+    def cleanup(self):
         self.counter.blockSignals(True)
         self.counter.setValue(self.model.rowCount())
         self.counter.blockSignals(False)
@@ -86,6 +88,7 @@ class SpeciesRemoveRows(QUndoCommand):
         number: int,
     ):
         QUndoCommand.__init__(self)
+        self.table = table
         self.model = table.model().sourceModel()
         self.counter = counter
         self.position = position
@@ -93,19 +96,22 @@ class SpeciesRemoveRows(QUndoCommand):
         self.removed_row = None
 
     def undo(self) -> None:
-        self.model.insertRows(position=self.position - 2, rows=self.number)
+        self.model.insertRows(position=self.position - self.number, rows=self.number)
         self.model._data.iloc[
             (self.position - self.number) : (self.position), :
         ] = self.removed_rows
-        self.counter.blockSignals(True)
-        self.counter.setValue(self.model.rowCount())
-        self.counter.blockSignals(False)
+
+        self.cleanup()
 
     def redo(self) -> None:
         self.removed_rows = self.model._data.iloc[
             (self.position - self.number) : (self.position), :
         ]
         self.model.removeRows(position=self.position, rows=self.number)
+
+        self.cleanup()
+
+    def cleanup(self):
         self.counter.blockSignals(True)
         self.counter.setValue(self.model.rowCount())
         self.counter.blockSignals(False)

@@ -344,7 +344,7 @@ class SpeciesModel(QAbstractTableModel):
         else:
             # for row in range(rows):
             self._data = pd.concat(
-                [self._data[: position + 1], empty_rows, self._data[position + 1 :]],
+                [self._data[:position], empty_rows, self._data[position:]],
                 ignore_index=True,
             )
 

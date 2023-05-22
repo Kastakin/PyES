@@ -830,88 +830,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 )
 
     def insertSpeciesAbove(self):
-        if self.tablesTab.currentIndex() == 0:
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-            else:
-                row = 0
-            self.undostack.push(
-                SpeciesAddRows(self.speciesView, self.numSpecies, row - 1, 1)
-            )
-        elif self.tablesTab.currentIndex() == 1:
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-            else:
-                row = 0
-            self.undostack.push(
-                SpeciesAddRows(self.solidSpeciesView, self.numPhases, row - 1, 1)
-            )
+        table = self.get_shown_tab()
+        if not table:
+            return
+
+        counter = self.get_shown_tab_counter()
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row()
+        else:
+            row = 0
+
+        self.undostack.push(SpeciesAddRows(table, counter, row, 1))
 
     def insertSpeciesBelow(self):
-        if self.tablesTab.currentIndex() == 0:
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-            else:
-                row = self.speciesModel.rowCount() - 1
-            self.undostack.push(
-                SpeciesAddRows(self.speciesView, self.numSpecies, row, 1)
-            )
-        elif self.tablesTab.currentIndex() == 1:
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-            else:
-                row = self.solidSpeciesModel.rowCount() - 1
+        table = self.get_shown_tab()
+        if not table:
+            return
 
-            self.undostack.push(
-                SpeciesAddRows(self.solidSpeciesView, self.numPhases, row, 1)
-            )
+        counter = self.get_shown_tab_counter()
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row() + 1
+        else:
+            row = table.model().rowCount()
+
+        self.undostack.push(SpeciesAddRows(table, counter, row, 1))
 
     def removeSpecies(self):
-        if self.tablesTab.currentIndex() == 0:
-            if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
-                if (
-                    QMessageBox.question(
-                        self,
-                        "Deleting Species",
-                        "Are you sure you want to delete the selected species?",
+        table = self.get_shown_tab()
+        if not table or (table == self.speciesView and self.numSpecies.value() == 1):
+            return
+
+        counter = self.get_shown_tab_counter()
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            if (
+                QMessageBox.question(
+                    self,
+                    "Deleting Species",
+                    "Are you sure you want to delete the selected species?",
+                )
+                == QMessageBox.Yes
+            ):
+                self.undostack.push(
+                    SpeciesRemoveRows(
+                        table,
+                        counter,
+                        selected_indexes[0].row() + 1,
+                        1,
                     )
-                    == QMessageBox.Yes
-                ):
-                    self.undostack.push(
-                        SpeciesRemoveRows(
-                            self.speciesView,
-                            self.numSpecies,
-                            self.speciesView.selectedIndexes()[0].row() + 1,
-                            1,
-                        )
-                    )
-        elif self.tablesTab.currentIndex() == 1:
-            if self.solidSpeciesView.selectedIndexes():
-                if (
-                    QMessageBox.question(
-                        self,
-                        "Deleting Species",
-                        "Are you sure you want to delete the selected species?",
-                    )
-                    == QMessageBox.Yes
-                ):
-                    self.undostack.push(
-                        SpeciesRemoveRows(
-                            self.solidSpeciesView,
-                            self.numPhases,
-                            self.solidSpeciesView.selectedIndexes()[0].row() + 1,
-                            1,
-                        )
-                    )
-        else:
-            pass
+                )
 
     def moveSpeciesUp(self):
-        if self.tablesTab.currentIndex() == 0:
-            table = self.speciesView
-        elif self.tablesTab.currentIndex() == 1:
-            table = self.solidSpeciesView
-        else:
+        table = self.get_shown_tab()
+        if not table:
             return
 
         selected_indexes = table.selectedIndexes()
@@ -921,11 +894,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.undostack.push(SpeciesSwapRows(table, row, row - 1))
 
     def moveSpeciesDown(self):
-        if self.tablesTab.currentIndex() == 0:
-            table = self.speciesView
-        elif self.tablesTab.currentIndex() == 1:
-            table = self.solidSpeciesView
-        else:
+        table = self.get_shown_tab()
+        if not table:
             return
 
         selected_indexes = table.selectedIndexes()
@@ -933,6 +903,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             row = selected_indexes[0].row()
             if row != (table.model().rowCount() - 1):
                 self.undostack.push(SpeciesSwapRows(table, row, row + 1))
+
+    def get_shown_tab(self):
+        if self.tablesTab.currentIndex() == 0:
+            table = self.speciesView
+        elif self.tablesTab.currentIndex() == 1:
+            table = self.solidSpeciesView
+        else:
+            table = None
+        return table
+
+    def get_shown_tab_counter(self):
+        table = self.get_shown_tab()
+        if self.tablesTab.currentIndex() == 0:
+            counter = self.numSpecies
+        elif self.tablesTab.currentIndex() == 1:
+            counter = self.numPhases
+        else:
+            counter = None
+        return counter
 
     def calculate(self):
         # Disable the button, one omptimization calculation at the time
