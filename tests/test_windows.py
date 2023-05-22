@@ -49,7 +49,7 @@ def assert_comp_names_headers(window: MainWindow, pos: int, value: str):
 
 class TestMainWindow:
     def test_default_values(self, window: MainWindow):
-        assert window.uncertaintyMode.currentIndex() == 1
+        assert window.uncertaintyMode.isChecked() == False
         assert window.imode.currentIndex() == 0
 
         assert window.dmode.currentIndex() == 0
@@ -59,22 +59,19 @@ class TestMainWindow:
         assert window.numPhases.value() == 0
 
     def test_comp_model(self, window: MainWindow):
-        assert window.compProxy.sourceModel() is window.compModel
-        assert window.compView.model() is window.compProxy
+        assert window.compView.model() is window.compModel
 
         assert window.compView.model().rowCount() == 1
         assert window.compView.model().columnCount() == 2
 
     def test_species_model(self, window: MainWindow):
-        assert window.speciesProxy.sourceModel() is window.speciesModel
-        assert window.speciesView.model() is window.speciesProxy
+        assert window.speciesView.model() is window.speciesModel
 
         assert window.speciesView.model().rowCount() == 1
         assert window.speciesView.model().columnCount() == 10
 
     def test_solid_model(self, window: MainWindow):
-        assert window.solidSpeciesProxy.sourceModel() is window.solidSpeciesModel
-        assert window.solidSpeciesView.model() is window.solidSpeciesProxy
+        assert window.solidSpeciesView.model() is window.solidSpeciesModel
 
         assert window.solidSpeciesView.model().rowCount() == 0
         assert window.solidSpeciesView.model().columnCount() == 10
@@ -91,10 +88,13 @@ class TestCompChanges:
         assert window.solidSpeciesView.model().columnCount() == 11
 
         assert (
-            window.compView.model().data(window.compView.model().index(0, 0)) == "COMP0"
+            window.compView.model().data(
+                window.compView.model().index(0, 0), Qt.ItemDataRole.DisplayRole
+            )
+            == "COMP1"
         )
 
-        assert_comp_names_headers(window, 0, "COMP0")
+        assert_comp_names_headers(window, 0, "COMP1")
 
     def test_add_comp_below_unselected(self, window: MainWindow, qtbot: QtBot):
         qtbot.mouseClick(window.insert_below_comp_button, Qt.MouseButton.LeftButton)
@@ -106,7 +106,10 @@ class TestCompChanges:
         assert window.solidSpeciesView.model().columnCount() == 11
 
         assert (
-            window.compView.model().data(window.compView.model().index(1, 0)) == "COMP2"
+            window.compView.model().data(
+                window.compView.model().index(1, 0), Qt.ItemDataRole.DisplayRole
+            )
+            == "COMP2"
         )
 
         assert_comp_names_headers(window, 1, "COMP2")
@@ -124,7 +127,10 @@ class TestCompChanges:
         assert window.solidSpeciesView.model().columnCount() == 12
 
         assert (
-            window.compView.model().data(window.compView.model().index(1, 0)) == "COMP1"
+            window.compView.model().data(
+                window.compView.model().index(1, 0), Qt.ItemDataRole.DisplayRole
+            )
+            == "COMP1"
         )
 
         assert_comp_names_headers(window, 1, "COMP1")
@@ -143,10 +149,13 @@ class TestCompChanges:
         assert window.solidSpeciesView.model().columnCount() == 13
 
         assert (
-            window.compView.model().data(window.compView.model().index(2, 0)) == "COMP2"
+            window.compView.model().data(
+                window.compView.model().index(2, 0), Qt.ItemDataRole.DisplayRole
+            )
+            == "COMP3"
         )
 
-        assert_comp_names_headers(window, 2, "COMP2")
+        assert_comp_names_headers(window, 2, "COMP3")
 
     def test_increase_comp_key(self, window: MainWindow, qtbot: QtBot):
         qtbot.keyClick(window.numComp, Qt.Key.Key_Up)
@@ -158,7 +167,10 @@ class TestCompChanges:
 
         assert (
             window.compView.model().data(
-                window.compView.model().index(window.compView.model().rowCount() - 1, 0)
+                window.compView.model().index(
+                    window.compView.model().rowCount() - 1, 0
+                ),
+                Qt.ItemDataRole.DisplayRole,
             )
             == "COMP2"
         )
@@ -294,7 +306,9 @@ class TestCompChanges:
         assert_comp_names_headers(window, 2, "COMP3")
 
     def test_rename_comp(self, window: MainWindow, qtbot: QtBot):
-        window.compView.model().setData(window.compView.model().index(0, 0), "Test")
+        window.compView.model().setData(
+            window.compView.model().index(0, 0), "Test", Qt.ItemDataRole.EditRole
+        )
 
         assert (
             window.compView.model().data(window.compView.model().index(0, 0)) == "Test"

@@ -10,7 +10,7 @@ class SpeciesSwapRows(QUndoCommand):
     def __init__(self, table: QTableView, first_row: int, second_row: int):
         QUndoCommand.__init__(self)
         self.table = table
-        self.model = table.model().sourceModel()
+        self.model = table.model()
         self.first_row = first_row
         self.second_row = second_row
 
@@ -34,20 +34,20 @@ class SpeciesCellEdit(QUndoCommand):
     def undo(self):
         self.model._data.iloc[self.index.row(), self.index.column()] = self.prev
 
-        # Updating coeff. should update the corresponding species name
-        self.model._data.iloc[self.index.row(), 1] = str(
-            getName(self.model._data.iloc[self.index.row(), 8:-1])
-        )
-        self.model.dataChanged.emit(self.index, self.index)
+        self.cleanup()
 
     def redo(self):
         self.model._data.iloc[self.index.row(), self.index.column()] = self.value
 
+        self.cleanup()
+
+    def cleanup(self):
         # Updating coeff. should update the corresponding species name
         self.model._data.iloc[self.index.row(), 1] = str(
             getName(self.model._data.iloc[self.index.row(), 8:-1])
         )
         self.model.dataChanged.emit(self.index, self.index)
+        self.model.layoutChanged.emit()
 
 
 class SpeciesAddRows(QUndoCommand):
@@ -60,7 +60,7 @@ class SpeciesAddRows(QUndoCommand):
     ):
         QUndoCommand.__init__(self)
         self.table = table
-        self.model = table.model().sourceModel()
+        self.model = table.model()
         self.counter = counter
         self.position = position
         self.number = number
@@ -89,7 +89,7 @@ class SpeciesRemoveRows(QUndoCommand):
     ):
         QUndoCommand.__init__(self)
         self.table = table
-        self.model = table.model().sourceModel()
+        self.model = table.model()
         self.counter = counter
         self.position = position
         self.number = number
@@ -131,12 +131,10 @@ class ComponentsSwapRows(QUndoCommand):
     ):
         QUndoCommand.__init__(self)
         self.comp_table = comp_table
-        self.comp_model = comp_table.model().sourceModel()
+        self.comp_model = comp_table.model()
         self.conc_model = conc_model
         self.species_tables = [species_table, solids_table]
-        self.species_models = [
-            table.model().sourceModel() for table in self.species_tables
-        ]
+        self.species_models = [table.model() for table in self.species_tables]
         self.ind_comp = ind_comp
         self.prev_ind_comp = prev_ind_comp
         self.first_row = first_row
@@ -183,12 +181,10 @@ class ComponentsAddRows(QUndoCommand):
         number: int,
     ):
         QUndoCommand.__init__(self)
-        self.comp_model = comp_table.model().sourceModel()
+        self.comp_model = comp_table.model()
         self.conc_model = conc_model
         self.species_tables = [species_table, solids_table]
-        self.species_models = [
-            table.model().sourceModel() for table in self.species_tables
-        ]
+        self.species_models = [table.model() for table in self.species_tables]
         self.ind_comp = ind_comp
         self.counter = counter
         self.position = position
@@ -244,12 +240,10 @@ class ComponentsRemoveRows(QUndoCommand):
         number: int,
     ):
         QUndoCommand.__init__(self)
-        self.comp_model = comp_table.model().sourceModel()
+        self.comp_model = comp_table.model()
         self.conc_model = conc_model
         self.species_tables = [species_table, solids_table]
-        self.species_models = [
-            table.model().sourceModel() for table in self.species_tables
-        ]
+        self.species_models = [table.model() for table in self.species_tables]
         self.ind_comp = ind_comp
         self.counter = counter
         self.position = position

@@ -39,12 +39,11 @@ from utils_func import (
     updateIndComponent,
 )
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate, NumberFormatDelegate
-from viewmodels.model_proxy import ProxyModel
 from viewmodels.models import (
     ComponentsModel,
+    ConcentrationsModel,
     SolidSpeciesModel,
     SolubleSpeciesModel,
-    TitrationComponentsModel,
 )
 from windows.export import ExportWindow
 from windows.plot import PlotWindow
@@ -129,27 +128,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Sets the tabelview for the component concentrations in titration
         # FIXME: we are using two views for the same model, we could probably do with a single view
-        self.concModel = TitrationComponentsModel(self.conc_data)
-        self.dmode0_concProxy = ProxyModel(self)
-        self.dmode0_concProxy.setSourceModel(self.concModel)
-        self.dmode1_concProxy = ProxyModel(self)
-        self.dmode1_concProxy.setSourceModel(self.concModel)
+        self.concModel = ConcentrationsModel(self.conc_data, self.undostack)
 
-        self.dmode0_concView.setModel(self.dmode0_concProxy)
+        self.dmode0_concView.setModel(self.concModel)
         d0header = self.dmode0_concView.horizontalHeader()
         d0header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        self.dmode1_concView.setModel(self.dmode1_concProxy)
+        self.dmode1_concView.setModel(self.concModel)
         d1header = self.dmode1_concView.horizontalHeader()
         d1header.setSectionResizeMode(QHeaderView.ResizeToContents)
         self.dmode1_concView.setColumnHidden(1, True)
         self.dmode1_concView.setColumnHidden(3, True)
 
         # Sets the tableview for the components
-        self.compModel = ComponentsModel(self.comp_data)
-        self.compProxy = ProxyModel(self)
-        self.compProxy.setSourceModel(self.compModel)
-        self.compView.setModel(self.compProxy)
+        self.compModel = ComponentsModel(self.comp_data, self.undostack)
+
+        self.compView.setModel(self.compModel)
         compHeader = self.compView.horizontalHeader()
         compHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
         # Connect the dataChanged signal to the corresponding slot
@@ -166,9 +160,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Sets the tableview for the species
         self.speciesModel = SolubleSpeciesModel(self.species_data, self.undostack)
-        self.speciesProxy = ProxyModel(self)
-        self.speciesProxy.setSourceModel(self.speciesModel)
-        self.speciesView.setModel(self.speciesProxy)
+        self.speciesView.setModel(self.speciesModel)
         self.speciesView.setItemDelegateForColumn(0, CheckBoxDelegate(self.speciesView))
         self.speciesView.setItemDelegate(NumberFormatDelegate(self.speciesView))
         # assign combobox delegate to last column
@@ -183,9 +175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesModel = SolidSpeciesModel(
             self.solid_species_data, self.undostack
         )
-        self.solidSpeciesProxy = ProxyModel(self)
-        self.solidSpeciesProxy.setSourceModel(self.solidSpeciesModel)
-        self.solidSpeciesView.setModel(self.solidSpeciesProxy)
+        self.solidSpeciesView.setModel(self.solidSpeciesModel)
         self.solidSpeciesView.setItemDelegateForColumn(
             0, CheckBoxDelegate(self.solidSpeciesView)
         )
@@ -603,6 +593,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Set dmode as 0 (titration)
         # and display the correct associated widget
         self.dmode.setCurrentIndex(0)
+        self.previousIndComp = 0
         self.dmodeUpdater(0)
 
         # Resets fields for both dmodes
@@ -1028,9 +1019,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if mode == 0:
             self.dmode0Input.show()
             self.dmode1Input.hide()
+            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], False)
         else:
             self.dmode0Input.hide()
             self.dmode1Input.show()
+            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], True)
 
     def indipendentUpdater(self, comp):
         """
@@ -1042,11 +1035,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except:
             pass
         self.previousIndComp = self.indComp.currentIndex()
-        self.dmode1_concView.model().setRowReadOnly([comp], True)
         self.initialLog_label.setText(f"Initial -log[{self.indComp.currentText()}]:")
         self.finalLog_label.setText(f"Final -log[f{self.indComp.currentText()}]:")
 
         self.logInc_label.setText(f"-log[{self.indComp.currentText()}] Increment:")
+        if self.dmode.currentIndex() == 1:
+            self.dmode1_concView.model().setRowReadOnly([comp], True)
 
     def relErrorsUpdater(self, checked):
         """

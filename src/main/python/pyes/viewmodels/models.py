@@ -10,52 +10,23 @@ from PySide6.QtGui import QColorConstants, QPalette, QUndoStack
 from utils_func import getName
 
 
-class TitrationComponentsModel(QAbstractTableModel):
-    def __init__(self, data: pd.DataFrame):
+class GenericModel(QAbstractTableModel):
+    def __init__(
+        self, data: pd.DataFrame | None = None, undo_stack: QUndoStack | None = None
+    ) -> None:
         super().__init__()
         self._data = data
+        self.undostack = undo_stack
 
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            value = self._data.iloc[index.row(), index.column()]
-            return str(value)
+        self.readonly_columns = set()
+        self.readonly_rows = set()
 
-    def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Vertical:
-                return str(self._data.index[section])
-
-    def updateIndex(self, new_index):
-        self._data.index = new_index
-        self.layoutChanged.emit()
-
-    def flags(self, index):
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-    def setData(self, index, value, role):
-        if role == Qt.EditRole:
-            try:
-                self._data.iloc[index.row(), index.column()] = float(value)
-            except:
-                return False
-            self.dataChanged.emit(index, index)
-        return True
-
-    def insertRows(self, position, rows=1, index=QModelIndex()):
-        """Insert a row into the model."""
+    def insertRows(
+        self, empty_rows: pd.DataFrame, position: int, rows: int, index=QModelIndex()
+    ) -> bool:
         self.beginInsertRows(
             index, (0 if position == -1 else position), position + rows - 1
         )
-
-        empty_rows = pd.DataFrame(
-            [[0.0 for x in range(4)] for row in range(rows)],
-            columns=["C0", "CT", "Sigma C0", "Sigma CT"],
-            index=["COMP" + str(position + row + 1) for row in range(rows)],
-        )
-
         if position == -1:
             self._data = pd.concat(
                 [empty_rows, self._data],
@@ -72,7 +43,7 @@ class TitrationComponentsModel(QAbstractTableModel):
         self.layoutChanged.emit()
         return True
 
-    def removeRows(self, position, rows=1, index=QModelIndex()):
+    def removeRows(self, position: int, rows: int = 1, index=QModelIndex()):
         """Remove rows from the model."""
         self.beginRemoveRows(
             index,
@@ -81,12 +52,56 @@ class TitrationComponentsModel(QAbstractTableModel):
         )
         self._data = self._data.drop(
             self._data.index[position - rows : position], axis=0
-        )
+        ).reset_index(drop=True)
 
         self.endRemoveRows()
         self.layoutChanged.emit()
 
         return True
+
+    def headerData(
+        self, section, orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+    ):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return str(self._data.columns[section])
+
+            if orientation == Qt.Vertical:
+                return str(self._data.index[section])
+
+    def updateFlags(self, flags: Qt.ItemFlag, index: QModelIndex):
+        if self.columnReadOnly(index.column()):
+            flags &= ~Qt.ItemFlag.ItemIsEditable
+            flags &= ~Qt.ItemFlag.ItemIsEnabled
+        if self.rowReadOnly(index.row()):
+            flags &= ~Qt.ItemFlag.ItemIsEditable
+            flags &= ~Qt.ItemFlag.ItemIsEnabled
+
+        return flags
+
+    def columnReadOnly(self, column):
+        return column in self.readonly_columns
+
+    def setColumnReadOnly(self, columns, readonly=True):
+        for column in columns:
+            if readonly:
+                self.readonly_columns.add(column)
+                self.layoutChanged.emit()
+            else:
+                self.readonly_columns.discard(column)
+                self.layoutChanged.emit()
+
+    def rowReadOnly(self, row):
+        return row in self.readonly_rows
+
+    def setRowReadOnly(self, rows, readonly=True):
+        for row in rows:
+            if readonly:
+                self.readonly_rows.add(row)
+                self.layoutChanged.emit()
+            else:
+                self.readonly_rows.discard(row)
+                self.layoutChanged.emit()
 
     def swapRows(self, first: int, second: int):
         a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
@@ -105,26 +120,63 @@ class TitrationComponentsModel(QAbstractTableModel):
         return self._data.columns.size
 
 
-class ComponentsModel(QAbstractTableModel):
-    def __init__(self, data: pd.DataFrame):
-        super().__init__()
-        self._data = data
+class ConcentrationsModel(GenericModel):
+    def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
+        super().__init__(data, undo_stack)
 
-    def data(self, index, role):
+    def data(self, index, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole):
         if role == Qt.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
 
-    def headerData(self, section, orientation, role):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Vertical:
-                return str(self._data.index[section])
+    def updateIndex(self, new_index):
+        self._data.index = new_index
+        self.layoutChanged.emit()
 
     def flags(self, index):
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        flags = (
+            Qt.ItemFlag.ItemIsEditable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsSelectable
+        )
+        return self.updateFlags(flags, index)
+
+    def setData(self, index, value, role):
+        if role == Qt.EditRole:
+            try:
+                self._data.iloc[index.row(), index.column()] = float(value)
+            except:
+                return False
+            self.dataChanged.emit(index, index)
+        return True
+
+    def insertRows(self, position, rows=1, index=QModelIndex()) -> bool:
+        """Insert a row into the model."""
+        empty_rows = pd.DataFrame(
+            [[0.0 for x in range(4)] for row in range(rows)],
+            columns=["C0", "CT", "Sigma C0", "Sigma CT"],
+            index=["COMP" + str(position + row + 1) for row in range(rows)],
+        )
+        super().insertRows(empty_rows, position, rows, index)
+
+
+class ComponentsModel(GenericModel):
+    def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
+        super().__init__(data, undo_stack)
+
+    def data(self, index, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole):
+        if role == Qt.DisplayRole:
+            value = self._data.iloc[index.row(), index.column()]
+            return str(value)
+
+    def flags(self, index):
+        flags = (
+            Qt.ItemFlag.ItemIsEditable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsSelectable
+        )
+
+        return self.updateFlags(flags, index)
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
@@ -143,74 +195,26 @@ class ComponentsModel(QAbstractTableModel):
             self.dataChanged.emit(index, index)
         return True
 
-    def insertRows(self, position, rows=1, index=QModelIndex()):
+    def insertRows(self, position, rows=1, index=QModelIndex()) -> bool:
         """Insert a row into the model."""
-        self.beginInsertRows(
-            index, (0 if position == -1 else position), position + rows - 1
-        )
-
         empty_rows = pd.DataFrame(
             [["COMP" + str(position + row + 1)] + [0] for row in range(rows)],
             columns=self._data.columns,
         )
 
-        if position == -1:
-            self._data = pd.concat(
-                [empty_rows, self._data],
-                ignore_index=True,
-            )
-        else:
-            # for row in range(rows):
-            self._data = pd.concat(
-                [self._data[:position], empty_rows, self._data[position:]],
-                ignore_index=True,
-            )
-
-        self.endInsertRows()
-        self.layoutChanged.emit()
-
-    def removeRows(self, position, rows=1, index=QModelIndex()):
-        """Remove a row from the model."""
-        self.beginRemoveRows(
-            index,
-            (0 if position == -1 else position),
-            (0 if position == -1 else position) + rows - 1,
-        )
-        self._data = self._data.drop(
-            self._data.index[position - rows : position], axis=0
-        )
-
-        self.endRemoveRows()
-        self.layoutChanged.emit()
-        return True
-
-    def swapRows(self, first: int, second: int):
-        a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
-        self._data.iloc[first, :], self._data.iloc[second, :] = b, a
-        self.layoutChanged.emit()
-
-    def swapColumns(self, first: int, second: int):
-        a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
-        self._data.iloc[:, first], self._data.iloc[:, second] = b, a
-        self.layoutChanged.emit()
-
-    def rowCount(self, index=QModelIndex()):
-        return self._data.index.size
-
-    def columnCount(self, index=QModelIndex()):
-        return self._data.columns.size
+        super().insertRows(empty_rows, position, rows, index)
 
 
-class _SpeciesModel(QAbstractTableModel):
+class GenericSpeciesModel(GenericModel):
     def __init__(
         self, data: pd.DataFrame, undo_stack: QUndoStack, template_header: list[str]
     ):
-        super().__init__()
+        super().__init__(data, undo_stack)
         self.template_header = template_header
-        self._data = data
-        self.undostack = undo_stack
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(
+        self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+    ):
         if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             if index.column() != 0:
@@ -231,16 +235,6 @@ class _SpeciesModel(QAbstractTableModel):
                 return QPalette().midlight()
             else:
                 return False
-
-    def headerData(
-        self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole
-    ):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Orientation.Vertical:
-                return str(self._data.index[section])
 
     def updateCompName(self, new_comp: list[str]):
         if self._data["Ref. Comp."].isin(new_comp).all() == False:
@@ -263,35 +257,25 @@ class _SpeciesModel(QAbstractTableModel):
         self.layoutChanged.emit()
 
     def flags(self, index: QModelIndex):
-        # TODO: check if all these checks are needed
-        if index.row() >= 0:
-            if index.column() == 0:
-                return (
-                    Qt.ItemFlag.ItemIsEditable
-                    | Qt.ItemFlag.ItemIsEnabled
-                    | Qt.ItemFlag.ItemIsSelectable
-                )
-            elif index.column() == 1:
-                return (
-                    Qt.ItemFlag.ItemIsSelectable
-                    | Qt.ItemFlag.ItemIsEnabled
-                    | Qt.ItemFlag.ItemIsSelectable
-                )
-            else:
-                value = self._data.iloc[index.row(), 0]
-                if value == False:
-                    if index.column() == self.columnCount() - 1:
-                        return Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled
-                    else:
-                        return (
-                            Qt.ItemFlag.ItemIsEditable
-                            | Qt.ItemFlag.ItemIsEnabled
-                            | Qt.ItemFlag.ItemIsSelectable
-                        )
-                else:
-                    return Qt.ItemFlag.NoItemFlags
+        if index.column() == 0:
+            flags = Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled
+        elif index.column() == 1:
+            flags = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         else:
-            return Qt.ItemFlag.NoItemFlags
+            value = self._data.iloc[index.row(), 0]
+            if value == False:
+                if index.column() == self.columnCount() - 1:
+                    flags = Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled
+                else:
+                    flags = (
+                        Qt.ItemFlag.ItemIsEditable
+                        | Qt.ItemFlag.ItemIsEnabled
+                        | Qt.ItemFlag.ItemIsSelectable
+                    )
+            else:
+                flags = Qt.ItemFlag.NoItemFlags
+
+        return self.updateFlags(flags, index)
 
     def setData(self, index, value, role):
         if role == Qt.EditRole:
@@ -323,14 +307,8 @@ class _SpeciesModel(QAbstractTableModel):
             self.dataChanged.emit(index, index)
         return True
 
-    def insertRows(self, position: int, rows: int = 1, index=QModelIndex()):
+    def insertRows(self, position: int, rows: int = 1, index=QModelIndex()) -> bool:
         """Insert a row into the model."""
-        self.beginInsertRows(
-            index,
-            (0 if position == -1 else position),
-            position + rows - 1,
-        )
-
         empty_rows = pd.DataFrame(
             [
                 [False]
@@ -342,39 +320,7 @@ class _SpeciesModel(QAbstractTableModel):
             ],
             columns=self._data.columns,
         )
-
-        if position == -1:
-            self._data = pd.concat(
-                [empty_rows, self._data],
-                ignore_index=True,
-            )
-        else:
-            # for row in range(rows):
-            self._data = pd.concat(
-                [self._data[:position], empty_rows, self._data[position:]],
-                ignore_index=True,
-            )
-
-        self.endInsertRows()
-        self.layoutChanged.emit()
-
-        return True
-
-    def removeRows(self, position: int, rows: int = 1, index=QModelIndex()):
-        """Remove rows from the model."""
-        self.beginRemoveRows(
-            index,
-            (0 if position == -1 else position),
-            (0 if position == -1 else position) + rows - 1,
-        )
-        self._data = self._data.drop(
-            self._data.index[position - rows : position], axis=0
-        ).reset_index(drop=True)
-
-        self.endRemoveRows()
-        self.layoutChanged.emit()
-
-        return True
+        super().insertRows(empty_rows, position, rows, index)
 
     def insertColumns(self, position, columns=1, index=QModelIndex()):
         """Add columns to the model"""
@@ -406,24 +352,8 @@ class _SpeciesModel(QAbstractTableModel):
 
         return True
 
-    def swapRows(self, first: int, second: int):
-        a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
-        self._data.iloc[first, :], self._data.iloc[second, :] = b, a
-        self.layoutChanged.emit()
 
-    def swapColumns(self, first: int, second: int):
-        a, b = self._data.iloc[:, first].copy(), self._data.iloc[:, second].copy()
-        self._data.iloc[:, first], self._data.iloc[:, second] = b, a
-        self.layoutChanged.emit()
-
-    def rowCount(self, index=QModelIndex()):
-        return self._data.index.size
-
-    def columnCount(self, index=QModelIndex()):
-        return self._data.columns.size
-
-
-class SolubleSpeciesModel(_SpeciesModel):
+class SolubleSpeciesModel(GenericSpeciesModel):
     def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
         template_header = [
             "Ignored",
@@ -438,7 +368,7 @@ class SolubleSpeciesModel(_SpeciesModel):
         super().__init__(data, undo_stack, template_header)
 
 
-class SolidSpeciesModel(_SpeciesModel):
+class SolidSpeciesModel(GenericSpeciesModel):
     def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
         template_header = [
             "Ignored",

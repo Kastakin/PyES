@@ -1319,7 +1319,7 @@
               <string>Select operation mode.</string>
              </property>
              <property name="currentIndex">
-              <number>1</number>
+              <number>0</number>
              </property>
              <item>
               <property name="text">
@@ -2245,11 +2245,17 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="icon">
+    <iconset theme="edit-undo"/>
+   </property>
    <property name="text">
     <string>Undo</string>
    </property>
   </action>
   <action name="actionRedo">
+   <property name="icon">
+    <iconset theme="edit-redo"/>
+   </property>
    <property name="text">
     <string>Redo</string>
    </property>
@@ -2266,8 +2272,8 @@
    <slot>calculate()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>102</x>
-     <y>711</y>
+     <x>98</x>
+     <y>688</y>
     </hint>
     <hint type="destinationlabel">
      <x>429</x>
@@ -2282,8 +2288,8 @@
    <slot>exportDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>112</x>
-     <y>744</y>
+     <x>108</x>
+     <y>745</y>
     </hint>
     <hint type="destinationlabel">
      <x>90</x>
@@ -2298,8 +2304,8 @@
    <slot>plotDist()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>708</x>
-     <y>744</y>
+     <x>743</x>
+     <y>745</y>
     </hint>
     <hint type="destinationlabel">
      <x>683</x>
@@ -2315,7 +2321,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>108</x>
-     <y>124</y>
+     <y>122</y>
     </hint>
     <hint type="destinationlabel">
      <x>605</x>
@@ -2330,7 +2336,7 @@
    <slot>indipendentUpdater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>557</x>
+     <x>514</x>
      <y>534</y>
     </hint>
     <hint type="destinationlabel">
@@ -2346,7 +2352,7 @@
    <slot>v0Updater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>563</x>
+     <x>520</x>
      <y>219</y>
     </hint>
     <hint type="destinationlabel">

@@ -11,12 +11,12 @@ def addSpeciesComp(position: int, added_rows: int, view: QTableView):
     view.model().insertColumns(position, added_rows)
     view.setItemDelegateForColumn(
         view.model().columnCount() - 1,
-        ComboBoxDelegate(view, view.model().sourceModel()._data["Name"].tolist()),
+        ComboBoxDelegate(view, view.model()._data["Name"].tolist()),
     )
 
 
 def removeSpeciesComp(position: int, removed_rows: int, view: QTableView):
-    model = view.model().sourceModel()
+    model = view.model()
     view.setItemDelegateForColumn(model.columnCount() - 1, None)
     model.removeColumns(position, removed_rows)
     view.setItemDelegateForColumn(
@@ -93,7 +93,7 @@ def updateCompNames(
     Handles the displayed names in the species table when edited in the components one
     """
     species_tables = [species_table, solids_table]
-    species_models = [table.model().sourceModel() for table in species_tables]
+    species_models = [table.model() for table in species_tables]
 
     updated_comps = comp_model._data["Name"].tolist()
 
