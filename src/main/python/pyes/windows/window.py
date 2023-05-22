@@ -21,7 +21,7 @@ from dialogs import (
     WrongFileDialog,
 )
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
-from PySide6.QtGui import QDesktopServices, QKeySequence, QUndoCommand, QUndoStack
+from PySide6.QtGui import QDesktopServices, QKeySequence, QUndoStack
 from PySide6.QtWidgets import (
     QFileDialog,
     QHeaderView,
@@ -30,14 +30,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from ui.PyES_main import Ui_MainWindow
-from utils_func import (
-    addSpeciesComp,
-    cleanData,
-    removeSpeciesComp,
-    returnDataDict,
-    updateCompNames,
-    updateIndComponent,
-)
+from utils_func import cleanData, returnDataDict, updateCompNames, updateIndComponent
 from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate, NumberFormatDelegate
 from viewmodels.models import (
     ComponentsModel,
