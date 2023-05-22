@@ -114,8 +114,8 @@ class CheckBoxDelegate(QStyledItemDelegate):
 
 
 class ComboBoxDelegate(QItemDelegate):
-    def __init__(self, owner, view, choices):
-        super().__init__(owner)
+    def __init__(self, view, choices, parent=None):
+        QItemDelegate.__init__(self, parent)
         self.items = choices
         self._view = view
 
