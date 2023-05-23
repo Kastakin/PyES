@@ -234,8 +234,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display about dialog
         """
-        dialog = QMessageBox.aboutQt(self)
-        dialog.exec()
+        QMessageBox.aboutQt(self)
 
     def file_save(self):
         """
