@@ -1045,8 +1045,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
             self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
         else:
-            # print(self.speciesView.model())
-            # print(self.solidSpeciesView.model())
             self.speciesView.model().setColumnReadOnly([3], True)
             self.solidSpeciesView.model().setColumnReadOnly([3], True)
             self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
