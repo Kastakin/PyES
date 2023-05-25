@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'PyES_main.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.0
+## Created by: Qt User Interface Compiler version 6.4.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -130,12 +130,29 @@ class Ui_MainWindow(object):
         self.actionAbout_Qt.setObjectName("actionAbout_Qt")
         self.actionUndo = QAction(MainWindow)
         self.actionUndo.setObjectName("actionUndo")
-        icon7 = QIcon(QIcon.fromTheme("edit-undo"))
+        icon7 = QIcon()
+        iconThemeName = "edit-undo"
+        if QIcon.hasThemeIcon(iconThemeName):
+            icon7 = QIcon.fromTheme(iconThemeName)
+        else:
+            icon7.addFile(".", QSize(), QIcon.Normal, QIcon.Off)
+
         self.actionUndo.setIcon(icon7)
         self.actionRedo = QAction(MainWindow)
         self.actionRedo.setObjectName("actionRedo")
-        icon8 = QIcon(QIcon.fromTheme("edit-redo"))
+        icon8 = QIcon()
+        iconThemeName = "edit-redo"
+        if QIcon.hasThemeIcon(iconThemeName):
+            icon8 = QIcon.fromTheme(iconThemeName)
+        else:
+            icon8.addFile(".", QSize(), QIcon.Normal, QIcon.Off)
+
         self.actionRedo.setIcon(icon8)
+        self.actionSaveAs = QAction(MainWindow)
+        self.actionSaveAs.setObjectName("actionSaveAs")
+        icon9 = QIcon()
+        icon9.addFile(":/icons/disk--plus.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.actionSaveAs.setIcon(icon9)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_5 = QVBoxLayout(self.centralwidget)
@@ -285,9 +302,11 @@ class Ui_MainWindow(object):
         sizePolicy6.setVerticalStretch(0)
         sizePolicy6.setHeightForWidth(self.toolButton.sizePolicy().hasHeightForWidth())
         self.toolButton.setSizePolicy(sizePolicy6)
-        icon9 = QIcon()
-        icon9.addFile(":/icons/information-frame.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.toolButton.setIcon(icon9)
+        icon10 = QIcon()
+        icon10.addFile(
+            ":/icons/information-frame.png", QSize(), QIcon.Normal, QIcon.Off
+        )
+        self.toolButton.setIcon(icon10)
 
         self.gridLayout.addWidget(self.toolButton, 0, 2, 1, 1)
 
@@ -464,7 +483,7 @@ class Ui_MainWindow(object):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.toolButton_2 = QToolButton(self.widget_8)
         self.toolButton_2.setObjectName("toolButton_2")
-        self.toolButton_2.setIcon(icon9)
+        self.toolButton_2.setIcon(icon10)
 
         self.gridLayout_2.addWidget(self.toolButton_2, 0, 1, 1, 1)
 
@@ -525,11 +544,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.setContentsMargins(0, 2, 0, 2)
         self.insert_above_comp_button = QToolButton(self.horizontalFrame_2)
         self.insert_above_comp_button.setObjectName("insert_above_comp_button")
-        icon10 = QIcon()
-        icon10.addFile(
+        icon11 = QIcon()
+        icon11.addFile(
             ":/icons/table-insert-row-before.png", QSize(), QIcon.Normal, QIcon.Off
         )
-        self.insert_above_comp_button.setIcon(icon10)
+        self.insert_above_comp_button.setIcon(icon11)
         self.insert_above_comp_button.setIconSize(QSize(18, 18))
         self.insert_above_comp_button.setAutoRaise(True)
 
@@ -544,11 +563,11 @@ class Ui_MainWindow(object):
             self.insert_below_comp_button.sizePolicy().hasHeightForWidth()
         )
         self.insert_below_comp_button.setSizePolicy(sizePolicy8)
-        icon11 = QIcon()
-        icon11.addFile(
+        icon12 = QIcon()
+        icon12.addFile(
             ":/icons/table-insert-row-after.png", QSize(), QIcon.Normal, QIcon.Off
         )
-        self.insert_below_comp_button.setIcon(icon11)
+        self.insert_below_comp_button.setIcon(icon12)
         self.insert_below_comp_button.setIconSize(QSize(18, 18))
         self.insert_below_comp_button.setAutoRaise(True)
 
@@ -556,9 +575,9 @@ class Ui_MainWindow(object):
 
         self.remove_comp_button = QToolButton(self.horizontalFrame_2)
         self.remove_comp_button.setObjectName("remove_comp_button")
-        icon12 = QIcon()
-        icon12.addFile(":/icons/table-delete-row.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.remove_comp_button.setIcon(icon12)
+        icon13 = QIcon()
+        icon13.addFile(":/icons/table-delete-row.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.remove_comp_button.setIcon(icon13)
         self.remove_comp_button.setIconSize(QSize(18, 18))
         self.remove_comp_button.setAutoRaise(True)
 
@@ -573,9 +592,9 @@ class Ui_MainWindow(object):
 
         self.move_up_comp_button = QToolButton(self.horizontalFrame_2)
         self.move_up_comp_button.setObjectName("move_up_comp_button")
-        icon13 = QIcon()
-        icon13.addFile(":/icons/row_up.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.move_up_comp_button.setIcon(icon13)
+        icon14 = QIcon()
+        icon14.addFile(":/icons/row_up.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.move_up_comp_button.setIcon(icon14)
         self.move_up_comp_button.setIconSize(QSize(18, 18))
         self.move_up_comp_button.setAutoRaise(True)
 
@@ -583,9 +602,9 @@ class Ui_MainWindow(object):
 
         self.move_down_comp_button = QToolButton(self.horizontalFrame_2)
         self.move_down_comp_button.setObjectName("move_down_comp_button")
-        icon14 = QIcon()
-        icon14.addFile(":/icons/row_down.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.move_down_comp_button.setIcon(icon14)
+        icon15 = QIcon()
+        icon15.addFile(":/icons/row_down.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.move_down_comp_button.setIcon(icon15)
         self.move_down_comp_button.setIconSize(QSize(18, 18))
         self.move_down_comp_button.setAutoRaise(True)
 
@@ -639,7 +658,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.setContentsMargins(0, 2, 0, 2)
         self.insert_above_species_button = QToolButton(self.horizontalFrame)
         self.insert_above_species_button.setObjectName("insert_above_species_button")
-        self.insert_above_species_button.setIcon(icon10)
+        self.insert_above_species_button.setIcon(icon11)
         self.insert_above_species_button.setIconSize(QSize(18, 18))
         self.insert_above_species_button.setAutoRaise(True)
 
@@ -651,7 +670,7 @@ class Ui_MainWindow(object):
             self.insert_below_species_button.sizePolicy().hasHeightForWidth()
         )
         self.insert_below_species_button.setSizePolicy(sizePolicy8)
-        self.insert_below_species_button.setIcon(icon11)
+        self.insert_below_species_button.setIcon(icon12)
         self.insert_below_species_button.setIconSize(QSize(18, 18))
         self.insert_below_species_button.setAutoRaise(True)
 
@@ -659,7 +678,7 @@ class Ui_MainWindow(object):
 
         self.remove_species_button = QToolButton(self.horizontalFrame)
         self.remove_species_button.setObjectName("remove_species_button")
-        self.remove_species_button.setIcon(icon12)
+        self.remove_species_button.setIcon(icon13)
         self.remove_species_button.setIconSize(QSize(18, 18))
         self.remove_species_button.setAutoRaise(True)
 
@@ -674,7 +693,7 @@ class Ui_MainWindow(object):
 
         self.move_up_species_button = QToolButton(self.horizontalFrame)
         self.move_up_species_button.setObjectName("move_up_species_button")
-        self.move_up_species_button.setIcon(icon13)
+        self.move_up_species_button.setIcon(icon14)
         self.move_up_species_button.setIconSize(QSize(18, 18))
         self.move_up_species_button.setAutoRaise(True)
 
@@ -682,7 +701,7 @@ class Ui_MainWindow(object):
 
         self.move_down_species_button = QToolButton(self.horizontalFrame)
         self.move_down_species_button.setObjectName("move_down_species_button")
-        self.move_down_species_button.setIcon(icon14)
+        self.move_down_species_button.setIcon(icon15)
         self.move_down_species_button.setIconSize(QSize(18, 18))
         self.move_down_species_button.setAutoRaise(True)
 
@@ -719,9 +738,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addWidget(self.speciesView)
 
-        icon15 = QIcon()
-        icon15.addFile(":/icons/flask.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.tablesTab.addTab(self.species, icon15, "")
+        icon16 = QIcon()
+        icon16.addFile(":/icons/flask.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.tablesTab.addTab(self.species, icon16, "")
         self.solidspecies = QWidget()
         self.solidspecies.setObjectName("solidspecies")
         self.verticalLayout_12 = QVBoxLayout(self.solidspecies)
@@ -739,9 +758,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.solidSpeciesView)
 
-        icon16 = QIcon()
-        icon16.addFile(":/icons/beaker-empty.png", QSize(), QIcon.Normal, QIcon.Off)
-        self.tablesTab.addTab(self.solidspecies, icon16, "")
+        icon17 = QIcon()
+        icon17.addFile(":/icons/beaker-empty.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.tablesTab.addTab(self.solidspecies, icon17, "")
 
         self.verticalLayout.addWidget(self.tablesTab)
 
@@ -1164,7 +1183,9 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionSaveAs)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
         self.menuHelp.addAction(self.actionWebsite)
@@ -1245,8 +1266,13 @@ class Ui_MainWindow(object):
         )
         # endif // QT_CONFIG(shortcut)
         self.actionAbout.setText(
-            QCoreApplication.translate("MainWindow", "About", None)
+            QCoreApplication.translate("MainWindow", "About PyES", None)
         )
+        # if QT_CONFIG(tooltip)
+        self.actionAbout.setToolTip(
+            QCoreApplication.translate("MainWindow", "About PyES", None)
+        )
+        # endif // QT_CONFIG(tooltip)
         # if QT_CONFIG(shortcut)
         self.actionAbout.setShortcut(
             QCoreApplication.translate("MainWindow", "Ctrl+H", None)
@@ -1300,6 +1326,19 @@ class Ui_MainWindow(object):
         )
         self.actionUndo.setText(QCoreApplication.translate("MainWindow", "Undo", None))
         self.actionRedo.setText(QCoreApplication.translate("MainWindow", "Redo", None))
+        self.actionSaveAs.setText(
+            QCoreApplication.translate("MainWindow", "Save Project As...", None)
+        )
+        # if QT_CONFIG(tooltip)
+        self.actionSaveAs.setToolTip(
+            QCoreApplication.translate("MainWindow", "Save Project As...", None)
+        )
+        # endif // QT_CONFIG(tooltip)
+        # if QT_CONFIG(shortcut)
+        self.actionSaveAs.setShortcut(
+            QCoreApplication.translate("MainWindow", "Ctrl+Shift+S", None)
+        )
+        # endif // QT_CONFIG(shortcut)
         self.sys_opt_label.setText(
             QCoreApplication.translate(
                 "MainWindow",

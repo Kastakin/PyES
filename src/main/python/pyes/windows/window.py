@@ -52,6 +52,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.threadpool = QThreadPool()
         self.undostack = QUndoStack()
 
+        self.undostack.cleanChanged.connect(self.check_clean_state)
+
         self.actionUndo.triggered.connect(self.undostack.undo)
         self.actionUndo.setShortcut(QKeySequence.StandardKey.Undo)
         self.actionRedo.triggered.connect(self.undostack.redo)
@@ -109,6 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Conncect slots for actions
         self.actionNew.triggered.connect(self.file_new)
         self.actionSave.triggered.connect(self.file_save)
+        self.actionSaveAs.triggered.connect(self.file_save_as)
         self.actionOpen.triggered.connect(self.file_open)
 
         self.actionCalculate.triggered.connect(self.calculate)
@@ -237,31 +240,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QMessageBox.aboutQt(self)
 
     def file_save(self):
+        save_path = self.save_helper()
+        self.update_file_title(save_path)
+
+    def file_save_as(self):
+        save_path = self.save_helper(save_as=True)
+        self.update_file_title(save_path)
+
+    def update_file_title(self, save_path):
+        if save_path:
+            # Store the file path
+            self.project_path = save_path
+            # Set window title accordingly
+            self.setWindowTitle("PyES - " + self.project_path)
+
+    def save_helper(self, save_as=False):
         """
         Saves current project as json file that can be later reopened
         """
-        if self.project_path:
-            output_path, _ = QFileDialog.getSaveFileName(
-                self, "Save Project", self.project_path, "JSON (*.json)"
-            )
-        else:
-            output_path, _ = QFileDialog.getSaveFileName(
+        if save_as or self.project_path is None:
+            output_path, filter = QFileDialog.getSaveFileName(
                 self,
                 "Save Project",
-                self.settings.value("path/default"),
+                (
+                    self.project_path
+                    if self.project_path is not None
+                    else self.settings.value("path/default")
+                ),
                 "JSON (*.json)",
             )
+        else:
+            output_path = self.project_path
 
         if output_path:
             file_name = Path(output_path).parents[0]
             file_name = file_name.joinpath(Path(output_path).stem)
             file_name = file_name.with_suffix(".json")
-
-            # Store the file path
-            self.project_path = output_path
-
-            # Set window title accordingly
-            self.setWindowTitle("PyES - " + self.project_path)
 
             # dictionary that holds all the relevant data locations
             data_list = returnDataDict(self)
@@ -272,6 +286,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 "w",
             ) as out_file:
                 json.dump(data, out_file)
+
+            self.undostack.setClean()
+            return output_path
+        else:
+            return None
 
     def file_open(self):
         """
@@ -1057,6 +1076,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Cleanup before closing.
         """
+        if not self.undostack.isClean():
+            dlg = QMessageBox(
+                QMessageBox.Icon.Question,
+                "Unsaved changes detected",
+                "Unsaved changes detected.\nDo you want to save?",
+            )
+            dlg.setText("The document has been modified.")
+            dlg.setInformativeText("Do you want to save your changes?")
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Save
+                | QMessageBox.StandardButton.Discard
+                | QMessageBox.StandardButton.Cancel
+            )
+            dlg.setDefaultButton(QMessageBox.StandardButton.Save)
+            choice = dlg.exec()
+
+            if choice == QMessageBox.StandardButton.Cancel:
+                event.ignore()
+            elif choice == QMessageBox.StandardButton.Discard:
+                pass
+            elif choice == QMessageBox.StandardButton.Save:
+                if not self.file_save():
+                    event.ignore()
+
         self.settings.setValue("mainwindow/geometry", self.saveGeometry())
 
         # Close any secondary window still open
@@ -1065,7 +1108,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.PlotWindow:
             self.PlotWindow.close()
 
-        event.accept()
+    def check_clean_state(self, clean: bool) -> None:
+        title = self.windowTitle()
+        if not clean:
+            self.setWindowTitle(f"* {title}")
+        else:
+            self.setWindowTitle(title.lstrip("* "))
 
     def check_solid_presence(self):
         if self.solidSpeciesModel.rowCount() == 0:
