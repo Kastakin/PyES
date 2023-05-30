@@ -127,10 +127,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.concModel = ConcentrationsModel(self.conc_data, self.undostack)
 
         self.dmode0_concView.setModel(self.concModel)
+        self.dmode0_concView.setItemDelegate(NumberFormatDelegate(self.dmode0_concView))
         d0header = self.dmode0_concView.horizontalHeader()
         d0header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         self.dmode1_concView.setModel(self.concModel)
+        self.dmode1_concView.setItemDelegate(NumberFormatDelegate(self.dmode1_concView))
         d1header = self.dmode1_concView.horizontalHeader()
         d1header.setSectionResizeMode(QHeaderView.ResizeToContents)
         self.dmode1_concView.setColumnHidden(1, True)
@@ -138,8 +140,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Sets the tableview for the components
         self.compModel = ComponentsModel(self.comp_data, self.undostack)
-
         self.compView.setModel(self.compModel)
+        self.compView.setItemDelegate(NumberFormatDelegate(self.compView))
         compHeader = self.compView.horizontalHeader()
         compHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
         # Connect the dataChanged signal to the corresponding slot

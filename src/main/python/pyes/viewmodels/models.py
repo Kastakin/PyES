@@ -4,7 +4,7 @@
 import re
 
 import pandas as pd
-from commands import SpeciesCellEdit
+from commands import ComponentsCellEdit, SpeciesCellEdit
 from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
 from PySide6.QtGui import QColorConstants, QPalette, QUndoStack
 from utils_func import getName
@@ -129,6 +129,10 @@ class ConcentrationsModel(GenericModel):
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
 
+        if role == Qt.ItemDataRole.UserRole:
+            value = self._data.iloc[index.row(), index.column()]
+            return value
+
     def updateIndex(self, new_index):
         self._data.index = new_index
         self.layoutChanged.emit()
@@ -144,11 +148,12 @@ class ConcentrationsModel(GenericModel):
     def setData(self, index, value, role):
         if role == Qt.EditRole:
             try:
-                self._data.iloc[index.row(), index.column()] = float(value)
+                self.undostack.push(ComponentsCellEdit(self, index, float(value)))
+                print("edited")
             except:
                 return False
             self.dataChanged.emit(index, index)
-        return True
+            return True
 
     def insertRows(self, position, rows=1, index=QModelIndex()) -> bool:
         """Insert a row into the model."""
@@ -169,6 +174,10 @@ class ComponentsModel(GenericModel):
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
 
+        if role == Qt.ItemDataRole.UserRole:
+            value = self._data.iloc[index.row(), index.column()]
+            return value
+
     def flags(self, index):
         flags = (
             Qt.ItemFlag.ItemIsEditable
@@ -183,13 +192,13 @@ class ComponentsModel(GenericModel):
             # First column must contain non-empty strings
             if index.column() == 0:
                 if re.match(r"^\S+$", value):
-                    self._data.iloc[index.row(), index.column()] = value
+                    self.undostack.push(ComponentsCellEdit(self, index, value))
                 else:
                     return False
             # The other column can accept only int values
             else:
                 try:
-                    self._data.iloc[index.row(), index.column()] = int(value)
+                    self.undostack.push(ComponentsCellEdit(self, index, int(value)))
                 except:
                     return False
             self.dataChanged.emit(index, index)

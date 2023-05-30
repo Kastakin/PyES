@@ -1,5 +1,6 @@
 from .models import (
     ComponentsAddRows,
+    ComponentsCellEdit,
     ComponentsRemoveRows,
     ComponentsSwapRows,
     SpeciesAddRows,
@@ -13,6 +14,7 @@ __all__ = [
     ComponentsRemoveRows,
     ComponentsSwapRows,
     ComponentsRemoveRows,
+    ComponentsCellEdit,
     SpeciesAddRows,
     SpeciesCellEdit,
     SpeciesRemoveRows,

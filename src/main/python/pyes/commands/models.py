@@ -23,6 +23,30 @@ class SpeciesSwapRows(QUndoCommand):
         self.table.selectRow(self.second_row)
 
 
+class ComponentsCellEdit(QUndoCommand):
+    def __init__(self, model: QAbstractItemModel, index: QModelIndex, value):
+        QUndoCommand.__init__(self)
+        self.index = index
+        self.value = value
+        self.prev = model.data(index, Qt.ItemDataRole.UserRole)
+        self.model = model
+
+    def undo(self):
+        self.model._data.iloc[self.index.row(), self.index.column()] = self.prev
+
+        self.cleanup()
+
+    def redo(self):
+        self.model._data.iloc[self.index.row(), self.index.column()] = self.value
+
+        self.cleanup()
+
+    def cleanup(self):
+        # Updating coeff. should update the corresponding species name
+        self.model.dataChanged.emit(self.index, self.index)
+        self.model.layoutChanged.emit()
+
+
 class SpeciesCellEdit(QUndoCommand):
     def __init__(self, model: QAbstractItemModel, index: QModelIndex, value):
         QUndoCommand.__init__(self)
