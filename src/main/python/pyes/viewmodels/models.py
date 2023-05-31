@@ -62,11 +62,11 @@ class GenericModel(QAbstractTableModel):
     def headerData(
         self, section, orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
     ):
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
                 return str(self._data.columns[section])
 
-            if orientation == Qt.Vertical:
+            if orientation == Qt.Orientation.Vertical:
                 return str(self._data.index[section])
 
     def updateFlags(self, flags: Qt.ItemFlag, index: QModelIndex):
@@ -125,7 +125,7 @@ class ConcentrationsModel(GenericModel):
         super().__init__(data, undo_stack)
 
     def data(self, index, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole):
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
 
@@ -146,7 +146,7 @@ class ConcentrationsModel(GenericModel):
         return self.updateFlags(flags, index)
 
     def setData(self, index, value, role):
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             try:
                 self.undostack.push(ComponentsCellEdit(self, index, float(value)))
                 print("edited")
@@ -170,7 +170,7 @@ class ComponentsModel(GenericModel):
         super().__init__(data, undo_stack)
 
     def data(self, index, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole):
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             value = self._data.iloc[index.row(), index.column()]
             return str(value)
 
@@ -188,7 +188,7 @@ class ComponentsModel(GenericModel):
         return self.updateFlags(flags, index)
 
     def setData(self, index, value, role):
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             # First column must contain non-empty strings
             if index.column() == 0:
                 if re.match(r"^\S+$", value):
@@ -287,7 +287,7 @@ class GenericSpeciesModel(GenericModel):
         return self.updateFlags(flags, index)
 
     def setData(self, index, value, role):
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             # The frist column holds the ignore flag
             if index.column() == 0:
                 try:
