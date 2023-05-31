@@ -31,7 +31,12 @@ from PySide6.QtWidgets import (
 )
 from ui.PyES_main import Ui_MainWindow
 from utils_func import cleanData, returnDataDict, updateCompNames, updateIndComponent
-from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate, NumberFormatDelegate
+from viewmodels.delegate import (
+    CheckBoxDelegate,
+    ComboBoxDelegate,
+    LineEditDelegate,
+    NumberFormatDelegate,
+)
 from viewmodels.models import (
     ComponentsModel,
     ConcentrationsModel,
@@ -141,7 +146,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Sets the tableview for the components
         self.compModel = ComponentsModel(self.comp_data, self.undostack)
         self.compView.setModel(self.compModel)
-        self.compView.setItemDelegate(NumberFormatDelegate(self.compView))
+        self.compView.setItemDelegateForColumn(0, LineEditDelegate(self.compView))
+        self.compView.setItemDelegateForColumn(1, NumberFormatDelegate(self.compView))
         compHeader = self.compView.horizontalHeader()
         compHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
         # Connect the dataChanged signal to the corresponding slot
