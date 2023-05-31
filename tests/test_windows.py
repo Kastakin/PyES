@@ -7,15 +7,18 @@ from src.main.python.pyes.main import MainWindow
 
 
 @fixture
-def window(qtbot):
+def window(qtbot: QtBot, monkeypatch: MonkeyPatch):
     window = MainWindow()
+    monkeypatch.setattr(window, "closeEvent", lambda *args: True)
     qtbot.addWidget(window)
     return window
 
 
 @fixture
-def window_solid(qtbot):
+def window_solid(qtbot: QtBot, monkeypatch: MonkeyPatch):
     window = MainWindow()
+    monkeypatch.setattr(window, "closeEvent", lambda *args: True)
+
     qtbot.addWidget(window)
 
     window.numPhases.setValue(1)
@@ -317,7 +320,7 @@ class TestCompChanges:
 
 
 class TestSpeciesChanges:
-    def test_add_species_above_unselected(self, window: MainWindow, qtbot: QtBot):
+    def test_add_species_above_unselected(self, window: MainWindow, qtbot):
         window.speciesView.model().setData(
             window.speciesView.model().index(
                 0, window.speciesView.model().columnCount() - 2
