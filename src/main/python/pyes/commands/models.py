@@ -16,10 +16,12 @@ class SpeciesSwapRows(QUndoCommand):
 
     def undo(self) -> None:
         self.model.swapRows(self.second_row, self.first_row)
+        self.table.updateEditorData()
         self.table.selectRow(self.first_row)
 
     def redo(self) -> None:
         self.model.swapRows(self.first_row, self.second_row)
+        self.table.updateEditorData()
         self.table.selectRow(self.second_row)
 
 
@@ -188,7 +190,7 @@ class ComponentsSwapRows(QUndoCommand):
         updateCompNames(
             self.comp_model, *self.species_tables, self.conc_model, self.ind_comp
         )
-
+        self.comp_table.updateEditorData()
         self.ind_comp.setCurrentIndex(self.ind_comp.findData(self.prev_ind_comp, 0))
 
 
