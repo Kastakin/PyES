@@ -179,7 +179,7 @@
                     </sizepolicy>
                    </property>
                    <property name="text">
-                    <string>N° Comp.</string>
+                    <string>N° Components</string>
                    </property>
                   </widget>
                  </item>
@@ -286,7 +286,7 @@
                  <item row="10" column="0" colspan="2">
                   <layout class="QGridLayout" name="gridLayout" rowstretch="1,0" columnstretch="0,0,0">
                    <item row="0" column="2">
-                    <widget class="QToolButton" name="toolButton">
+                    <widget class="QToolButton" name="ionic_strength_info">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                        <horstretch>0</horstretch>
@@ -312,7 +312,7 @@
                       </widget>
                      </item>
                      <item row="0" column="1">
-                      <widget class="QComboBox" name="imode">
+                      <widget class="CustomComboBox" name="imode">
                        <property name="sizePolicy">
                         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                          <horstretch>0</horstretch>
@@ -349,7 +349,7 @@
                       </widget>
                      </item>
                      <item row="0" column="1">
-                      <widget class="QDoubleSpinBox" name="refIonicStr">
+                      <widget class="CustomSpinBox" name="refIonicStr">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -378,7 +378,7 @@
                       </widget>
                      </item>
                      <item row="1" column="1">
-                      <widget class="QDoubleSpinBox" name="A">
+                      <widget class="CustomSpinBox" name="A">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -410,7 +410,7 @@
                       </widget>
                      </item>
                      <item row="2" column="1">
-                      <widget class="QDoubleSpinBox" name="B">
+                      <widget class="CustomSpinBox" name="B">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -442,7 +442,7 @@
                       </widget>
                      </item>
                      <item row="3" column="1">
-                      <widget class="QDoubleSpinBox" name="c0">
+                      <widget class="CustomSpinBox" name="c0">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -474,7 +474,7 @@
                       </widget>
                      </item>
                      <item row="4" column="1">
-                      <widget class="QDoubleSpinBox" name="c1">
+                      <widget class="CustomSpinBox" name="c1">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -506,7 +506,7 @@
                       </widget>
                      </item>
                      <item row="5" column="1">
-                      <widget class="QDoubleSpinBox" name="d0">
+                      <widget class="CustomSpinBox" name="d0">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -538,7 +538,7 @@
                       </widget>
                      </item>
                      <item row="6" column="1">
-                      <widget class="QDoubleSpinBox" name="d1">
+                      <widget class="CustomSpinBox" name="d1">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -570,7 +570,7 @@
                       </widget>
                      </item>
                      <item row="7" column="1">
-                      <widget class="QDoubleSpinBox" name="e0">
+                      <widget class="CustomSpinBox" name="e0">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -602,7 +602,7 @@
                       </widget>
                      </item>
                      <item row="8" column="1">
-                      <widget class="QDoubleSpinBox" name="e1">
+                      <widget class="CustomSpinBox" name="e1">
                        <property name="enabled">
                         <bool>false</bool>
                        </property>
@@ -630,7 +630,7 @@
                  <item row="7" column="0" colspan="2">
                   <layout class="QGridLayout" name="gridLayout_2">
                    <item row="0" column="1">
-                    <widget class="QToolButton" name="toolButton_2">
+                    <widget class="QToolButton" name="uncertainty_info">
                      <property name="text">
                       <string/>
                      </property>
@@ -645,7 +645,7 @@
                      <item row="0" column="0" colspan="2">
                       <widget class="QCheckBox" name="uncertaintyMode">
                        <property name="text">
-                        <string>Uncertanity Estimation</string>
+                        <string>Uncertainty Estimation</string>
                        </property>
                        <property name="checked">
                         <bool>true</bool>
@@ -718,7 +718,7 @@
            <item>
             <widget class="QFrame" name="horizontalFrame_2">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -885,6 +885,19 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
              </layout>
             </widget>
            </item>
@@ -902,20 +915,23 @@
                <height>16777215</height>
               </size>
              </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
              <property name="sizeAdjustPolicy">
               <enum>QAbstractScrollArea::AdjustIgnored</enum>
              </property>
              <property name="editTriggers">
               <set>QAbstractItemView::AllEditTriggers</set>
              </property>
+             <property name="showDropIndicator" stdset="0">
+              <bool>false</bool>
+             </property>
              <property name="selectionMode">
               <enum>QAbstractItemView::SingleSelection</enum>
              </property>
              <property name="selectionBehavior">
               <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <property name="textElideMode">
+              <enum>Qt::ElideNone</enum>
              </property>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
@@ -1308,7 +1324,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QComboBox" name="dmode">
+            <widget class="CustomComboBox" name="dmode">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -1339,7 +1355,7 @@
         <item>
          <widget class="QWidget" name="dmode0Input" native="true">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -1358,9 +1374,522 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="QWidget" name="widget" native="true">
+            <widget class="QStackedWidget" name="dmode_inputs">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="page">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_9">
+               <item>
+                <widget class="QWidget" name="widget_3" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>263</width>
+                   <height>287</height>
+                  </size>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_9">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>15</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QFrame" name="frame">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>280</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                    <layout class="QFormLayout" name="formLayout">
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>6</number>
+                     </property>
+                     <item row="0" column="0" colspan="2">
+                      <widget class="QLabel" name="label_3">
+                       <property name="text">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Volume Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="v0_label">
+                       <property name="text">
+                        <string>Initial Volume:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="CustomSpinBox" name="v0">
+                       <property name="statusTip">
+                        <string>Initial volume in the titration vessel.</string>
+                       </property>
+                       <property name="suffix">
+                        <string> ml</string>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="initv_label">
+                       <property name="text">
+                        <string>First Point Volume:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="CustomSpinBox" name="initv">
+                       <property name="statusTip">
+                        <string>Volume in the vessel at the first titration point.</string>
+                       </property>
+                       <property name="suffix">
+                        <string> ml</string>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="vinc_label">
+                       <property name="text">
+                        <string>Volume Increments:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
+                      <widget class="CustomSpinBox" name="vinc">
+                       <property name="statusTip">
+                        <string>Increment in volume for each titration point.</string>
+                       </property>
+                       <property name="suffix">
+                        <string> ml</string>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="nop_label">
+                       <property name="text">
+                        <string>Number of points:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="CustomSpinBox" name="nop">
+                       <property name="statusTip">
+                        <string>Number of titration points.</string>
+                       </property>
+                       <property name="suffix">
+                        <string/>
+                       </property>
+                       <property name="decimals">
+                        <number>0</number>
+                       </property>
+                       <property name="minimum">
+                        <double>1.000000000000000</double>
+                       </property>
+                       <property name="maximum">
+                        <double>9000.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>1.000000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="0" colspan="2">
+                      <widget class="Line" name="line_2">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="0" colspan="2">
+                      <widget class="QLabel" name="label_4">
+                       <property name="text">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background Ions Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="0">
+                      <widget class="QLabel" name="c0back_label">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="text">
+                        <string>Initial C:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="0">
+                      <widget class="QLabel" name="ctback_label">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="text">
+                        <string>Titrant C:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="1">
+                      <widget class="CustomSpinBox" name="c0back">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="statusTip">
+                        <string>Initial concentration of background ions in titration vessel.</string>
+                       </property>
+                       <property name="suffix">
+                        <string> mol/l</string>
+                       </property>
+                       <property name="decimals">
+                        <number>5</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="8" column="1">
+                      <widget class="CustomSpinBox" name="ctback">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="statusTip">
+                        <string>Concentration of background ions in the titrant.</string>
+                       </property>
+                       <property name="suffix">
+                        <string> mol/l</string>
+                       </property>
+                       <property name="decimals">
+                        <number>5</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_3">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="page_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_10">
+               <item>
+                <widget class="QWidget" name="widget_11" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>263</width>
+                   <height>287</height>
+                  </size>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_11">
+                  <property name="leftMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin">
+                   <number>15</number>
+                  </property>
+                  <property name="rightMargin">
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin">
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QFrame" name="frame_2">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>284</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::StyledPanel</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Raised</enum>
+                    </property>
+                    <layout class="QFormLayout" name="formLayout_2">
+                     <property name="topMargin">
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin">
+                      <number>6</number>
+                     </property>
+                     <item row="0" column="0" colspan="2">
+                      <widget class="QLabel" name="label_9">
+                       <property name="text">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Indipendent Component Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="0">
+                      <widget class="QLabel" name="initialLog_label">
+                       <property name="text">
+                        <string>Initial -log[A]:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="2" column="1">
+                      <widget class="CustomSpinBox" name="initialLog">
+                       <property name="statusTip">
+                        <string>Initial Log value of the indipendent component.</string>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="0">
+                      <widget class="QLabel" name="finalLog_label">
+                       <property name="text">
+                        <string>Final -log[A]</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="3" column="1">
+                      <widget class="CustomSpinBox" name="finalLog">
+                       <property name="statusTip">
+                        <string>Final Log value of the indipendent component.</string>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="0">
+                      <widget class="QLabel" name="logInc_label">
+                       <property name="text">
+                        <string>-log[A] Increment:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="4" column="1">
+                      <widget class="CustomSpinBox" name="logInc">
+                       <property name="statusTip">
+                        <string>Log increment of the indipendent component at each point.</string>
+                       </property>
+                       <property name="decimals">
+                        <number>3</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="5" column="0" colspan="2">
+                      <widget class="Line" name="line_3">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="6" column="0" colspan="2">
+                      <widget class="QLabel" name="label_16">
+                       <property name="text">
+                        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background Ions Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="0">
+                      <widget class="QLabel" name="cback_label">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="text">
+                        <string>Concentration:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="7" column="1">
+                      <widget class="CustomSpinBox" name="cback">
+                       <property name="enabled">
+                        <bool>false</bool>
+                       </property>
+                       <property name="toolTip">
+                        <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
+                       </property>
+                       <property name="statusTip">
+                        <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
+                       </property>
+                       <property name="suffix">
+                        <string> mol/l</string>
+                       </property>
+                       <property name="decimals">
+                        <number>5</number>
+                       </property>
+                       <property name="maximum">
+                        <double>900.000000000000000</double>
+                       </property>
+                       <property name="singleStep">
+                        <double>0.050000000000000</double>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="0">
+                      <widget class="QLabel" name="indComp_label">
+                       <property name="text">
+                        <string>Indipendent Comp:</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item row="1" column="1">
+                      <widget class="CustomComboBox" name="indComp">
+                       <property name="statusTip">
+                        <string>Component to be considered indipendent.</string>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <widget class="QWidget" name="widget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
@@ -1381,550 +1910,16 @@
               <item>
                <widget class="QLabel" name="label_2">
                 <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Initial and Titrant concentration:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Analytical Concentrations:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QTableView" name="dmode0_concView"/>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QWidget" name="widget_3" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>263</width>
-               <height>287</height>
-              </size>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_9">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>25</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QFrame" name="frame">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>280</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QFormLayout" name="formLayout">
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>6</number>
-                 </property>
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QLabel" name="label_3">
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Volume Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="v0_label">
-                   <property name="text">
-                    <string>Initial Volume:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QDoubleSpinBox" name="v0">
-                   <property name="statusTip">
-                    <string>Initial volume in the titration vessel.</string>
-                   </property>
-                   <property name="suffix">
-                    <string> ml</string>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="initv_label">
-                   <property name="text">
-                    <string>First Point Volume:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QDoubleSpinBox" name="initv">
-                   <property name="statusTip">
-                    <string>Volume in the vessel at the first titration point.</string>
-                   </property>
-                   <property name="suffix">
-                    <string> ml</string>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="vinc_label">
-                   <property name="text">
-                    <string>Volume Increments:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QDoubleSpinBox" name="vinc">
-                   <property name="statusTip">
-                    <string>Increment in volume for each titration point.</string>
-                   </property>
-                   <property name="suffix">
-                    <string> ml</string>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="nop_label">
-                   <property name="text">
-                    <string>Number of points:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QDoubleSpinBox" name="nop">
-                   <property name="statusTip">
-                    <string>Number of titration points.</string>
-                   </property>
-                   <property name="suffix">
-                    <string/>
-                   </property>
-                   <property name="decimals">
-                    <number>0</number>
-                   </property>
-                   <property name="minimum">
-                    <double>1.000000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>9000.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>1.000000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0" colspan="2">
-                  <widget class="Line" name="line_2">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="0" colspan="2">
-                  <widget class="QLabel" name="label_4">
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background Ions Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="c0back_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Initial C:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="0">
-                  <widget class="QLabel" name="ctback_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Titrant C:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QDoubleSpinBox" name="c0back">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="statusTip">
-                    <string>Initial concentration of background ions in titration vessel.</string>
-                   </property>
-                   <property name="suffix">
-                    <string> mol/l</string>
-                   </property>
-                   <property name="decimals">
-                    <number>5</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="1">
-                  <widget class="QDoubleSpinBox" name="ctback">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="statusTip">
-                    <string>Concentration of background ions in the titrant.</string>
-                   </property>
-                   <property name="suffix">
-                    <string> mol/l</string>
-                   </property>
-                   <property name="decimals">
-                    <number>5</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <spacer name="verticalSpacer_3">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Expanding</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QWidget" name="dmode1Input" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_7">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QWidget" name="widget_5" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_10">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QLabel" name="label_8">
-                <property name="text">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Analytical concentration:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <widget class="QTableView" name="concView">
+                <property name="sizeAdjustPolicy">
+                 <enum>QAbstractScrollArea::AdjustToContents</enum>
                 </property>
                </widget>
-              </item>
-              <item>
-               <widget class="QTableView" name="dmode1_concView"/>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QWidget" name="widget_11" native="true">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>263</width>
-               <height>287</height>
-              </size>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_11">
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>25</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item>
-               <widget class="QFrame" name="frame_2">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>284</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-                <layout class="QFormLayout" name="formLayout_2">
-                 <property name="topMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>6</number>
-                 </property>
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QLabel" name="label_9">
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Indipendent Component Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="initialLog_label">
-                   <property name="text">
-                    <string>Initial -log[A]:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QDoubleSpinBox" name="initialLog">
-                   <property name="statusTip">
-                    <string>Initial Log value of the indipendent component.</string>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="finalLog_label">
-                   <property name="text">
-                    <string>Final -log[A]</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QDoubleSpinBox" name="finalLog">
-                   <property name="statusTip">
-                    <string>Final Log value of the indipendent component.</string>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="logInc_label">
-                   <property name="text">
-                    <string>-log[A] Increment:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QDoubleSpinBox" name="logInc">
-                   <property name="statusTip">
-                    <string>Log increment of the indipendent component at each point.</string>
-                   </property>
-                   <property name="decimals">
-                    <number>3</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0" colspan="2">
-                  <widget class="Line" name="line_3">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="0" colspan="2">
-                  <widget class="QLabel" name="label_16">
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Background Ions Settings:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="cback_label">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Concentration:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QDoubleSpinBox" name="cback">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="toolTip">
-                    <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
-                   </property>
-                   <property name="statusTip">
-                    <string>Sum of the concentrations of ionic species that do not take part in the reactions.</string>
-                   </property>
-                   <property name="suffix">
-                    <string> mol/l</string>
-                   </property>
-                   <property name="decimals">
-                    <number>5</number>
-                   </property>
-                   <property name="maximum">
-                    <double>900.000000000000000</double>
-                   </property>
-                   <property name="singleStep">
-                    <double>0.050000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="indComp_label">
-                   <property name="text">
-                    <string>Indipendent Comp:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QComboBox" name="indComp">
-                   <property name="statusTip">
-                    <string>Component to be considered indipendent.</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <spacer name="verticalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
              </layout>
             </widget>
@@ -2252,7 +2247,7 @@
   <action name="actionUndo">
    <property name="icon">
     <iconset theme="edit-undo">
-     <normaloff>.</normaloff>.</iconset>
+     <normaloff>../../../../../../../.designer/backup</normaloff>../../../../../../../.designer/backup</iconset>
    </property>
    <property name="text">
     <string>Undo</string>
@@ -2261,7 +2256,7 @@
   <action name="actionRedo">
    <property name="icon">
     <iconset theme="edit-redo">
-     <normaloff>.</normaloff>.</iconset>
+     <normaloff>../../../../../../../.designer/backup</normaloff>../../../../../../../.designer/backup</iconset>
    </property>
    <property name="text">
     <string>Redo</string>
@@ -2283,6 +2278,18 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>ui.widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>CustomComboBox</class>
+   <extends>QComboBox</extends>
+   <header>ui.widgets</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../../resources/base/resources.qrc"/>
  </resources>
@@ -2336,66 +2343,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>dmode</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>dmodeUpdater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>108</x>
-     <y>122</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>605</x>
-     <y>64</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>indComp</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>indipendentUpdater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>514</x>
-     <y>534</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>643</x>
-     <y>739</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>v0</sender>
    <signal>valueChanged(double)</signal>
    <receiver>MainWindow</receiver>
    <slot>v0Updater()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>520</x>
-     <y>219</y>
+     <x>310</x>
+     <y>218</y>
     </hint>
     <hint type="destinationlabel">
      <x>804</x>
      <y>769</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>imode</sender>
-   <signal>currentIndexChanged(int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>imodeUpdater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>223</x>
-     <y>327</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1203</x>
-     <y>376</y>
     </hint>
    </hints>
   </connection>
@@ -2624,7 +2583,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolButton_2</sender>
+   <sender>uncertainty_info</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>displayUncertaintyInfo()</slot>
@@ -2640,7 +2599,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>toolButton</sender>
+   <sender>ionic_strength_info</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>displayIonicStrengthInfo()</slot>
@@ -2652,22 +2611,6 @@
     <hint type="destinationlabel">
      <x>283</x>
      <y>754</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>uncertaintyMode</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>relErrorsUpdater()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>24</x>
-     <y>272</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1</x>
-     <y>265</y>
     </hint>
    </hints>
   </connection>

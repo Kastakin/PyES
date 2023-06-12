@@ -103,6 +103,12 @@ class GenericModel(QAbstractTableModel):
                 self.readonly_rows.discard(row)
                 self.layoutChanged.emit()
 
+    def showAllRows(self):
+        self.readonly_rows = set()
+
+    def showAllColumns(self):
+        self.readonly_columns = set()
+
     def swapRows(self, first: int, second: int):
         a, b = self._data.iloc[first, :].copy(), self._data.iloc[second, :].copy()
         self._data.iloc[first, :], self._data.iloc[second, :] = b, a
@@ -123,6 +129,7 @@ class GenericModel(QAbstractTableModel):
 class ConcentrationsModel(GenericModel):
     def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
         super().__init__(data, undo_stack)
+        self.previous_ind_comp = 0
 
     def data(self, index, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole):
         if role == Qt.ItemDataRole.DisplayRole:
@@ -163,6 +170,9 @@ class ConcentrationsModel(GenericModel):
             index=["COMP" + str(position + row + 1) for row in range(rows)],
         )
         super().insertRows(empty_rows, position, rows, index)
+
+    def setPreviousIndependentComponent(self, index: int):
+        self.previous_ind_comp = index
 
 
 class ComponentsModel(GenericModel):

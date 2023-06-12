@@ -42,9 +42,7 @@ def assert_comp_names_headers(window: MainWindow, pos: int, value: str):
         window.solidSpeciesView.model().headerData(pos + 8, Qt.Orientation.Horizontal)
         == value
     )
-    assert (
-        window.dmode0_concView.model().headerData(pos, Qt.Orientation.Vertical) == value
-    )
+    assert window.concView.model().headerData(pos, Qt.Orientation.Vertical) == value
     assert (
         window.dmode1_concView.model().headerData(pos, Qt.Orientation.Vertical) == value
     )

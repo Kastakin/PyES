@@ -737,7 +737,6 @@ class Distribution:
 
             saturation_index_calc = np.zeros(self.nf)
             adjust_solids = True and (self.nf > 0)
-            counter = 0
             while adjust_solids:
                 saturation_index = self._getSaturationIndex(
                     species_conc_calc[: self.nc], log_ks
@@ -887,6 +886,7 @@ class Distribution:
                 log_beta = self.log_beta_ris
                 log_ks = self.log_ks_ris
                 cis = [None]
+            c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
 
         # Calculate total concentration given the species concentration
         c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
@@ -903,7 +903,7 @@ class Distribution:
             shifts_to_calculate[-self.nf :],
         )
 
-        while iteration < 200:
+        while iteration < 2000:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION %s ON POINT %s", iteration, point
             )
@@ -916,12 +916,12 @@ class Distribution:
                 shifts_to_skip[-self.nf :],
             )
 
-            # J, delta = self._scaleMatrix(J, delta, with_solids)
-
             if self.distribution:
                 # Ignore row and column relative to the independent component
                 J = np.delete(J, self.ind_comp, axis=0)
                 J = np.delete(J, self.ind_comp, axis=1)
+
+            # J, delta = self._scaleMatrix(J, delta)
 
             # Solve the equations to obtain newton step
             shifts = np.linalg.solve(J, -delta)
@@ -979,12 +979,12 @@ class Distribution:
             iteration += 1
             # If convergence criteria is met return check if any solid has to be considered
             if with_solids:
-                if comp_conv_criteria < 1e-16 and all(
+                if comp_conv_criteria < 1e-12 and all(
                     abs(i) <= 1e-9 for i in solid_delta
                 ):
                     return c_spec, cp, log_beta, log_ks, cis
             else:
-                if comp_conv_criteria < 1e-16:
+                if comp_conv_criteria < 1e-12:
                     return c_spec, cp, log_beta, log_ks, cis
 
         # If during the first or second run you exceed the iteration limit report it
@@ -1023,7 +1023,6 @@ class Distribution:
         saturation_index: NDArray = np.array([]),
         solid_concentrations: NDArray = np.array([]),
     ):
-
         negative_cp = solid_concentrations < 0
         supersaturated_solid = saturation_index > 1 + 1e-9
 
@@ -1636,3 +1635,12 @@ class Distribution:
             )
 
         return dataframe
+
+    def _scaleMatrix(self, J: NDArray, delta: NDArray):
+        d1 = np.diag(np.sqrt(J.max(axis=1)))
+        d2 = np.diag(np.sqrt(J.max(axis=0)))
+        # d1 = np.diag(np.sqrt(np.diag(J)))
+        # d2 = np.diag(np.sqrt(np.diag(J)))
+        J = d1 @ J @ d2
+        delta = d1 @ delta
+        return J, delta

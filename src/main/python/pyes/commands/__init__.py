@@ -1,3 +1,10 @@
+from .fields import (
+    DoubleSpinBoxEdit,
+    dmodeEdit,
+    imodeEdit,
+    indCompEdit,
+    uncertaintyEdit,
+)
 from .models import (
     ComponentsAddRows,
     ComponentsCellEdit,
@@ -10,6 +17,11 @@ from .models import (
 )
 
 __all__ = [
+    uncertaintyEdit,
+    imodeEdit,
+    indCompEdit,
+    dmodeEdit,
+    DoubleSpinBoxEdit,
     ComponentsAddRows,
     ComponentsRemoveRows,
     ComponentsSwapRows,

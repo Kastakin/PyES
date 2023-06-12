@@ -7,9 +7,14 @@ from commands import (
     ComponentsAddRows,
     ComponentsRemoveRows,
     ComponentsSwapRows,
+    DoubleSpinBoxEdit,
     SpeciesAddRows,
     SpeciesRemoveRows,
     SpeciesSwapRows,
+    dmodeEdit,
+    imodeEdit,
+    indCompEdit,
+    uncertaintyEdit,
 )
 from dialogs import (
     AboutDialog,
@@ -23,6 +28,8 @@ from dialogs import (
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
 from PySide6.QtGui import QDesktopServices, QKeySequence, QUndoStack
 from PySide6.QtWidgets import (
+    QComboBox,
+    QDoubleSpinBox,
     QFileDialog,
     QHeaderView,
     QMainWindow,
@@ -78,6 +85,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.PlotWindow = None
         self.ExportWindow = None
 
+        self.qspinbox_fields: list[QDoubleSpinBox] = [
+            self.refIonicStr,
+            self.A,
+            self.B,
+            self.c0,
+            self.c1,
+            self.d0,
+            self.d1,
+            self.e0,
+            self.e1,
+            self.v0,
+            self.initv,
+            self.vinc,
+            self.nop,
+            self.c0back,
+            self.ctback,
+            self.initialLog,
+            self.finalLog,
+            self.logInc,
+            self.cback,
+        ]
+
+        self.qcombobox_fields: list[QComboBox] = [self.imode, self.dmode, self.indComp]
+
         self.imode_fields: list[QWidget] = [
             self.refIonicStr,
             self.refIonicStr_label,
@@ -105,6 +136,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback_label,
         ]
 
+        for field in self.qspinbox_fields:
+            field.valueChanged.connect(
+                lambda value, field=field: self.undostack.push(
+                    DoubleSpinBoxEdit(field, value)
+                )
+            )
+
+        self.imode.currentIndexChanged.connect(
+            lambda index: self.undostack.push(
+                imodeEdit(
+                    self.imode,
+                    self.imode_fields,
+                    [self.speciesView.model(), self.solidSpeciesView.model()],
+                    index,
+                )
+            )
+        )
+
+        self.dmode.currentIndexChanged.connect(
+            lambda index: self.undostack.push(
+                dmodeEdit(
+                    self.dmode,
+                    index,
+                    self.dmode_inputs,
+                    self.concView,
+                )
+            )
+        )
+
+        self.indComp.currentIndexChanged.connect(
+            lambda index: self.undostack.push(
+                indCompEdit(
+                    self.indComp,
+                    index,
+                    [self.initialLog_label, self.finalLog_label, self.logInc_label],
+                    self.concModel,
+                    self.dmode,
+                )
+            )
+        )
+
+        self.uncertaintyMode.toggled.connect(
+            lambda state: self.undostack.push(
+                uncertaintyEdit(
+                    self.uncertaintyMode,
+                    state,
+                    [
+                        self.speciesView.model(),
+                        self.solidSpeciesView.model(),
+                        self.concView.model(),
+                    ],
+                )
+            )
+        )
+
         # Generate clean data for tableviews
         (
             self.conc_data,
@@ -127,21 +213,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAbout_Qt.triggered.connect(self.help_about_qt)
         self.actionWebsite.triggered.connect(self.help_website)
 
-        # Sets the tabelview for the component concentrations in titration
-        # FIXME: we are using two views for the same model, we could probably do with a single view
         self.concModel = ConcentrationsModel(self.conc_data, self.undostack)
 
-        self.dmode0_concView.setModel(self.concModel)
-        self.dmode0_concView.setItemDelegate(NumberFormatDelegate(self.dmode0_concView))
-        d0header = self.dmode0_concView.horizontalHeader()
+        self.concView.setModel(self.concModel)
+        self.concView.setItemDelegate(NumberFormatDelegate(self.concView))
+        d0header = self.concView.horizontalHeader()
         d0header.setSectionResizeMode(QHeaderView.ResizeToContents)
-
-        self.dmode1_concView.setModel(self.concModel)
-        self.dmode1_concView.setItemDelegate(NumberFormatDelegate(self.dmode1_concView))
-        d1header = self.dmode1_concView.horizontalHeader()
-        d1header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.dmode1_concView.setColumnHidden(1, True)
-        self.dmode1_concView.setColumnHidden(3, True)
 
         # Sets the tableview for the components
         self.compModel = ComponentsModel(self.comp_data, self.undostack)
@@ -198,9 +275,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Interface is populated with empty basic data
         self.resetFields()
-
-        # Sets the components names in the QComboBox
-        updateIndComponent(self.compModel, self.indComp)
 
         self.solidSpeciesModel.layoutChanged.connect(self.check_solid_presence)
 
@@ -533,7 +607,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.speciesModel.updateCompName(updated_comps)
         self.solidSpeciesModel.updateHeader(updated_comps)
         self.solidSpeciesModel.updateCompName(updated_comps)
-        self.indComp.setCurrentIndex(ind_comp)
+        self.indComp.currentIndexChanged.emit(ind_comp)
         self.speciesView.setItemDelegateForColumn(
             self.speciesModel.columnCount() - 1,
             ComboBoxDelegate(self.speciesView, self.compModel._data["Name"].tolist()),
@@ -597,7 +671,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.uncertaintyMode.setChecked(False)
 
         # Reset Ionic strenght params
-        self.imode.setCurrentIndex(0)
+        self.imode.currentIndexChanged.emit(0)
         self.refIonicStr.setValue(0)
         self.A.setValue(0)
         self.B.setValue(0)
@@ -607,13 +681,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.d1.setValue(0)
         self.e0.setValue(0)
         self.e1.setValue(0)
-        self.imodeUpdater(0)
 
         # Set dmode as 0 (titration)
         # and display the correct associated widget
-        self.dmode.setCurrentIndex(0)
-        self.previousIndComp = 0
-        self.dmodeUpdater(0)
+        self.dmode.currentIndexChanged.emit(0)
 
         # Resets fields for both dmodes
         self.v0.setValue(0)
@@ -654,6 +725,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             updateIndComponent(self.compModel, self.indComp)
         except:
             pass
+        finally:
+            self.undostack.clear()
 
     def updateComp(self, rows):
         """
@@ -986,26 +1059,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def logger(self, log):
         self.consoleOutput.append(log)
 
-    def imodeUpdater(self, imode):
-        """
-        Enables and disables Debye-Huckle parameters fields
-        while making it clear grayingout also the corresponding
-        fields in the modelviews
-        """
-        if imode == 1:
-            for field in self.imode_fields:
-                field.setEnabled(True)
-
-            self.speciesView.model().setColumnReadOnly(range(4, 8), False)
-            self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), False)
-
-        else:
-            for field in self.imode_fields:
-                field.setEnabled(False)
-
-            self.speciesView.model().setColumnReadOnly(range(4, 8), True)
-            self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), True)
-
     def exportDist(self):
         """
         Export calculated distribution in csv/excel format
@@ -1030,37 +1083,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.PlotWindow = PlotWindow(self)
         self.PlotWindow.show()
 
-    def dmodeUpdater(self, mode):
-        """
-        Conditionally show one settings input or another
-        if we want to work in distribution or titration mode.
-        """
-        if mode == 0:
-            self.dmode0Input.show()
-            self.dmode1Input.hide()
-            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], False)
-        else:
-            self.dmode0Input.hide()
-            self.dmode1Input.show()
-            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], True)
-
-    def indipendentUpdater(self, comp):
-        """
-        If working in "distribution mode"
-        gray out indipendent component.
-        """
-        try:
-            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], False)
-        except:
-            pass
-        self.previousIndComp = self.indComp.currentIndex()
-        self.initialLog_label.setText(f"Initial -log[{self.indComp.currentText()}]:")
-        self.finalLog_label.setText(f"Final -log[f{self.indComp.currentText()}]:")
-
-        self.logInc_label.setText(f"-log[{self.indComp.currentText()}] Increment:")
-        if self.dmode.currentIndex() == 1:
-            self.dmode1_concView.model().setRowReadOnly([comp], True)
-
     def relErrorsUpdater(self, checked):
         """
         If relative errors aren't requested
@@ -1069,13 +1091,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if checked:
             self.speciesView.model().setColumnReadOnly([3], False)
             self.solidSpeciesView.model().setColumnReadOnly([3], False)
-            self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
-            self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
+            self.concView.model().setColumnReadOnly([2, 3], False)
         else:
             self.speciesView.model().setColumnReadOnly([3], True)
             self.solidSpeciesView.model().setColumnReadOnly([3], True)
-            self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
-            self.dmode0_concView.model().setColumnReadOnly([2, 3], True)
+            self.concView.model().setColumnReadOnly([2, 3], True)
 
     def v0Updater(self, value):
         self.initv.setMinimum(value)
