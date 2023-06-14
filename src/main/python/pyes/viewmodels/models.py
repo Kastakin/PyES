@@ -156,7 +156,6 @@ class ConcentrationsModel(GenericModel):
         if role == Qt.ItemDataRole.EditRole:
             try:
                 self.undostack.push(ComponentsCellEdit(self, index, float(value)))
-                print("edited")
             except:
                 return False
             self.dataChanged.emit(index, index)
