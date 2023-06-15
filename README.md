@@ -16,10 +16,10 @@ Based on the previous work of Professor Sammartano of the University of Messina,
 ## Requirements
 * Architecture:
   * x86_64
-  * Apple Silicon (Not tested!)
+  * Apple Silicon
 * OS:
   * Windows 10+
-  * macOS 10.14+ (Not tested!)
+  * macOS 10.14+
   * Linux/X11 (Ubuntu 20.04+)
 
 ## Installation
