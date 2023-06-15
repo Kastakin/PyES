@@ -35,11 +35,6 @@ class NotSavedDialog(QMessageBox):
         Dialog for asking confirmation of intention of closing the file when unsaved modification are present
         """
         super().__init__(parent)
-        # QMessageBox(
-        #     QMessageBox.Icon.Question,
-        #     "Unsaved changes detected",
-        #     "Unsaved changes detected.\nDo you want to save?",
-        # )
         self.setIcon(QMessageBox.Icon.Question)
         self.setWindowTitle("Unsaved changes detected")
         self.setText("The document has been modified.")
