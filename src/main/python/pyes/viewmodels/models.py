@@ -403,7 +403,7 @@ class SolubleSpeciesModel(GenericSpeciesModel):
         template_header = [
             "Ignored",
             "Name",
-            "LogKs",
+            "LogB",
             "Sigma",
             "Ref. Ionic Str.",
             "CGF",
@@ -418,7 +418,7 @@ class SolidSpeciesModel(GenericSpeciesModel):
         template_header = [
             "Ignored",
             "Name",
-            "LogB",
+            "LogKs",
             "Sigma",
             "Ref. Ionic Str.",
             "CGF",

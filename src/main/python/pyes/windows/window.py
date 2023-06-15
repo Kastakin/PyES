@@ -610,7 +610,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         if self.solidSpeciesModel._data.empty:
-            self.solidSpeciesModel._data = self.solid_species_data
+            self.solidSpeciesModel._data = self.speciesModel._data.iloc[0:0, :].copy()
+            self.solidSpeciesModel._data.rename(columns={"LogB": "LogKs"}, inplace=True)
 
         self.solidSpeciesModel._data.index = range(self.numPhases.value())
 

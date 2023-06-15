@@ -167,7 +167,7 @@ def cleanData():
         columns=[
             "Ignored",
             "Name",
-            "LogB",
+            "LogKs",
             "Sigma",
             "Ref. Ionic Str.",
             "CG",
