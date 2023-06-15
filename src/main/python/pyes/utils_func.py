@@ -6,22 +6,21 @@ from PySide6.QtWidgets import QComboBox, QTableView
 from viewmodels.delegate import ComboBoxDelegate
 
 
-def addSpeciesComp(position: int, added_rows: int, view: QTableView):
+def addSpeciesComp(position: int, added_rows: int, view: QTableView, comp_names):
     view.setItemDelegateForColumn(view.model().columnCount() - 1, None)
     view.model().insertColumns(position, added_rows)
     view.setItemDelegateForColumn(
         view.model().columnCount() - 1,
-        ComboBoxDelegate(view, view.model()._data["Name"].tolist()),
+        ComboBoxDelegate(view, comp_names),
     )
 
 
-def removeSpeciesComp(position: int, removed_rows: int, view: QTableView):
-    model = view.model()
-    view.setItemDelegateForColumn(model.columnCount() - 1, None)
-    model.removeColumns(position, removed_rows)
+def removeSpeciesComp(position: int, removed_rows: int, view: QTableView, comp_names):
+    view.setItemDelegateForColumn(view.model().columnCount() - 1, None)
+    view.model().removeColumns(position, removed_rows)
     view.setItemDelegateForColumn(
-        model.columnCount() - 1,
-        ComboBoxDelegate(view, model._data["Name"].tolist()),
+        view.model().columnCount() - 1,
+        ComboBoxDelegate(view, comp_names),
     )
 
 
@@ -117,13 +116,17 @@ def updateIndComponent(comp_model: QAbstractItemModel, components_combobox: QCom
     old_selected = components_combobox.currentIndex()
     if old_selected < 0:
         old_selected = 0
+
+    components_combobox.blockSignals(True)
     components_combobox.clear()
     components_combobox.addItems(comp_model._data["Name"])
+    components_combobox.blockSignals(False)
+
     num_elements = components_combobox.count()
-    if num_elements >= old_selected:
+    if num_elements > old_selected:
         components_combobox.setCurrentIndex(old_selected)
     else:
-        components_combobox.setCurrentIndex(num_elements)
+        components_combobox.setCurrentIndex(num_elements - 1)
 
 
 def cleanData():
@@ -135,17 +138,17 @@ def cleanData():
     conc_data = pd.DataFrame(
         [[0.0 for x in range(4)]],
         columns=["C0", "CT", "Sigma C0", "Sigma CT"],
-        index=["COMP1"],
+        index=["A"],
     )
     comp_data = pd.DataFrame(
-        [["COMP1", 0]],
+        [["A", 0]],
         columns=[
             "Name",
             "Charge",
         ],
     )
     species_data = pd.DataFrame(
-        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["COMP1"]],
+        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["A"]],
         columns=[
             "Ignored",
             "Name",
@@ -155,12 +158,12 @@ def cleanData():
             "CG",
             "DG",
             "EG",
-            "COMP1",
+            "A",
             "Ref. Comp.",
         ],
     )
     solid_species_data = pd.DataFrame(
-        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["COMP1"]],
+        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["A"]],
         columns=[
             "Ignored",
             "Name",
@@ -170,7 +173,7 @@ def cleanData():
             "CG",
             "DG",
             "EG",
-            "COMP1",
+            "A",
             "Ref. Comp.",
         ],
     ).drop(0)

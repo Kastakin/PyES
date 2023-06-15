@@ -1083,20 +1083,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.PlotWindow = PlotWindow(self)
         self.PlotWindow.show()
 
-    def relErrorsUpdater(self, checked):
-        """
-        If relative errors aren't requested
-        gray out the corresponding columns in tableviews.
-        """
-        if checked:
-            self.speciesView.model().setColumnReadOnly([3], False)
-            self.solidSpeciesView.model().setColumnReadOnly([3], False)
-            self.concView.model().setColumnReadOnly([2, 3], False)
-        else:
-            self.speciesView.model().setColumnReadOnly([3], True)
-            self.solidSpeciesView.model().setColumnReadOnly([3], True)
-            self.concView.model().setColumnReadOnly([2, 3], True)
-
     def v0Updater(self, value):
         self.initv.setMinimum(value)
 

@@ -2,6 +2,8 @@
 # to display tabular data
 
 import re
+import string
+from itertools import permutations
 
 import pandas as pd
 from commands import ComponentsCellEdit, SpeciesCellEdit
@@ -33,7 +35,6 @@ class GenericModel(QAbstractTableModel):
                 ignore_index=True,
             )
         else:
-            # for row in range(rows):
             self._data = pd.concat(
                 [self._data[:position], empty_rows, self._data[position:]],
                 ignore_index=True,
@@ -176,6 +177,13 @@ class ConcentrationsModel(GenericModel):
 
 class ComponentsModel(GenericModel):
     def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
+        self.default_names = set(
+            "".join(x) for x in permutations(string.ascii_uppercase, 2)
+        )
+        self.default_names.update(
+            set("".join(x) for x in permutations(string.ascii_uppercase, 3))
+        )
+        self.default_names.update(set(string.ascii_uppercase))
         super().__init__(data, undo_stack)
 
     def data(self, index, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole):
@@ -215,8 +223,19 @@ class ComponentsModel(GenericModel):
 
     def insertRows(self, position, rows=1, index=QModelIndex()) -> bool:
         """Insert a row into the model."""
+        new_names = sorted(
+            self.default_names.difference(self._data["Name"].to_list()),
+            key=lambda item: (len(item), item),
+        )[:rows]
+
         empty_rows = pd.DataFrame(
-            [["COMP" + str(position + row + 1)] + [0] for row in range(rows)],
+            [
+                [
+                    new_names[i],
+                    0,
+                ]
+                for i in range(rows)
+            ],
             columns=self._data.columns,
         )
 
@@ -344,10 +363,18 @@ class GenericSpeciesModel(GenericModel):
         """Add columns to the model"""
         self.beginInsertColumns(index, position, position + columns - 1)
 
-        for column in range(columns):
-            self._data.insert(
-                position + column, "COMP" + str(position + column), int(0)
-            )
+        empty_columns = pd.DataFrame(
+            [[0 for column in range(columns)]], index=self._data.index
+        )
+        self._data = pd.concat(
+            [
+                self._data.iloc[:, :position],
+                empty_columns,
+                self._data.iloc[:, position:],
+            ],
+            axis=1,
+            ignore_index=True,
+        )
 
         self.endInsertColumns()
         self.layoutChanged.emit()

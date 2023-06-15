@@ -226,6 +226,7 @@ class ComponentsAddRows(QUndoCommand):
                 self.position + self.number + 8,
                 self.number,
                 table,
+                self.comp_model._data["Name"].tolist(),
             )
         self.conc_model.removeRows(self.position + self.number, self.number)
         self.cleanup()
@@ -238,6 +239,7 @@ class ComponentsAddRows(QUndoCommand):
                 self.position + 8,
                 self.number,
                 table,
+                self.comp_model._data["Name"].tolist(),
             )
 
         self.conc_model.insertRows(self.position, self.number)
@@ -293,6 +295,7 @@ class ComponentsRemoveRows(QUndoCommand):
                 self.position - self.number + 8,
                 self.number,
                 table,
+                self.comp_model._data["Name"].tolist(),
             )
 
             model._data.iloc[
@@ -327,6 +330,7 @@ class ComponentsRemoveRows(QUndoCommand):
                 self.position + 8,
                 self.number,
                 table,
+                self.comp_model._data["Name"].tolist(),
             )
 
         self.conc_model.removeRows(self.position, self.number)
