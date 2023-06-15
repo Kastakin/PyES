@@ -76,7 +76,7 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
 
         self.comps = parent.result["comp_info"]
         if self.distribution:
-            self.indipendent_comp_name = parent.indComp.currentText()
+            self.independent_comp_name = parent.indComp.currentText()
         self.comp_names = list(self.comps.index)
 
         # Get values for the x from the index
@@ -289,11 +289,11 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         if self.distribution:
             self.conc_graph.setLabel(
                 "bottom",
-                text=f"Indipendent Component -log[{self.indipendent_comp_name}]",
+                text=f"Independent Component -log[{self.independent_comp_name}]",
             )
             self.perc_graph.setLabel(
                 "bottom",
-                text=f"Indipendent Component -log[{self.indipendent_comp_name}]",
+                text=f"Independent Component -log[{self.independent_comp_name}]",
             )
         else:
             self.conc_graph.setLabel(
