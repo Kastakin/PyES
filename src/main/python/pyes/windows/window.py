@@ -22,6 +22,7 @@ from dialogs import (
     IonicStrengthInfoDialog,
     IssuesLoadingDialog,
     NewDialog,
+    NotSavedDialog,
     UncertaintyInfoDialog,
     WrongFileDialog,
 )
@@ -285,28 +286,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display a prompt asking if you want to create a new project
         """
-        dialog = NewDialog(self)
-        if dialog.exec():
-            self.resetFields()
-            self.project_path = None
-            self.setWindowTitle("PyES - New Project")
+        if not self.undostack.isClean():
+            choice = NotSavedDialog().exec()
 
-            # Resets results
-            self.result = {}
-
-            # Disable results windows
-            if self.PlotWindow:
-                self.PlotWindow.close()
-            if self.ExportWindow:
-                self.ExportWindow.close()
-
-            # Disable buttons to show results
-            self.exportButton.setEnabled(False)
-            self.plotDistButton.setEnabled(False)
-            self.actionExport_Results.setEnabled(False)
-            self.actionPlot_Results.setEnabled(False)
+            if choice != QMessageBox.StandardButton.Discard:
+                return False
         else:
-            pass
+            choice = NewDialog().exec()
+
+            if not choice:
+                return False
+
+        self.resetFields()
+        self.project_path = None
+        self.setWindowTitle("PyES - New Project")
+
+        # Resets results
+        self.result = {}
+
+        # Disable results windows
+        if self.PlotWindow:
+            self.PlotWindow.close()
+        if self.ExportWindow:
+            self.ExportWindow.close()
+
+        # Disable buttons to show results
+        self.exportButton.setEnabled(False)
+        self.plotDistButton.setEnabled(False)
+        self.actionExport_Results.setEnabled(False)
+        self.actionPlot_Results.setEnabled(False)
 
     def help_about(self):
         """
@@ -378,6 +386,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Load a previously saved project
         """
+        if not self.undostack.isClean():
+            choice = NotSavedDialog().exec()
+
+            if choice == QMessageBox.StandardButton.Cancel:
+                return False
+            elif choice == QMessageBox.StandardButton.Discard:
+                pass
+            elif choice == QMessageBox.StandardButton.Save:
+                if not self.file_save():
+                    return False
+
         if self.project_path:
             input_path, _ = QFileDialog.getOpenFileName(
                 self,
@@ -1091,20 +1110,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Cleanup before closing.
         """
         if not self.undostack.isClean():
-            dlg = QMessageBox(
-                QMessageBox.Icon.Question,
-                "Unsaved changes detected",
-                "Unsaved changes detected.\nDo you want to save?",
-            )
-            dlg.setText("The document has been modified.")
-            dlg.setInformativeText("Do you want to save your changes?")
-            dlg.setStandardButtons(
-                QMessageBox.StandardButton.Save
-                | QMessageBox.StandardButton.Discard
-                | QMessageBox.StandardButton.Cancel
-            )
-            dlg.setDefaultButton(QMessageBox.StandardButton.Save)
-            choice = dlg.exec()
+            choice = NotSavedDialog().exec()
 
             if choice == QMessageBox.StandardButton.Cancel:
                 event.ignore()

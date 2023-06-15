@@ -29,6 +29,29 @@ class AboutDialog(QDialog):
         self.ui.setupUi(self)
 
 
+class NotSavedDialog(QMessageBox):
+    def __init__(self, parent=None):
+        """
+        Dialog for asking confirmation of intention of closing the file when unsaved modification are present
+        """
+        super().__init__(parent)
+        # QMessageBox(
+        #     QMessageBox.Icon.Question,
+        #     "Unsaved changes detected",
+        #     "Unsaved changes detected.\nDo you want to save?",
+        # )
+        self.setIcon(QMessageBox.Icon.Question)
+        self.setWindowTitle("Unsaved changes detected")
+        self.setText("The document has been modified.")
+        self.setInformativeText("Do you want to save your changes?")
+        self.setStandardButtons(
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel
+        )
+        self.setDefaultButton(QMessageBox.StandardButton.Save)
+
+
 class WrongFileDialog(QMessageBox):
     def __init__(self, parent=None):
         """
