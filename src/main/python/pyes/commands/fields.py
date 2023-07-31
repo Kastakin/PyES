@@ -1,3 +1,5 @@
+import re
+
 from PySide6.QtCore import QAbstractItemModel
 from PySide6.QtGui import QUndoCommand
 from PySide6.QtWidgets import (
@@ -86,7 +88,13 @@ class indCompEdit(QUndoCommand):
         self.conc_model.setPreviousIndependentComponent(self.previous_index)
 
         for label in self.affected_labels:
-            label.setText(label.text())
+            label.setText(
+                re.sub(
+                    f"\[\w+\]",
+                    f"[{self.field.itemText(self.previous_index)}]",
+                    label.text(),
+                )
+            )
 
         self.field.blockSignals(True)
         self.field.setCurrentIndex(self.previous_index)
@@ -99,7 +107,13 @@ class indCompEdit(QUndoCommand):
         self.conc_model.setPreviousIndependentComponent(self.index)
 
         for label in self.affected_labels:
-            label.setText(label.text())
+            label.setText(
+                re.sub(
+                    f"\[\w+\]",
+                    f"[{self.field.itemText(self.index)}]",
+                    label.text(),
+                )
+            )
 
         self.field.blockSignals(True)
         self.field.setCurrentIndex(self.index)
