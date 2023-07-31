@@ -467,7 +467,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             value_or_problem(jsdata, "np", 0, "Number of phases", problems)
         )
         self.uncertaintyMode.setChecked(
-            value_or_problem(jsdata, "emode", 1, "Uncertainty estimation", problems)
+            value_or_problem(jsdata, "emode", 0, "Uncertainty estimation", problems)
         )
         self.imode.setCurrentIndex(
             value_or_problem(jsdata, "imode", 0, "Ionic strength effect", problems)

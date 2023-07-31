@@ -75,10 +75,17 @@
           <property name="spacing">
            <number>2</number>
           </property>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="select_all">
+          <item row="3" column="1">
+           <widget class="QPushButton" name="deselect_all">
             <property name="text">
-             <string>Select All</string>
+             <string>Deselect All</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="regions_check">
+            <property name="text">
+             <string>Solids as regions</string>
             </property>
            </widget>
           </item>
@@ -150,24 +157,24 @@
             </widget>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="deselect_all">
-            <property name="text">
-             <string>Deselect All</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <widget class="QPushButton" name="filter">
             <property name="text">
              <string>Filter</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QCheckBox" name="regions_check">
+          <item row="3" column="0">
+           <widget class="QPushButton" name="select_all">
             <property name="text">
-             <string>Solids as regions</string>
+             <string>Select All</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="errors_check">
+            <property name="text">
+             <string>Plot error bars</string>
             </property>
            </widget>
           </item>
@@ -182,28 +189,6 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="perc_tab">
-       <attribute name="title">
-        <string>Percentages</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1">
-        <property name="leftMargin">
-         <number>1</number>
-        </property>
-        <property name="topMargin">
-         <number>1</number>
-        </property>
-        <property name="rightMargin">
-         <number>1</number>
-        </property>
-        <property name="bottomMargin">
-         <number>1</number>
-        </property>
-        <item>
-         <widget class="PlotWidget" name="perc_graph" native="true"/>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="conc_tab">
        <attribute name="title">
         <string>Concentrations</string>
@@ -223,6 +208,28 @@
         </property>
         <item>
          <widget class="PlotWidget" name="conc_graph" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="perc_tab">
+       <attribute name="title">
+        <string>Percentages</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1">
+        <property name="leftMargin">
+         <number>1</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>1</number>
+        </property>
+        <property name="bottomMargin">
+         <number>1</number>
+        </property>
+        <item>
+         <widget class="PlotWidget" name="perc_graph" native="true"/>
         </item>
        </layout>
       </widget>
@@ -296,12 +303,28 @@
    <slot>changeSolidsGraphics()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>93</x>
-     <y>520</y>
+     <x>97</x>
+     <y>510</y>
     </hint>
     <hint type="destinationlabel">
      <x>289</x>
      <y>519</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>errors_check</sender>
+   <signal>clicked()</signal>
+   <receiver>PlotWindow</receiver>
+   <slot>changeErrorsGraphics()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>518</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>485</y>
     </hint>
    </hints>
   </connection>
@@ -311,5 +334,6 @@
   <slot>deselectAll()</slot>
   <slot>filterSpecies()</slot>
   <slot>changeSolidsGraphics()</slot>
+  <slot>changeErrorsGraphics()</slot>
  </slots>
 </ui>

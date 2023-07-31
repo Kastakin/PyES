@@ -29,7 +29,7 @@ class Distribution:
         else:
             self.distribution = True
 
-        if data["emode"] == 0:
+        if data["emode"] == 1:
             self.errors = True
         else:
             self.errors = False

@@ -86,10 +86,15 @@ class Ui_PlotWindow(object):
         self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.select_all = QPushButton(self.widget_2)
-        self.select_all.setObjectName("select_all")
+        self.deselect_all = QPushButton(self.widget_2)
+        self.deselect_all.setObjectName("deselect_all")
 
-        self.gridLayout.addWidget(self.select_all, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.deselect_all, 3, 1, 1, 1)
+
+        self.regions_check = QCheckBox(self.widget_2)
+        self.regions_check.setObjectName("regions_check")
+
+        self.gridLayout.addWidget(self.regions_check, 1, 0, 1, 2)
 
         self.tabWidget_2 = QTabWidget(self.widget_2)
         self.tabWidget_2.setObjectName("tabWidget_2")
@@ -135,20 +140,20 @@ class Ui_PlotWindow(object):
 
         self.gridLayout.addWidget(self.tabWidget_2, 0, 0, 1, 2)
 
-        self.deselect_all = QPushButton(self.widget_2)
-        self.deselect_all.setObjectName("deselect_all")
-
-        self.gridLayout.addWidget(self.deselect_all, 2, 1, 1, 1)
-
         self.filter = QPushButton(self.widget_2)
         self.filter.setObjectName("filter")
 
-        self.gridLayout.addWidget(self.filter, 3, 0, 1, 2)
+        self.gridLayout.addWidget(self.filter, 4, 0, 1, 2)
 
-        self.regions_check = QCheckBox(self.widget_2)
-        self.regions_check.setObjectName("regions_check")
+        self.select_all = QPushButton(self.widget_2)
+        self.select_all.setObjectName("select_all")
 
-        self.gridLayout.addWidget(self.regions_check, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.select_all, 3, 0, 1, 1)
+
+        self.errors_check = QCheckBox(self.widget_2)
+        self.errors_check.setObjectName("errors_check")
+
+        self.gridLayout.addWidget(self.errors_check, 2, 0, 1, 2)
 
         self.verticalLayout.addWidget(self.widget_2)
 
@@ -190,6 +195,7 @@ class Ui_PlotWindow(object):
         self.select_all.clicked.connect(PlotWindow.selectAll)
         self.filter.clicked.connect(PlotWindow.filterSpecies)
         self.regions_check.clicked.connect(PlotWindow.changeSolidsGraphics)
+        self.errors_check.clicked.connect(PlotWindow.changeErrorsGraphics)
 
         self.tabWidget_2.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
@@ -202,8 +208,11 @@ class Ui_PlotWindow(object):
         PlotWindow.setWindowTitle(
             QCoreApplication.translate("PlotWindow", "Export Plot", None)
         )
-        self.select_all.setText(
-            QCoreApplication.translate("PlotWindow", "Select All", None)
+        self.deselect_all.setText(
+            QCoreApplication.translate("PlotWindow", "Deselect All", None)
+        )
+        self.regions_check.setText(
+            QCoreApplication.translate("PlotWindow", "Solids as regions", None)
         )
         self.tabWidget_2.setTabText(
             self.tabWidget_2.indexOf(self.species),
@@ -213,12 +222,12 @@ class Ui_PlotWindow(object):
             self.tabWidget_2.indexOf(self.solids),
             QCoreApplication.translate("PlotWindow", "Solids", None),
         )
-        self.deselect_all.setText(
-            QCoreApplication.translate("PlotWindow", "Deselect All", None)
-        )
         self.filter.setText(QCoreApplication.translate("PlotWindow", "Filter", None))
-        self.regions_check.setText(
-            QCoreApplication.translate("PlotWindow", "Solids as regions", None)
+        self.select_all.setText(
+            QCoreApplication.translate("PlotWindow", "Select All", None)
+        )
+        self.errors_check.setText(
+            QCoreApplication.translate("PlotWindow", "Plot error bars", None)
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.perc_tab),

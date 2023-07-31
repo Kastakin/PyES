@@ -45,19 +45,21 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.color_palette_solids = cycle(PALETTE)
 
         # Inherit the required informations from the primary window
-        if parent.dmode.currentIndex() == 0:
-            self.distribution = False
-        else:
-            self.distribution = True
-
-        if "solid_distribution" in parent.result:
-            self.with_solids = True
-        else:
-            self.with_solids = False
+        self.distribution = parent.dmode.currentIndex() == 1
+        print(self.distribution)
+        self.with_solids = "solid_distribution" in parent.result
+        self.with_errors = parent.uncertaintyMode.isChecked()
 
         self.conc_result = parent.result["species_distribution"]
         self.perc_result = parent.result["species_percentages"]
         self.perc_result.columns = self.conc_result.columns
+
+        if not self.with_errors:
+            self.errors_check.setEnabled(False)
+
+        self.conc_sd = parent.result["species_sigma"]
+        self.solid_sd = parent.result["solid_sigma"]
+        self.solid_sd.columns = [column + "_(s)" for column in self.solid_sd.columns]
 
         if self.with_solids:
             self.solid_conc_result = parent.result["solid_distribution"][
@@ -159,7 +161,7 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             color = next(self.color_palette)
         else:
             color = self.speciesModel.item(
-                self.speciesModel.findItems(species, Qt.MatchExactly, 0)[0]
+                self.speciesModel.findItems(species, Qt.MatchFlag.MatchExactly, 0)[0]
                 .index()
                 .row(),
                 1,
@@ -172,7 +174,9 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             color = next(self.color_palette_solids)
         else:
             color = self.solidsModel.item(
-                self.solidsModel.findItems(solids, Qt.MatchExactly, 0)[0].index().row(),
+                self.solidsModel.findItems(solids, Qt.MatchFlag.MatchExactly, 0)[0]
+                .index()
+                .row(),
                 1,
             ).text()
 
@@ -188,15 +192,25 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 self.conc_result[name].to_numpy(dtype=float),
                 self.perc_result[name].to_numpy(dtype=float),
             ]
+            if self.with_errors and self.errors_check.isChecked():
+                errors = [
+                    self.conc_sd[name].to_numpy(dtype=float) + values[0],
+                    -self.conc_sd[name].to_numpy(dtype=float) + values[0],
+                ]
             if name in self._data_visible:
-                line_style = Qt.SolidLine
+                line_style = Qt.PenStyle.SolidLine
+                errorline_style = Qt.PenStyle.DashDotDotLine
                 color = self.get_species_color(name)
                 if name not in self._data_lines:
                     self._addPlotLines(values, name, color, line_style)
+                    if self.with_errors and self.errors_check.isChecked():
+                        self._addErrorLines(errors, name, color, errorline_style)
                 else:
                     for i, plot in enumerate(self._data_lines[name]):
-                        plot.setData(self.x, values[i])
-                        plot.setPen(pg.mkPen(color, width=2, style=line_style))
+                        if i < 2:
+                            plot.setPen(pg.mkPen(color, width=2, style=line_style))
+                        else:
+                            plot.setPen(pg.mkPen(color, width=2, style=errorline_style))
 
                 conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
                     conc_y_max, *values[0]
@@ -233,21 +247,31 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                         self.solid_conc_result[name].to_numpy(dtype=float),
                         self.solid_perc_result[name].to_numpy(dtype=float),
                     ]
+                    if self.with_errors and self.errors_check.isChecked():
+                        errors = [
+                            self.solid_sd[name].to_numpy(dtype=float) + values[0],
+                            -self.solid_sd[name].to_numpy(dtype=float) + values[0],
+                        ]
                     if name in self._data_visible:
-                        line_style = Qt.DashLine
+                        line_style = Qt.PenStyle.DashLine
+                        errorline_style = Qt.PenStyle.DashDotDotLine
                         color = self.get_solids_color(name)
                         if name not in self._data_lines:
                             self._addPlotLines(values, name, color, line_style)
+                            if self.with_errors and self.errors_check.isChecked():
+                                self._addErrorLines(
+                                    errors, name, color, errorline_style
+                                )
                         else:
                             for i, plot in enumerate(self._data_lines[name]):
-                                plot.setData(self.x, values[i])
-                                plot.setPen(
-                                    pg.mkPen(
-                                        color,
-                                        width=2,
-                                        style=line_style,
+                                if i < 2:
+                                    plot.setPen(
+                                        pg.mkPen(color, width=2, style=line_style)
                                     )
-                                )
+                                else:
+                                    plot.setPen(
+                                        pg.mkPen(color, width=2, style=errorline_style)
+                                    )
 
                         conc_y_min, conc_y_max = min(conc_y_min, *values[0]), max(
                             conc_y_max, *values[0]
@@ -316,6 +340,10 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             plot.clear()
         self._data_lines.pop(name)
 
+    def _removeErrorLines(self, name):
+        for plot in self._data_lines[name][2:]:
+            plot.clear()
+
     def _addPlotLines(self, values, name, color, line_style):
         self._data_lines[name] = [
             self.conc_graph.plot(
@@ -332,6 +360,22 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             ),
         ]
         self._addLegendItem(name)
+
+    def _addErrorLines(self, values, name, color, line_style):
+        self._data_lines[name] += [
+            self.conc_graph.plot(
+                self.x,
+                values[0],
+                pen=pg.mkPen(color, width=2, style=line_style),
+                name=name + "_ub_error",
+            ),
+            self.conc_graph.plot(
+                self.x,
+                values[1],
+                pen=pg.mkPen(color, width=2, style=line_style),
+                name=name + "_lb_error",
+            ),
+        ]
 
     def _removeRegionLines(self, name):
         for region in self._data_lines[name]:
@@ -384,8 +428,8 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.perc_legend.addItem(self._data_lines[name][1], name)
 
     def _removeLegendItem(self, name):
-        self.conc_legend.removeItem(self._data_lines[name][0])
-        self.perc_legend.removeItem(self._data_lines[name][1])
+        self.conc_legend.removeItem(name)
+        self.perc_legend.removeItem(name)
 
     def changeSolidsGraphics(self):
         if self.regions_check.isChecked():
@@ -396,6 +440,47 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
             for name in self.solid_conc_result.columns:
                 if name in self._data_visible:
                     self._removeRegionLines(name)
+
+        self.redraw()
+
+    def changeErrorsGraphics(self):
+        if self.errors_check.isChecked():
+            for name in self.conc_result.columns:
+                if name in self._data_visible:
+                    values = [
+                        self.conc_result[name].to_numpy(dtype=float),
+                        self.perc_result[name].to_numpy(dtype=float),
+                    ]
+                    errors = [
+                        self.conc_sd[name].to_numpy(dtype=float) + values[0],
+                        -self.conc_sd[name].to_numpy(dtype=float) + values[0],
+                    ]
+                    color = self.get_species_color(name)
+
+                    self._addErrorLines(
+                        errors, name, color, line_style=Qt.PenStyle.DashDotDotLine
+                    )
+            for name in self.solid_conc_result.columns:
+                if name in self._data_visible:
+                    values = [
+                        self.solid_conc_result[name].to_numpy(dtype=float),
+                        self.solid_perc_result[name].to_numpy(dtype=float),
+                    ]
+                    errors = [
+                        self.solid_sd[name].to_numpy(dtype=float) + values[0],
+                        -self.solid_sd[name].to_numpy(dtype=float) + values[0],
+                    ]
+                    color = self.get_solids_color(name)
+
+                    self._addErrorLines(
+                        errors, name, color, line_style=Qt.PenStyle.DashDotDotLine
+                    )
+        else:
+            for name in list(self.solid_conc_result.columns) + list(
+                self.conc_result.columns
+            ):
+                if name in self._data_visible:
+                    self._removeErrorLines(name)
 
         self.redraw()
 
