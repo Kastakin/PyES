@@ -631,7 +631,7 @@ class Distribution:
                     index=self.solid_names,
                 ).rename_axis(index="Solid Names")
             else:
-                solid_info = None
+                solid_info = pd.DataFrame()
 
             if self.imode == 1:
                 species_info.insert(1, "Ref. I", self.species_ris[self.nc :])
