@@ -45,9 +45,13 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
     QCheckBox,
+    QComboBox,
+    QFormLayout,
     QGridLayout,
     QHBoxLayout,
     QHeaderView,
+    QLabel,
+    QLayout,
     QMainWindow,
     QPushButton,
     QSizePolicy,
@@ -159,8 +163,23 @@ class Ui_PlotWindow(object):
 
         self.horizontalLayout.addWidget(self.widget)
 
+        self.verticalLayout_4 = QVBoxLayout()
+        self.verticalLayout_4.setSpacing(2)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, -1, -1, -1)
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName("tabWidget")
+        self.conc_tab = QWidget()
+        self.conc_tab.setObjectName("conc_tab")
+        self.horizontalLayout_2 = QHBoxLayout(self.conc_tab)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(1, 1, 1, 1)
+        self.conc_graph = PlotWidget(self.conc_tab)
+        self.conc_graph.setObjectName("conc_graph")
+
+        self.horizontalLayout_2.addWidget(self.conc_graph)
+
+        self.tabWidget.addTab(self.conc_tab, "")
         self.perc_tab = QWidget()
         self.perc_tab.setObjectName("perc_tab")
         self.verticalLayout_2 = QVBoxLayout(self.perc_tab)
@@ -173,21 +192,50 @@ class Ui_PlotWindow(object):
 
         self.verticalLayout_2.setStretch(0, 1)
         self.tabWidget.addTab(self.perc_tab, "")
-        self.conc_tab = QWidget()
-        self.conc_tab.setObjectName("conc_tab")
-        self.horizontalLayout_2 = QHBoxLayout(self.conc_tab)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(1, 1, 1, 1)
-        self.conc_graph = PlotWidget(self.conc_tab)
-        self.conc_graph.setObjectName("conc_graph")
+        self.titration_tab = QWidget()
+        self.titration_tab.setObjectName("titration_tab")
+        self.verticalLayout_3 = QVBoxLayout(self.titration_tab)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.verticalLayout_3.setContentsMargins(1, 1, 1, 1)
+        self.titration_graph = PlotWidget(self.titration_tab)
+        self.titration_graph.setObjectName("titration_graph")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(
+            self.titration_graph.sizePolicy().hasHeightForWidth()
+        )
+        self.titration_graph.setSizePolicy(sizePolicy3)
 
-        self.horizontalLayout_2.addWidget(self.conc_graph)
+        self.verticalLayout_3.addWidget(self.titration_graph)
 
-        self.tabWidget.addTab(self.conc_tab, "")
+        self.formLayout = QFormLayout()
+        self.formLayout.setObjectName("formLayout")
+        self.formLayout.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.componentLabel = QLabel(self.titration_tab)
+        self.componentLabel.setObjectName("componentLabel")
 
-        self.horizontalLayout.addWidget(self.tabWidget)
+        self.formLayout.setWidget(0, QFormLayout.LabelRole, self.componentLabel)
 
-        self.horizontalLayout.setStretch(1, 1)
+        self.componentComboBox = QComboBox(self.titration_tab)
+        self.componentComboBox.setObjectName("componentComboBox")
+
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.componentComboBox)
+
+        self.verticalLayout_3.addLayout(self.formLayout)
+
+        self.verticalLayout_3.setStretch(0, 1)
+        self.tabWidget.addTab(self.titration_tab, "")
+
+        self.verticalLayout_4.addWidget(self.tabWidget)
+
+        self.exportButton = QPushButton(self.centralwidget)
+        self.exportButton.setObjectName("exportButton")
+
+        self.verticalLayout_4.addWidget(self.exportButton)
+
+        self.horizontalLayout.addLayout(self.verticalLayout_4)
+
         PlotWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(PlotWindow)
@@ -230,12 +278,22 @@ class Ui_PlotWindow(object):
             QCoreApplication.translate("PlotWindow", "Plot error bars", None)
         )
         self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.conc_tab),
+            QCoreApplication.translate("PlotWindow", "Concentrations", None),
+        )
+        self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.perc_tab),
             QCoreApplication.translate("PlotWindow", "Percentages", None),
         )
+        self.componentLabel.setText(
+            QCoreApplication.translate("PlotWindow", "Component:", None)
+        )
         self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.conc_tab),
-            QCoreApplication.translate("PlotWindow", "Concentrations", None),
+            self.tabWidget.indexOf(self.titration_tab),
+            QCoreApplication.translate("PlotWindow", "Titration Curve", None),
+        )
+        self.exportButton.setText(
+            QCoreApplication.translate("PlotWindow", "Export Graph", None)
         )
 
     # retranslateUi

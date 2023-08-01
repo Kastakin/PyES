@@ -13,41 +13,7 @@ from PySide6.QtWidgets import (
     QStyleOptionComboBox,
     QStyleOptionViewItem,
 )
-
-
-class DotDoubleValidator(QDoubleValidator):
-    def __init__(
-        self,
-        bottom: float = -float("inf"),
-        top: float = float("inf"),
-        decimals: int = -1,
-        parent=None,
-    ) -> None:
-        return super().__init__(bottom, top, decimals, parent)
-
-    def validate(self, input: str, pos: int) -> object:
-        if "," in input:
-            return QDoubleValidator.Intermediate
-        return super().validate(input, pos)
-
-    def fixup(self, input: str) -> str:
-        return input.replace(",", ".")
-
-
-class CustomDoubleSpinbox(QLineEdit):
-    def __init__(
-        self,
-        parent=None,
-        bottom: float = -float("inf"),
-        top: float = float("inf"),
-        decimals: int = -1,
-    ):
-        QLineEdit.__init__(self, parent)
-        float_validator = DotDoubleValidator(bottom, top, decimals)
-        float_validator.setLocale(QLocale("UnitedStates"))
-        float_validator.setNotation(DotDoubleValidator.StandardNotation)
-
-        self.setValidator(float_validator)
+from ui.widgets import LineSpinBox
 
 
 class NumberFormatDelegate(QItemDelegate):
@@ -64,7 +30,7 @@ class NumberFormatDelegate(QItemDelegate):
         self.decimals = decimals
 
     def createEditor(self, parent, option, index):
-        editor = CustomDoubleSpinbox(
+        editor = LineSpinBox(
             parent,
             bottom=self.bottom,
             top=self.top,

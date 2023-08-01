@@ -1,12 +1,15 @@
 import sys
 import typing
 from itertools import cycle
+from pathlib import Path
 
 import numpy as np
 import pyqtgraph as pg
+import pyqtgraph.exporters
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import QInputDialog, QMainWindow
+from PySide6.QtWidgets import QDialog, QFileDialog, QInputDialog, QMainWindow
+from ui.PyES_graphExport import Ui_ExportGraphDialog
 from ui.PyES_pyqtgraphPlotExport import Ui_PlotWindow
 from viewmodels.delegate import ColorPickerDelegate
 
@@ -38,6 +41,8 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
     def __init__(self, parent: "MainWindow"):
         super().__init__()
         self.setupUi(self)
+        self.componentComboBox.currentTextChanged.connect(self._updateTitrationCurve)
+        self.exportButton.clicked.connect(self._exportGraph)
 
         # Colour cycle to use for plotting species.
         self.color_palette = cycle(PALETTE)
@@ -46,8 +51,8 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
 
         # Inherit the required informations from the primary window
         self.distribution = parent.dmode.currentIndex() == 1
-        print(self.distribution)
-        self.with_solids = "solid_distribution" in parent.result
+
+        self.with_solids = not parent.result["solid_distribution"].empty
         self.with_errors = parent.uncertaintyMode.isChecked()
 
         self.conc_result = parent.result["species_distribution"]
@@ -61,24 +66,21 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.solid_sd = parent.result["solid_sigma"]
         self.solid_sd.columns = [column + "_(s)" for column in self.solid_sd.columns]
 
-        if self.with_solids:
-            self.solid_conc_result = parent.result["solid_distribution"][
-                [
-                    column
-                    for column in parent.result["solid_distribution"]
-                    if not (column.startswith("Prec.") or column.startswith("SI"))
-                ]
+        self.solid_conc_result = parent.result["solid_distribution"][
+            [
+                column
+                for column in parent.result["solid_distribution"]
+                if not (column.startswith("Prec.") or column.startswith("SI"))
             ]
-            self.solid_conc_result.columns = [
-                column + "_(s)" for column in self.solid_conc_result.columns
-            ]
+        ]
+        self.solid_conc_result.columns = [
+            column + "_(s)" for column in self.solid_conc_result.columns
+        ]
 
-            self.solid_perc_result = parent.result["solid_percentages"]
-            self.solid_perc_result.columns = self.solid_conc_result.columns
+        self.solid_perc_result = parent.result["solid_percentages"]
+        self.solid_perc_result.columns = self.solid_conc_result.columns
 
         self.comps = parent.result["comp_info"]
-        if self.distribution:
-            self.independent_comp_name = parent.indComp.currentText()
         self.comp_names = list(self.comps.index)
 
         # Get values for the x from the index
@@ -127,6 +129,21 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 item2 = QStandardItem()
                 item2.setText(self.get_solids_color(column, new=True))
                 self.solidsModel.appendRow([item, item2])
+        else:
+            self.regions_check.setEnabled(False)
+
+        if self.distribution:
+            self.independent_comp_name = parent.indComp.currentText()
+            self.tabWidget.setTabEnabled(2, False)
+        else:
+            self.componentComboBox.addItems(self.comp_names)
+            # self.titration_curve = self.titration_graph.plot(
+            #     self.x,
+            #     -np.log10(
+            #         self.conc_result[self.componentComboBox.currentText()].to_numpy()
+            #     ),
+            #     pen=pg.mkPen("b", width=2, style=Qt.PenStyle.SolidLine),
+            # )
 
         # Resize column to newly added species
         # self.speciesView.resizeColumnsToContents()
@@ -329,8 +346,15 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
                 text="Volume of Titrant [l]",
             )
 
+            self.titration_graph.setTitle("Titration Curve")
+            self.titration_graph.setLabel(
+                "bottom",
+                text="Volume of Titrant [l]",
+            )
+
         self.conc_graph.enableAutoRange()
         self.perc_graph.enableAutoRange()
+        self.titration_graph.enableAutoRange()
 
         self._createLegend()
 
@@ -544,3 +568,60 @@ class PlotWindow(QMainWindow, Ui_PlotWindow):
         self.perc_legend = pg.LegendItem()
         self.conc_legend.setParentItem((self.conc_graph.graphicsItem()))
         self.perc_legend.setParentItem((self.perc_graph.graphicsItem()))
+
+    def _updateTitrationCurve(self, comp_name: str):
+        self.titration_graph.setLabel(
+            "left",
+            text=f"p{self.componentComboBox.currentText()}",
+        )
+        self.titration_graph.clear()
+        self.titration_graph.plot(
+            self.x,
+            -np.log10(self.conc_result[comp_name].to_numpy()),
+            pen=pg.mkPen("b", width=2, style=Qt.PenStyle.SolidLine),
+        )
+
+    def _exportGraph(self):
+        selected_plot = self.tabWidget.currentWidget().findChild(pg.PlotWidget)
+        ExportGraphDialog(self, selected_plot).exec()
+
+
+class ExportGraphDialog(QDialog, Ui_ExportGraphDialog):
+    def __init__(self, parent: PlotWindow, graph: pg.PlotWidget):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.graph = graph
+
+        self.export_button.clicked.connect(self.save_file)
+        self.transparent_check.clicked.connect(self.toggle_transparent)
+
+    def toggle_transparent(self, checked):
+        self.background.setEnabled(not checked)
+        self.backgroundLabel.setEnabled(not checked)
+
+    def save_file(self):
+        exporter = pg.exporters.ImageExporter(self.graph.plotItem)
+
+        exporter.parameters()["width"] = int(
+            exporter.parameters()["width"] * self.scaleDoubleSpinBox.value()
+        )
+
+        exporter.parameters()["background"] = (
+            "#00000000"
+            if self.transparent_check.isChecked()
+            else self.background.color()
+        )
+        exporter.parameters()["antialias"] = False
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Export Plot", "", "PNG File (*.png)"
+        )
+
+        if path:
+            file_name = Path(path).parents[0]
+            file_name = file_name.joinpath(Path(path).stem)
+            file_name = file_name.with_suffix(".png")
+
+            exporter.export(str(file_name))
+
+        self.accept()
