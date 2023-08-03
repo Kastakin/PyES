@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -55,7 +56,12 @@ class optimizeWorker(QRunnable):
         try:
             optimizer.fit(self.data)
         except Exception as e:
-            self.signals.aborted.emit(str(e))
+            if self.debug:
+                self.signals.aborted.emit(
+                    "".join(traceback.TracebackException.from_exception(e).format())
+                )
+            else:
+                self.signals.aborted.emit(str(e))
             return None
 
         self.signals.log.emit(r"DATA LOADED!")
