@@ -117,6 +117,8 @@ class Distribution:
         )
 
         # Remove the concentration and charge data relative to those
+        if not self.distribution:
+            self.c_added = np.delete(self.c_added, ignored_comps, 0)
         self.c_tot = np.delete(self.c_tot, ignored_comps, 0)
         self.comp_charge = np.delete(self.comp_charge, ignored_comps)
 
@@ -1416,6 +1418,7 @@ class Distribution:
         invalid_comp_encoder = dict(
             zip(ignored_comp_names, range(len(ignored_comp_names)))
         )
+        default_value = self.ind_comp if self.distribution else 0
         species_perc_int = self.species_perc_str
         solid_perc_int = self.solid_perc_str
         self.species_perc_str = np.concatenate(
@@ -1428,12 +1431,11 @@ class Distribution:
             solid_perc_int = np.where(solid_perc_int == key, value, solid_perc_int)
         for key, value in invalid_comp_encoder.items():
             species_perc_int = np.where(
-                species_perc_int == key, self.ind_comp, species_perc_int
+                species_perc_int == key, default_value, species_perc_int
             )
             solid_perc_int = np.where(
-                solid_perc_int == key, self.ind_comp, solid_perc_int
+                solid_perc_int == key, default_value, solid_perc_int
             )
-
         return species_perc_int.astype(int), solid_perc_int.astype(int)
 
     def _computeErrors(
