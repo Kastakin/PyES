@@ -47,6 +47,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
+    QFrame,
     QGridLayout,
     QHBoxLayout,
     QHeaderView,
@@ -60,13 +61,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from ui.widgets import ColorButton
 
 
 class Ui_PlotWindow(object):
     def setupUi(self, PlotWindow):
         if not PlotWindow.objectName():
             PlotWindow.setObjectName("PlotWindow")
-        PlotWindow.resize(800, 600)
+        PlotWindow.resize(945, 704)
         PlotWindow.setMinimumSize(QSize(800, 600))
         self.centralwidget = QWidget(PlotWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -83,22 +85,64 @@ class Ui_PlotWindow(object):
         self.verticalLayout = QVBoxLayout(self.widget)
         self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.verticalLayout.setContentsMargins(2, 2, 2, 2)
+        self.verticalLayout.setContentsMargins(2, 0, 2, 2)
         self.widget_2 = QWidget(self.widget)
         self.widget_2.setObjectName("widget_2")
         self.gridLayout = QGridLayout(self.widget_2)
         self.gridLayout.setSpacing(2)
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.deselect_all = QPushButton(self.widget_2)
-        self.deselect_all.setObjectName("deselect_all")
+        self.c_unit = QComboBox(self.widget_2)
+        self.c_unit.addItem("")
+        self.c_unit.addItem("")
+        self.c_unit.addItem("")
+        self.c_unit.setObjectName("c_unit")
 
-        self.gridLayout.addWidget(self.deselect_all, 3, 1, 1, 1)
+        self.gridLayout.addWidget(self.c_unit, 9, 1, 1, 1)
+
+        self.line = QFrame(self.widget_2)
+        self.line.setObjectName("line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
+
+        self.gridLayout.addWidget(self.line, 4, 0, 1, 2)
 
         self.regions_check = QCheckBox(self.widget_2)
         self.regions_check.setObjectName("regions_check")
 
-        self.gridLayout.addWidget(self.regions_check, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.regions_check, 7, 0, 1, 2)
+
+        self.errors_check = QCheckBox(self.widget_2)
+        self.errors_check.setObjectName("errors_check")
+
+        self.gridLayout.addWidget(self.errors_check, 8, 0, 1, 2)
+
+        self.v_unit_label = QLabel(self.widget_2)
+        self.v_unit_label.setObjectName("v_unit_label")
+
+        self.gridLayout.addWidget(self.v_unit_label, 10, 0, 1, 1)
+
+        self.plot_options_label = QLabel(self.widget_2)
+        self.plot_options_label.setObjectName("plot_options_label")
+
+        self.gridLayout.addWidget(self.plot_options_label, 5, 0, 1, 2)
+
+        self.v_unit = QComboBox(self.widget_2)
+        self.v_unit.addItem("")
+        self.v_unit.addItem("")
+        self.v_unit.setObjectName("v_unit")
+
+        self.gridLayout.addWidget(self.v_unit, 10, 1, 1, 1)
+
+        self.deselect_all = QPushButton(self.widget_2)
+        self.deselect_all.setObjectName("deselect_all")
+
+        self.gridLayout.addWidget(self.deselect_all, 1, 0, 1, 1)
+
+        self.select_all = QPushButton(self.widget_2)
+        self.select_all.setObjectName("select_all")
+
+        self.gridLayout.addWidget(self.select_all, 1, 1, 1, 1)
 
         self.tabWidget_2 = QTabWidget(self.widget_2)
         self.tabWidget_2.setObjectName("tabWidget_2")
@@ -147,17 +191,22 @@ class Ui_PlotWindow(object):
         self.filter = QPushButton(self.widget_2)
         self.filter.setObjectName("filter")
 
-        self.gridLayout.addWidget(self.filter, 4, 0, 1, 2)
+        self.gridLayout.addWidget(self.filter, 3, 0, 1, 2)
 
-        self.select_all = QPushButton(self.widget_2)
-        self.select_all.setObjectName("select_all")
+        self.c_unit_label = QLabel(self.widget_2)
+        self.c_unit_label.setObjectName("c_unit_label")
 
-        self.gridLayout.addWidget(self.select_all, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.c_unit_label, 9, 0, 1, 1)
 
-        self.errors_check = QCheckBox(self.widget_2)
-        self.errors_check.setObjectName("errors_check")
+        self.monochrome_check = QCheckBox(self.widget_2)
+        self.monochrome_check.setObjectName("monochrome_check")
 
-        self.gridLayout.addWidget(self.errors_check, 2, 0, 1, 2)
+        self.gridLayout.addWidget(self.monochrome_check, 6, 0, 1, 1)
+
+        self.monochrome_color = ColorButton(self.widget_2)
+        self.monochrome_color.setObjectName("monochrome_color")
+
+        self.gridLayout.addWidget(self.monochrome_color, 6, 1, 1, 1)
 
         self.verticalLayout.addWidget(self.widget_2)
 
@@ -236,6 +285,7 @@ class Ui_PlotWindow(object):
 
         self.horizontalLayout.addLayout(self.verticalLayout_4)
 
+        self.horizontalLayout.setStretch(1, 1)
         PlotWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(PlotWindow)
@@ -256,11 +306,40 @@ class Ui_PlotWindow(object):
         PlotWindow.setWindowTitle(
             QCoreApplication.translate("PlotWindow", "Export Plot", None)
         )
+        self.c_unit.setItemText(
+            0, QCoreApplication.translate("PlotWindow", "mol/l", None)
+        )
+        self.c_unit.setItemText(
+            1, QCoreApplication.translate("PlotWindow", "mmol/l", None)
+        )
+        self.c_unit.setItemText(
+            2, QCoreApplication.translate("PlotWindow", "\u03bcmol/l", None)
+        )
+
+        self.regions_check.setText(
+            QCoreApplication.translate("PlotWindow", "Solids as regions", None)
+        )
+        self.errors_check.setText(
+            QCoreApplication.translate("PlotWindow", "Plot error bars", None)
+        )
+        self.v_unit_label.setText(
+            QCoreApplication.translate("PlotWindow", "Volume Units", None)
+        )
+        self.plot_options_label.setText(
+            QCoreApplication.translate(
+                "PlotWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Plot Options</span></p></body></html>',
+                None,
+            )
+        )
+        self.v_unit.setItemText(0, QCoreApplication.translate("PlotWindow", "l", None))
+        self.v_unit.setItemText(1, QCoreApplication.translate("PlotWindow", "ml", None))
+
         self.deselect_all.setText(
             QCoreApplication.translate("PlotWindow", "Deselect All", None)
         )
-        self.regions_check.setText(
-            QCoreApplication.translate("PlotWindow", "Solids as regions", None)
+        self.select_all.setText(
+            QCoreApplication.translate("PlotWindow", "Select All", None)
         )
         self.tabWidget_2.setTabText(
             self.tabWidget_2.indexOf(self.species),
@@ -271,12 +350,13 @@ class Ui_PlotWindow(object):
             QCoreApplication.translate("PlotWindow", "Solids", None),
         )
         self.filter.setText(QCoreApplication.translate("PlotWindow", "Filter", None))
-        self.select_all.setText(
-            QCoreApplication.translate("PlotWindow", "Select All", None)
+        self.c_unit_label.setText(
+            QCoreApplication.translate("PlotWindow", "Concentration Units", None)
         )
-        self.errors_check.setText(
-            QCoreApplication.translate("PlotWindow", "Plot error bars", None)
+        self.monochrome_check.setText(
+            QCoreApplication.translate("PlotWindow", "Monochrome", None)
         )
+        self.monochrome_color.setText("")
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.conc_tab),
             QCoreApplication.translate("PlotWindow", "Concentrations", None),
