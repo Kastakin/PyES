@@ -3,10 +3,34 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from dialogs import AboutDialog, CompletedCalculation, NewDialog, WrongFileDialog
+from commands import (
+    ComponentsAddRows,
+    ComponentsRemoveRows,
+    ComponentsSwapRows,
+    DoubleSpinBoxEdit,
+    SpeciesAddRows,
+    SpeciesRemoveRows,
+    SpeciesSwapRows,
+    dmodeEdit,
+    imodeEdit,
+    indCompEdit,
+    uncertaintyEdit,
+)
+from dialogs import (
+    AboutDialog,
+    CompletedCalculation,
+    IonicStrengthInfoDialog,
+    IssuesLoadingDialog,
+    NewDialog,
+    NotSavedDialog,
+    UncertaintyInfoDialog,
+    WrongFileDialog,
+)
 from PySide6.QtCore import QByteArray, QSettings, QThreadPool, QUrl
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QKeySequence, QUndoStack
 from PySide6.QtWidgets import (
+    QComboBox,
+    QDoubleSpinBox,
     QFileDialog,
     QHeaderView,
     QMainWindow,
@@ -14,14 +38,18 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from ui.PyES_main import Ui_MainWindow
-from utils_func import cleanData, indCompUpdater, returnDataDict
-from viewmodels.delegate import CheckBoxDelegate, ComboBoxDelegate
-from viewmodels.model_proxy import ProxyModel
+from utils_func import cleanData, returnDataDict, updateCompNames, updateIndComponent
+from viewmodels.delegate import (
+    CheckBoxDelegate,
+    ComboBoxDelegate,
+    LineEditDelegate,
+    NumberFormatDelegate,
+)
 from viewmodels.models import (
     ComponentsModel,
+    ConcentrationsModel,
     SolidSpeciesModel,
-    SpeciesModel,
-    TitrationComponentsModel,
+    SolubleSpeciesModel,
 )
 from windows.export import ExportWindow
 from windows.plot import PlotWindow
@@ -35,6 +63,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Initiate threadpool
         self.threadpool = QThreadPool()
+        self.undostack = QUndoStack()
+
+        self.undostack.cleanChanged.connect(self.check_clean_state)
+
+        self.actionUndo.triggered.connect(self.undostack.undo)
+        self.actionUndo.setShortcut(QKeySequence.StandardKey.Undo)
+        self.actionRedo.triggered.connect(self.undostack.redo)
+        self.actionRedo.setShortcut(QKeySequence.StandardKey.Redo)
 
         # Initiate settings context
         self.settings = QSettings()
@@ -49,6 +85,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Setup for secondary windows
         self.PlotWindow = None
         self.ExportWindow = None
+
+        self.qspinbox_fields: list[QDoubleSpinBox] = [
+            self.refIonicStr,
+            self.A,
+            self.B,
+            self.c0,
+            self.c1,
+            self.d0,
+            self.d1,
+            self.e0,
+            self.e1,
+            self.v0,
+            self.initv,
+            self.vinc,
+            self.nop,
+            self.c0back,
+            self.ctback,
+            self.initialLog,
+            self.finalLog,
+            self.logInc,
+            self.cback,
+        ]
+
+        self.qcombobox_fields: list[QComboBox] = [self.imode, self.dmode, self.indComp]
 
         self.imode_fields: list[QWidget] = [
             self.refIonicStr,
@@ -77,6 +137,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.cback_label,
         ]
 
+        for field in self.qspinbox_fields:
+            field.valueChanged.connect(
+                lambda value, field=field: self.undostack.push(
+                    DoubleSpinBoxEdit(field, value)
+                )
+            )
+
+        self.imode.currentIndexChanged.connect(
+            lambda index: self.undostack.push(
+                imodeEdit(
+                    self.imode,
+                    self.imode_fields,
+                    [self.speciesView.model(), self.solidSpeciesView.model()],
+                    index,
+                )
+            )
+        )
+
+        self.dmode.currentIndexChanged.connect(
+            lambda index: self.undostack.push(
+                dmodeEdit(
+                    self.dmode,
+                    index,
+                    self.dmode_inputs,
+                    self.concView,
+                )
+            )
+        )
+
+        self.indComp.currentIndexChanged.connect(
+            lambda index: self.undostack.push(
+                indCompEdit(
+                    self.indComp,
+                    index,
+                    [self.initialLog_label, self.finalLog_label, self.logInc_label],
+                    self.concModel,
+                    self.dmode,
+                )
+            )
+        )
+
+        self.uncertaintyMode.toggled.connect(
+            lambda state: self.undostack.push(
+                uncertaintyEdit(
+                    self.uncertaintyMode,
+                    state,
+                    [
+                        self.speciesView.model(),
+                        self.solidSpeciesView.model(),
+                        self.concView.model(),
+                    ],
+                )
+            )
+        )
+
         # Generate clean data for tableviews
         (
             self.conc_data,
@@ -88,6 +203,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Conncect slots for actions
         self.actionNew.triggered.connect(self.file_new)
         self.actionSave.triggered.connect(self.file_save)
+        self.actionSaveAs.triggered.connect(self.file_save_as)
         self.actionOpen.triggered.connect(self.file_open)
 
         self.actionCalculate.triggered.connect(self.calculate)
@@ -98,64 +214,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAbout_Qt.triggered.connect(self.help_about_qt)
         self.actionWebsite.triggered.connect(self.help_website)
 
-        # Sets the tabelview for the component concentrations in titration
-        # FIXME: we are using two views for the same model, we could probably do with a single view
-        self.concModel = TitrationComponentsModel(self.conc_data)
-        self.dmode0_concProxy = ProxyModel(self)
-        self.dmode0_concProxy.setSourceModel(self.concModel)
-        self.dmode1_concProxy = ProxyModel(self)
-        self.dmode1_concProxy.setSourceModel(self.concModel)
+        self.concModel = ConcentrationsModel(self.conc_data, self.undostack)
 
-        self.dmode0_concView.setModel(self.dmode0_concProxy)
-        d0header = self.dmode0_concView.horizontalHeader()
+        self.concView.setModel(self.concModel)
+        self.concView.setItemDelegate(NumberFormatDelegate(self.concView))
+        d0header = self.concView.horizontalHeader()
         d0header.setSectionResizeMode(QHeaderView.ResizeToContents)
 
-        self.dmode1_concView.setModel(self.dmode1_concProxy)
-        d1header = self.dmode1_concView.horizontalHeader()
-        d1header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.dmode1_concView.setColumnHidden(1, True)
-        self.dmode1_concView.setColumnHidden(3, True)
-
         # Sets the tableview for the components
-        self.compModel = ComponentsModel(self.comp_data)
-        self.compProxy = ProxyModel(self)
-        self.compProxy.setSourceModel(self.compModel)
-        self.compView.setModel(self.compProxy)
+        self.compModel = ComponentsModel(self.comp_data, self.undostack)
+        self.compView.setModel(self.compModel)
+        self.compView.setItemDelegateForColumn(0, LineEditDelegate(self.compView))
+        self.compView.setItemDelegateForColumn(1, NumberFormatDelegate(self.compView))
         compHeader = self.compView.horizontalHeader()
         compHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
         # Connect the dataChanged signal to the corresponding slot
         # used to update header of species with components names
-        self.compModel.dataChanged.connect(self.updateCompName)
+        self.compModel.dataChanged.connect(
+            lambda _: updateCompNames(
+                self.compModel,
+                self.speciesView,
+                self.solidSpeciesView,
+                self.concModel,
+                self.indComp,
+            )
+        )
 
         # Sets the tableview for the species
-        self.speciesModel = SpeciesModel(self.species_data)
-        self.speciesProxy = ProxyModel(self)
-        self.speciesProxy.setSourceModel(self.speciesModel)
-        self.speciesView.setModel(self.speciesProxy)
+        self.speciesModel = SolubleSpeciesModel(self.species_data, self.undostack)
+        self.speciesView.setModel(self.speciesModel)
         self.speciesView.setItemDelegateForColumn(0, CheckBoxDelegate(self.speciesView))
+        self.speciesView.setItemDelegate(NumberFormatDelegate(self.speciesView))
         # assign combobox delegate to last column
         self.speciesView.setItemDelegateForColumn(
             self.speciesModel.columnCount() - 1,
-            ComboBoxDelegate(
-                self, self.speciesView, self.compModel._data["Name"].tolist()
-            ),
+            ComboBoxDelegate(self.speciesView, self.compModel._data["Name"].tolist()),
         )
         speciesHeader = self.speciesView.horizontalHeader()
         speciesHeader.setSectionResizeMode(QHeaderView.ResizeToContents)
 
         # Sets the tableview for the solid species
-        self.solidSpeciesModel = SolidSpeciesModel(self.solid_species_data)
-        self.solidSpeciesProxy = ProxyModel(self)
-        self.solidSpeciesProxy.setSourceModel(self.solidSpeciesModel)
-        self.solidSpeciesView.setModel(self.solidSpeciesProxy)
+        self.solidSpeciesModel = SolidSpeciesModel(
+            self.solid_species_data, self.undostack
+        )
+        self.solidSpeciesView.setModel(self.solidSpeciesModel)
         self.solidSpeciesView.setItemDelegateForColumn(
             0, CheckBoxDelegate(self.solidSpeciesView)
+        )
+        self.solidSpeciesView.setItemDelegate(
+            NumberFormatDelegate(self.solidSpeciesView)
         )
         # assign combobox delegate to last column
         self.solidSpeciesView.setItemDelegateForColumn(
             self.solidSpeciesModel.columnCount() - 1,
             ComboBoxDelegate(
-                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
+                self.solidSpeciesView, self.compModel._data["Name"].tolist()
             ),
         )
         solidSpeciesHeader = self.solidSpeciesView.horizontalHeader()
@@ -164,8 +277,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Interface is populated with empty basic data
         self.resetFields()
 
-        # Sets the components names in the QComboBox
-        indCompUpdater(self)
+        self.solidSpeciesModel.layoutChanged.connect(self.check_solid_presence)
 
         # declare the checkline used to validate project files
         self.check_line = {"check": "PyES project file --- DO NOT MODIFY THIS LINE!"}
@@ -174,28 +286,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display a prompt asking if you want to create a new project
         """
-        dialog = NewDialog(self)
-        if dialog.exec():
-            self.resetFields()
-            self.project_path = None
-            self.setWindowTitle("PyES - New Project")
+        if not self.undostack.isClean():
+            choice = NotSavedDialog().exec()
 
-            # Resets results
-            self.result = {}
-
-            # Disable results windows
-            if self.PlotWindow:
-                self.PlotWindow.close()
-            if self.ExportWindow:
-                self.ExportWindow.close()
-
-            # Disable buttons to show results
-            self.exportButton.setEnabled(False)
-            self.plotDistButton.setEnabled(False)
-            self.actionExport_Results.setEnabled(False)
-            self.actionPlot_Results.setEnabled(False)
+            if choice != QMessageBox.StandardButton.Discard:
+                return False
         else:
-            pass
+            choice = NewDialog().exec()
+
+            if not choice:
+                return False
+
+        self.resetFields()
+        self.project_path = None
+        self.setWindowTitle("PyES - New Project")
+
+        # Resets results
+        self.result = {}
+
+        # Disable results windows
+        if self.PlotWindow:
+            self.PlotWindow.close()
+        if self.ExportWindow:
+            self.ExportWindow.close()
+
+        # Disable buttons to show results
+        self.exportButton.setEnabled(False)
+        self.plotDistButton.setEnabled(False)
+        self.actionExport_Results.setEnabled(False)
+        self.actionPlot_Results.setEnabled(False)
 
     def help_about(self):
         """
@@ -208,35 +327,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Display about dialog
         """
-        dialog = QMessageBox.aboutQt(self)
-        dialog.exec()
+        QMessageBox.aboutQt(self)
 
     def file_save(self):
+        save_path = self.save_helper()
+        self.update_file_title(save_path)
+
+    def file_save_as(self):
+        save_path = self.save_helper(save_as=True)
+        self.update_file_title(save_path)
+
+    def update_file_title(self, save_path):
+        if save_path:
+            # Store the file path
+            self.project_path = save_path
+            # Set window title accordingly
+            self.setWindowTitle("PyES - " + self.project_path)
+
+    def save_helper(self, save_as=False):
         """
         Saves current project as json file that can be later reopened
         """
-        if self.project_path:
-            output_path, _ = QFileDialog.getSaveFileName(
-                self, "Save Project", self.project_path, "JSON (*.json)"
-            )
-        else:
-            output_path, _ = QFileDialog.getSaveFileName(
+        if save_as or self.project_path is None:
+            output_path, filter = QFileDialog.getSaveFileName(
                 self,
                 "Save Project",
-                self.settings.value("path/default"),
+                (
+                    self.project_path
+                    if self.project_path is not None
+                    else self.settings.value("path/default")
+                ),
                 "JSON (*.json)",
             )
+        else:
+            output_path = self.project_path
 
         if output_path:
             file_name = Path(output_path).parents[0]
             file_name = file_name.joinpath(Path(output_path).stem)
             file_name = file_name.with_suffix(".json")
-
-            # Store the file path
-            self.project_path = output_path
-
-            # Set window title accordingly
-            self.setWindowTitle("PyES - " + self.project_path)
 
             # dictionary that holds all the relevant data locations
             data_list = returnDataDict(self)
@@ -248,10 +377,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ) as out_file:
                 json.dump(data, out_file)
 
+            self.undostack.setClean()
+            return output_path
+        else:
+            return None
+
     def file_open(self):
         """
         Load a previously saved project
         """
+        if not self.undostack.isClean():
+            choice = NotSavedDialog().exec()
+
+            if choice == QMessageBox.StandardButton.Cancel:
+                return False
+            elif choice == QMessageBox.StandardButton.Discard:
+                pass
+            elif choice == QMessageBox.StandardButton.Save:
+                if not self.file_save():
+                    return False
+
         if self.project_path:
             input_path, _ = QFileDialog.getOpenFileName(
                 self,
@@ -268,217 +413,253 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
 
         if input_path:
-            with open(
-                input_path,
-                "r",
-            ) as input_file:
-                jsdata = json.load(input_file)
+            return self.load_project_file(input_path)
 
-            # TODO: better and more robust validation of project files
-            # The loaded file has to be a valid project file, discard it if not
-            if jsdata["check"] != self.check_line["check"]:
+    def load_project_file(self, input_path):
+        with open(
+            input_path,
+            "r",
+        ) as input_file:
+            try:
+                jsdata: dict = json.load(input_file)
+
+                # TODO: better and more robust validation of project files
+                # The loaded file has to be a valid project file, discard it if not
+                checksum = jsdata["check"]
+                assert checksum == self.check_line["check"]
+            except (json.JSONDecodeError, UnicodeDecodeError, KeyError, AssertionError):
+                if not self.isVisible():
+                    self.show()
                 dialog = WrongFileDialog(self)
                 dialog.exec()
                 return False
 
-            self.resetFields()
-            # Resets results
-            self.result = {}
-            # Get file path from the open project file
-            self.project_path = input_path
-            # Set window title accordingly
-            self.setWindowTitle("PyES - " + self.project_path)
+        self.resetFields()
+        # Resets results
+        self.result = {}
+        # Get file path from the open project file
+        self.project_path = input_path
+        # Set window title accordingly
+        self.setWindowTitle("PyES - " + self.project_path)
 
-            # Disable results windows
-            if self.PlotWindow:
-                self.PlotWindow.close()
-            if self.ExportWindow:
-                self.ExportWindow.close()
+        # Disable results windows
+        if self.PlotWindow:
+            self.PlotWindow.close()
+        if self.ExportWindow:
+            self.ExportWindow.close()
 
             # Disable buttons to show results
-            self.exportButton.setEnabled(False)
-            self.plotDistButton.setEnabled(False)
-            self.actionExport_Results.setEnabled(False)
-            self.actionPlot_Results.setEnabled(False)
+        self.exportButton.setEnabled(False)
+        self.plotDistButton.setEnabled(False)
+        self.actionExport_Results.setEnabled(False)
+        self.actionPlot_Results.setEnabled(False)
 
-            try:
-                self.numComp.setValue(jsdata["nc"])
-            except:
-                self.numComp.setValue(1)
+        problems = []
 
-            try:
-                self.numSpecies.setValue(jsdata["ns"])
-            except:
-                self.numSpecies.setValue(1)
+        # Species Tab
+        self.numComp.setValue(
+            value_or_problem(jsdata, "nc", 1, "Number of components", problems)
+        )
+        self.numSpecies.setValue(
+            value_or_problem(jsdata, "ns", 1, "Number of species", problems)
+        )
+        self.numPhases.setValue(
+            value_or_problem(jsdata, "np", 0, "Number of phases", problems)
+        )
+        self.uncertaintyMode.setChecked(
+            value_or_problem(jsdata, "emode", 0, "Uncertainty estimation", problems)
+        )
+        self.imode.setCurrentIndex(
+            value_or_problem(jsdata, "imode", 0, "Ionic strength effect", problems)
+        )
+        self.refIonicStr.setValue(
+            value_or_problem(jsdata, "ris", 0, "Reference ionic strength", problems)
+        )
+        self.A.setValue(
+            value_or_problem(jsdata, "a", 0, "A parameter D-H equation", problems)
+        )
+        self.B.setValue(
+            value_or_problem(jsdata, "b", 0, "B parameter D-H equation", problems),
+        )
+        self.c0.setValue(
+            value_or_problem(jsdata, "c0", 0, "c0 parameter D-H equation", problems)
+        )
+        self.c1.setValue(
+            value_or_problem(jsdata, "c1", 0, "c1 parameter D-H equation", problems)
+        )
+        self.d0.setValue(
+            value_or_problem(jsdata, "d0", 0, "d0 parameter D-H equation", problems)
+        )
+        self.d1.setValue(
+            value_or_problem(jsdata, "d1", 0, "d1 parameter D-H equation", problems)
+        )
+        self.e0.setValue(
+            value_or_problem(jsdata, "e0", 0, "e0 parameter D-H equation", problems)
+        )
 
-            try:
-                self.numPhases.setValue(jsdata["np"])
-            except:
-                self.numPhases.setValue(0)
+        self.e1.setValue(
+            value_or_problem(jsdata, "e1", 0, "e1 parameter D-H equation", problems)
+        )
 
-            try:
-                self.uncertaintyMode.setCurrentIndex(jsdata["emode"])
-            except:
-                self.uncertaintyMode.setCurrentIndex(1)
+        # Settings tabs
+        self.dmode.setCurrentIndex(
+            value_or_problem(jsdata, "dmode", 0, "Work mode", problems)
+        )
 
-            try:
-                self.imode.setCurrentIndex(jsdata["imode"])
-            except:
-                self.imode.setCurrentIndex(0)
-
-            try:
-                self.refIonicStr.setValue(jsdata["ris"])
-            except:
-                self.refIonicStr.setValue(0)
-
-            try:
-                self.A.setValue(jsdata["a"])
-            except:
-                self.A.setValue(0)
-
-            try:
-                self.B.setValue(jsdata["b"])
-            except:
-                self.B.setValue(0)
-
-            try:
-                self.c0.setValue(jsdata["c0"])
-            except:
-                self.c0.setValue(0)
-
-            try:
-                self.c1.setValue(jsdata["c1"])
-            except:
-                self.c1.setValue(0)
-
-            try:
-                self.d0.setValue(jsdata["d0"])
-            except:
-                self.d0.setValue(0)
-
-            try:
-                self.d1.setValue(jsdata["d1"])
-            except:
-                self.d1.setValue(0)
-
-            try:
-                self.e0.setValue(jsdata["e0"])
-            except:
-                self.e0.setValue(0)
-
-            try:
-                self.dmode.setCurrentIndex(jsdata["dmode"])
-            except:
-                self.dmode.setCurrentIndex(0)
-
-            try:
-                self.v0.setValue(jsdata["v0"])
-            except:
-                self.v0.setValue(0)
-
-            try:
-                self.initv.setValue(jsdata["initv"])
-            except:
-                self.initv.setValue(0)
-
-            try:
-                self.vinc.setValue(jsdata["vinc"])
-            except:
-                self.vinc.setValue(0)
-
-            try:
-                self.nop.setValue(jsdata["nop"])
-            except:
-                self.nop.setValue(1)
-
-            try:
-                self.c0back.setValue(jsdata["c0back"])
-            except:
-                self.c0back.setValue(0)
-
-            try:
-                self.ctback.setValue(jsdata["ctback"])
-            except:
-                self.ctback.setValue(0)
-
-            try:
-                self.initialLog.setValue(jsdata["initialLog"])
-            except:
-                self.initialLog.setValue(0)
-
-            try:
-                self.finalLog.setValue(jsdata["finalLog"])
-            except:
-                self.finalLog.setValue(0)
-
-            try:
-                self.logInc.setValue(jsdata["logInc"])
-            except:
-                self.logInc.setValue(0)
-
-            try:
-                self.cback.setValue(jsdata["cback"])
-            except:
-                self.cback.setValue(0)
-
-            try:
-                self.compModel._data = pd.DataFrame.from_dict(jsdata["compModel"])
-                self.compModel._data.index = range(jsdata["nc"])
-            except:
-                self.compModel._data = self.comp_data
-
-            try:
-                self.speciesModel._data = pd.DataFrame.from_dict(jsdata["speciesModel"])
-                self.speciesModel._data.index = range(jsdata["ns"])
-            except:
-                self.speciesModel._data = self.species_data
-
-            try:
-                self.solidSpeciesModel._data = pd.DataFrame.from_dict(
-                    jsdata["solidSpeciesModel"]
-                )
-                self.solidSpeciesModel._data.index = range(jsdata["np"])
-            except:
-                self.solidSpeciesModel._data = self.solid_species_data
-
-            try:
-                self.concModel._data = pd.DataFrame.from_dict(jsdata["concModel"])
-            except:
-                self.concModel._data = self.conc_data
-
-            try:
-                ind_comp = jsdata["ind_comp"]
-            except:
-                ind_comp = 0
-
-            indCompUpdater(self)
-            updated_comps = self.compModel._data["Name"].tolist()
-            self.speciesModel.updateHeader(updated_comps)
-            self.speciesModel.updateCompName(updated_comps)
-            self.solidSpeciesModel.updateHeader(updated_comps)
-            self.solidSpeciesModel.updateCompName(updated_comps)
-            self.indComp.setCurrentIndex(ind_comp)
-            self.speciesView.setItemDelegateForColumn(
-                self.speciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.speciesView, self.compModel._data["Name"].tolist()
-                ),
+        self.v0.setValue(
+            value_or_problem(jsdata, "v0", 0, "Initial titration volume", problems)
+        )
+        self.initv.setValue(
+            value_or_problem(jsdata, "initv", 0, "First point of titration", problems),
+        )
+        self.vinc.setValue(
+            value_or_problem(
+                jsdata,
+                "vinc",
+                0,
+                "Volume increments for each titration point",
+                problems,
             )
-            self.solidSpeciesView.setItemDelegateForColumn(
-                self.solidSpeciesModel.columnCount() - 1,
-                ComboBoxDelegate(
-                    self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
-                ),
+        )
+        self.nop.setValue(
+            value_or_problem(jsdata, "nop", 1, "Number of titration points", problems)
+        )
+        self.c0back.setValue(
+            value_or_problem(
+                jsdata,
+                "c0back",
+                0,
+                "Concentration of background ions in titration vessel",
+                problems,
             )
+        )
+        self.ctback.setValue(
+            value_or_problem(
+                jsdata,
+                "ctback",
+                0,
+                "Concentration of background ions in titrant",
+                problems,
+            )
+        )
 
-            # The model layout changed so it has to be updated
-            self.compModel.layoutChanged.emit()
-            self.speciesModel.layoutChanged.emit()
-            self.solidSpeciesModel.layoutChanged.emit()
-            self.concModel.layoutChanged.emit()
+        ind_comp = value_or_problem(
+            jsdata, "ind_comp", 0, "Independent component", problems
+        )
 
-            # Clear logger output
-            self.consoleOutput.clear()
+        self.initialLog.setValue(
+            value_or_problem(
+                jsdata,
+                "initialLog",
+                0,
+                "Initial Log of concentration of independent component",
+                problems,
+            )
+        )
+        self.finalLog.setValue(
+            value_or_problem(
+                jsdata,
+                "finalLog",
+                0,
+                "Final Log of concentration of independent component",
+                problems,
+            )
+        )
+        self.logInc.setValue(
+            value_or_problem(
+                jsdata,
+                "logInc",
+                0,
+                "Increments in Log of concentration of independent component",
+                problems,
+            )
+        )
+        self.cback.setValue(
+            value_or_problem(
+                jsdata, "cback", 0, "Concentration of background ions", problems
+            )
+        )
+
+        # Models
+        self.compModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata, "compModel", self.comp_data, "Components model", problems
+            )
+        )
+        self.compModel._data.index = range(self.numComp.value())
+
+        self.speciesModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata,
+                "speciesModel",
+                self.species_data,
+                "Species model",
+                problems,
+            )
+        )
+        self.speciesModel._data.index = range(self.numSpecies.value())
+
+        self.solidSpeciesModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata,
+                "solidSpeciesModel",
+                self.solid_species_data,
+                "Solid species model",
+                problems,
+            )
+        )
+
+        if self.solidSpeciesModel._data.empty:
+            self.solidSpeciesModel._data = self.speciesModel._data.iloc[0:0, :].copy()
+            self.solidSpeciesModel._data.rename(columns={"LogB": "LogKs"}, inplace=True)
+
+        self.solidSpeciesModel._data.index = range(self.numPhases.value())
+
+        self.concModel._data = pd.DataFrame.from_dict(
+            value_or_problem(
+                jsdata, "concModel", self.conc_data, "Concentrations model", problems
+            )
+        )
+
+        updateIndComponent(self.compModel, self.indComp)
+        updated_comps = self.compModel._data["Name"].tolist()
+        self.speciesModel.updateHeader(updated_comps)
+        self.speciesModel.updateCompName(updated_comps)
+        self.solidSpeciesModel.updateHeader(updated_comps)
+        self.solidSpeciesModel.updateCompName(updated_comps)
+        self.indComp.currentIndexChanged.emit(ind_comp)
+        self.speciesView.setItemDelegateForColumn(
+            self.speciesModel.columnCount() - 1,
+            ComboBoxDelegate(self.speciesView, self.compModel._data["Name"].tolist()),
+        )
+        self.solidSpeciesView.setItemDelegateForColumn(
+            self.solidSpeciesModel.columnCount() - 1,
+            ComboBoxDelegate(
+                self.solidSpeciesView, self.compModel._data["Name"].tolist()
+            ),
+        )
+
+        # The model layout changed so it has to be updated
+        self.compModel.layoutChanged.emit()
+        self.speciesModel.layoutChanged.emit()
+        self.solidSpeciesModel.layoutChanged.emit()
+        self.concModel.layoutChanged.emit()
+
+        # Clear logger output
+        self.consoleOutput.clear()
+
+        # Clear undo stack after loading
+        self.undostack.clear()
+
+        if problems:
+            problems_dialog = IssuesLoadingDialog(self)
+            problems_dialog.setText(
+                "The following fields had problems being imported:\n"
+                + "\n".join([f"- {p}" for p in problems])
+                + "\n" * 2
+                + "Default values have been used in their place."
+            )
+            problems_dialog.exec()
 
     def help_website(self):
         """
@@ -507,10 +688,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.solidSpeciesView.setEnabled(False)
 
         # Reset rel. error settings
-        self.uncertaintyMode.setCurrentIndex(1)
+        self.uncertaintyMode.setChecked(False)
 
         # Reset Ionic strenght params
-        self.imode.setCurrentIndex(0)
+        self.imode.currentIndexChanged.emit(0)
         self.refIonicStr.setValue(0)
         self.A.setValue(0)
         self.B.setValue(0)
@@ -520,12 +701,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.d1.setValue(0)
         self.e0.setValue(0)
         self.e1.setValue(0)
-        self.imodeUpdater(0)
 
         # Set dmode as 0 (titration)
         # and display the correct associated widget
-        self.dmode.setCurrentIndex(0)
-        self.dmodeUpdater(0)
+        self.dmode.currentIndexChanged.emit(0)
 
         # Resets fields for both dmodes
         self.v0.setValue(0)
@@ -563,9 +742,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.compModel.layoutChanged.emit()
             self.speciesModel.layoutChanged.emit()
             self.solidSpeciesModel.layoutChanged.emit()
-            indCompUpdater(self)
+            updateIndComponent(self.compModel, self.indComp)
         except:
             pass
+        finally:
+            self.undostack.clear()
 
     def updateComp(self, rows):
         """
@@ -574,77 +755,61 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         if self.compModel.rowCount() < rows:
             added_rows = rows - self.compModel.rowCount()
-            self.compModel.insertRows(self.compModel.rowCount(), added_rows)
 
-            self.addSpeciesComp(self.speciesModel.columnCount() - 1, added_rows)
-            self.concModel.insertRows(self.concModel.rowCount(), added_rows)
+            self.undostack.push(
+                ComponentsAddRows(
+                    self.compView,
+                    self.speciesView,
+                    self.solidSpeciesView,
+                    self.concModel,
+                    self.indComp,
+                    self.numComp,
+                    self.compModel.rowCount(),
+                    added_rows,
+                )
+            )
 
         elif self.compModel.rowCount() > rows:
             removed_rows = self.compModel.rowCount() - rows
-            self.compModel.removeRows(self.compModel.rowCount(), removed_rows)
 
-            self.removeSpeciesComp(self.speciesModel.columnCount() - 1, removed_rows)
-            self.concModel.removeRows(self.concModel.rowCount(), removed_rows)
-        else:
-            pass
-        self.updateCompName()
-        indCompUpdater(self)
+            self.undostack.push(
+                ComponentsRemoveRows(
+                    self.compView,
+                    self.speciesView,
+                    self.solidSpeciesView,
+                    self.concModel,
+                    self.indComp,
+                    self.numComp,
+                    self.compModel.rowCount(),
+                    removed_rows,
+                )
+            )
 
-    def addSpeciesComp(self, position, added_rows):
-        self.speciesView.setItemDelegateForColumn(
-            self.speciesModel.columnCount() - 1, None
-        )
-        self.speciesModel.insertColumns(position, added_rows)
-        self.speciesView.setItemDelegateForColumn(
-            self.speciesModel.columnCount() - 1,
-            ComboBoxDelegate(
-                self, self.speciesView, self.compModel._data["Name"].tolist()
-            ),
-        )
-
-        self.solidSpeciesView.setItemDelegateForColumn(
-            self.solidSpeciesModel.columnCount() - 1, None
-        )
-        self.solidSpeciesModel.insertColumns(position, added_rows)
-        self.solidSpeciesView.setItemDelegateForColumn(
-            self.solidSpeciesModel.columnCount() - 1,
-            ComboBoxDelegate(
-                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
-            ),
-        )
-
-    def removeSpeciesComp(self, position, removed_rows):
-        self.speciesView.setItemDelegateForColumn(
-            self.speciesModel.columnCount() - 1, None
-        )
-        self.speciesModel.removeColumns(position, removed_rows)
-        self.speciesView.setItemDelegateForColumn(
-            self.speciesModel.columnCount() - 1,
-            ComboBoxDelegate(
-                self, self.speciesView, self.compModel._data["Name"].tolist()
-            ),
-        )
-        self.solidSpeciesView.setItemDelegateForColumn(
-            self.solidSpeciesModel.columnCount() - 1, None
-        )
-        self.solidSpeciesModel.removeColumns(position, removed_rows)
-        self.solidSpeciesView.setItemDelegateForColumn(
-            self.solidSpeciesModel.columnCount() - 1,
-            ComboBoxDelegate(
-                self, self.solidSpeciesView, self.compModel._data["Name"].tolist()
-            ),
-        )
-
-    def updateSpecies(self, s):
+    def updateSpecies(self):
         """
         Handles the updating species model due to changes in the number of species present.
         """
-        if self.speciesModel.rowCount() < s:
-            added_rows = s - self.speciesModel.rowCount()
-            self.speciesModel.insertRows(self.speciesModel.rowCount(), added_rows)
-        elif self.speciesModel.rowCount() > s:
-            removed_rows = self.speciesModel.rowCount() - s
-            self.speciesModel.removeRows(self.speciesModel.rowCount(), removed_rows)
+        new_value = self.numSpecies.value()
+        if self.speciesModel.rowCount() < new_value:
+            added_rows = new_value - self.speciesModel.rowCount()
+            self.undostack.push(
+                SpeciesAddRows(
+                    self.speciesView,
+                    self.numSpecies,
+                    self.speciesModel.rowCount(),
+                    added_rows,
+                )
+            )
+        elif self.speciesModel.rowCount() > new_value:
+            removed_rows = self.speciesModel.rowCount() - new_value
+            self.undostack.push(
+                SpeciesRemoveRows(
+                    self.speciesView,
+                    self.numSpecies,
+                    self.speciesModel.rowCount(),
+                    removed_rows,
+                )
+            )
         else:
             pass
 
@@ -654,67 +819,62 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         if self.solidSpeciesModel.rowCount() < s:
             added_rows = s - self.solidSpeciesModel.rowCount()
-            self.solidSpeciesModel.insertRows(
-                self.solidSpeciesModel.rowCount(), added_rows
+            self.undostack.push(
+                SpeciesAddRows(
+                    self.solidSpeciesView,
+                    self.numPhases,
+                    self.solidSpeciesModel.rowCount(),
+                    added_rows,
+                )
             )
         elif self.solidSpeciesModel.rowCount() > s:
             removed_rows = self.solidSpeciesModel.rowCount() - s
-            self.solidSpeciesModel.removeRows(
-                self.solidSpeciesModel.rowCount(), removed_rows
+            self.undostack.push(
+                SpeciesRemoveRows(
+                    self.solidSpeciesView,
+                    self.numPhases,
+                    self.solidSpeciesModel.rowCount(),
+                    removed_rows,
+                )
             )
         else:
             pass
-        if self.solidSpeciesModel.rowCount() == 0:
-            self.solidSpeciesView.setEnabled(False)
-        else:
-            self.solidSpeciesView.setEnabled(True)
-
-    def updateCompName(self):
-        """
-        Handles the displayed names in the species table when edited in the components one
-        """
-        updated_comps = self.compModel._data["Name"].tolist()
-
-        self.speciesView.setItemDelegateForColumn(
-            self.speciesModel.columnCount() - 1,
-            ComboBoxDelegate(self, self.speciesView, updated_comps),
-        )
-        self.speciesModel.updateHeader(updated_comps)
-        self.speciesModel.updateCompName(updated_comps)
-
-        self.solidSpeciesView.setItemDelegateForColumn(
-            self.solidSpeciesModel.columnCount() - 1,
-            ComboBoxDelegate(self, self.solidSpeciesView, updated_comps),
-        )
-        self.solidSpeciesModel.updateHeader(updated_comps)
-        self.solidSpeciesModel.updateCompName(updated_comps)
-
-        self.concModel.updateIndex(updated_comps)
-        indCompUpdater(self)
 
     def insertCompAbove(self):
         if self.compView.selectedIndexes():
             row = self.compView.selectedIndexes()[0].row()
         else:
             row = 0
-        self.compModel.insertRows(row - 1, 1)
-        self.addSpeciesComp(row + 8, 1)
-        self.concModel.insertRows(row - 1)
-
-        self.numComp.setValue(self.numComp.value() + 1)
-        self.compView.selectRow(row)
+        self.undostack.push(
+            ComponentsAddRows(
+                self.compView,
+                self.speciesView,
+                self.solidSpeciesView,
+                self.concModel,
+                self.indComp,
+                self.numComp,
+                row,
+                1,
+            )
+        )
 
     def insertCompBelow(self):
         if self.compView.selectedIndexes():
             row = self.compView.selectedIndexes()[0].row() + 1
         else:
-            row = self.compModel.rowCount() + 1
-        self.compModel.insertRows(row - 1, 1)
-        self.addSpeciesComp(row + 7, 1)
-        self.concModel.insertRows(row - 1)
-
-        self.numComp.setValue(self.numComp.value() + 1)
-        self.compView.selectRow(row)
+            row = self.compModel.rowCount()
+        self.undostack.push(
+            ComponentsAddRows(
+                self.compView,
+                self.speciesView,
+                self.solidSpeciesView,
+                self.concModel,
+                self.indComp,
+                self.numComp,
+                row,
+                1,
+            )
+        )
 
     def removeComp(self):
         if self.compView.selectedIndexes() and self.compModel.rowCount() > 1:
@@ -727,148 +887,148 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 == QMessageBox.Yes
             ):
                 row = self.compView.selectedIndexes()[0].row() + 1
-                self.compModel.removeRows(row, 1)
-
-                self.removeSpeciesComp(row + 8, 1)
-                self.concModel.removeRows(row)
-
-                self.numComp.setValue(self.numComp.value() - 1)
+                self.undostack.push(
+                    ComponentsRemoveRows(
+                        self.compView,
+                        self.speciesView,
+                        self.solidSpeciesView,
+                        self.concModel,
+                        self.indComp,
+                        self.numComp,
+                        row,
+                        1,
+                    )
+                )
 
     def moveCompUp(self):
         if self.compView.selectedIndexes():
-            current_ind_comp = self.indComp.currentData(0)
+            selected_ind_comp = self.indComp.currentData(0)
             row = self.compView.selectedIndexes()[0].row()
-            if row == 0:
-                return
-
-            self.speciesModel.swapColumns(row + 8, row + 7)
-            self.solidSpeciesModel.swapColumns(row + 8, row + 7)
-            self.concModel.swapRows(row, row - 1)
-            self.compModel.swapRows(row, row - 1)
-            self.compView.selectRow(row - 1)
-
-            self.updateCompName()
-
-            self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
+            if row != 0:
+                self.undostack.push(
+                    ComponentsSwapRows(
+                        self.compView,
+                        self.speciesView,
+                        self.solidSpeciesView,
+                        self.concModel,
+                        self.indComp,
+                        selected_ind_comp,
+                        row,
+                        row - 1,
+                    )
+                )
 
     def moveCompDown(self):
         if self.compView.selectedIndexes():
-            current_ind_comp = self.indComp.currentData(0)
+            selected_ind_comp = self.indComp.currentData(0)
             row = self.compView.selectedIndexes()[0].row()
-            if row == self.compModel.rowCount() - 1:
-                return
-
-            self.speciesModel.swapColumns(row + 8, row + 9)
-            self.solidSpeciesModel.swapColumns(row + 8, row + 9)
-            self.concModel.swapRows(row, row + 1)
-            self.compModel.swapRows(row, row + 1)
-            self.compView.selectRow(row + 1)
-
-            self.updateCompName()
-
-            self.indComp.setCurrentIndex(self.indComp.findData(current_ind_comp, 0))
+            if row != self.compModel.rowCount() - 1:
+                self.undostack.push(
+                    ComponentsSwapRows(
+                        self.compView,
+                        self.speciesView,
+                        self.solidSpeciesView,
+                        self.concModel,
+                        self.indComp,
+                        selected_ind_comp,
+                        row,
+                        row + 1,
+                    )
+                )
 
     def insertSpeciesAbove(self):
-        if self.tablesTab.isTabVisible(0):
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-            else:
-                row = 0
-            self.speciesModel.insertRows(row - 1, 1)
-            self.numSpecies.setValue(self.numSpecies.value() + 1)
-            self.speciesView.selectRow(row)
-        elif self.tablesTab.isTabVisible(1):
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-            else:
-                row = 0
+        table = self.get_shown_tab()
+        if not table:
+            return
 
-            self.solidSpeciesModel.insertRows(row - 1, 1)
-            self.numPhases.setValue(self.numPhases.value() + 1)
-            self.speciesView.selectRow(row)
+        counter = self.get_shown_tab_counter()
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row()
         else:
-            pass
+            row = 0
+
+        self.undostack.push(SpeciesAddRows(table, counter, row, 1))
 
     def insertSpeciesBelow(self):
-        if self.tablesTab.isTabVisible(0):
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-            else:
-                row = self.speciesModel.rowCount()
-            self.speciesModel.insertRows(row, 1)
-            self.numSpecies.setValue(self.numSpecies.value() + 1)
-            self.speciesView.selectRow(row + 1)
-        elif self.tablesTab.isTabVisible(1):
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-            else:
-                row = self.solidSpeciesModel.rowCount()
+        table = self.get_shown_tab()
+        if not table:
+            return
 
-            self.solidSpeciesModel.insertRows(row, 1)
-            self.numPhases.setValue(self.numPhases.value() + 1)
-            self.speciesView.selectRow(row + 1)
+        counter = self.get_shown_tab_counter()
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row() + 1
         else:
-            pass
+            row = table.model().rowCount()
+
+        self.undostack.push(SpeciesAddRows(table, counter, row, 1))
 
     def removeSpecies(self):
-        if self.tablesTab.isTabVisible(0):
-            if self.speciesView.selectedIndexes() and self.speciesModel.rowCount() > 1:
-                if (
-                    QMessageBox.question(
-                        self,
-                        "Deleting Species",
-                        "Are you sure you want to delete the selected species?",
+        table = self.get_shown_tab()
+        if not table or (table == self.speciesView and self.numSpecies.value() == 1):
+            return
+
+        counter = self.get_shown_tab_counter()
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            if (
+                QMessageBox.question(
+                    self,
+                    "Deleting Species",
+                    "Are you sure you want to delete the selected species?",
+                )
+                == QMessageBox.Yes
+            ):
+                self.undostack.push(
+                    SpeciesRemoveRows(
+                        table,
+                        counter,
+                        selected_indexes[0].row() + 1,
+                        1,
                     )
-                    == QMessageBox.Yes
-                ):
-                    self.speciesModel.removeRows(
-                        self.speciesView.selectedIndexes()[0].row() + 1, 1
-                    )
-                    self.numSpecies.setValue(self.numSpecies.value() - 1)
-        elif self.tablesTab.isTabVisible(1):
-            if self.solidSpeciesView.selectedIndexes():
-                if (
-                    QMessageBox.question(
-                        self,
-                        "Deleting Species",
-                        "Are you sure you want to delete the selected species?",
-                    )
-                    == QMessageBox.Yes
-                ):
-                    self.solidSpeciesModel.removeRows(
-                        self.solidSpeciesView.selectedIndexes()[0].row() + 1, 1
-                    )
-                    self.numPhases.setValue(self.numPhases.value() - 1)
-        else:
-            pass
+                )
 
     def moveSpeciesUp(self):
-        if self.tablesTab.isTabVisible(0):
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-                self.speciesModel.swapRows(row, row - 1)
-                self.speciesView.selectRow(row - 1)
-        elif self.tablesTab.isTabVisible(1):
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-                self.solidSpeciesModel.swapRows(row, row - 1)
-                self.solidSpeciesView.selectRow(row - 1)
-        else:
-            pass
+        table = self.get_shown_tab()
+        if not table:
+            return
+
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row()
+            if row != 0:
+                self.undostack.push(SpeciesSwapRows(table, row, row - 1))
 
     def moveSpeciesDown(self):
-        if self.tablesTab.isTabVisible(0):
-            if self.speciesView.selectedIndexes():
-                row = self.speciesView.selectedIndexes()[0].row()
-                self.speciesModel.swapRows(row, row + 1)
-                self.speciesView.selectRow(row + 1)
-        elif self.tablesTab.isTabVisible(1):
-            if self.solidSpeciesView.selectedIndexes():
-                row = self.solidSpeciesView.selectedIndexes()[0].row()
-                self.solidSpeciesModel.swapRows(row, row + 1)
-                self.solidSpeciesView.selectRow(row + 1)
+        table = self.get_shown_tab()
+        if not table:
+            return
+
+        selected_indexes = table.selectedIndexes()
+        if selected_indexes:
+            row = selected_indexes[0].row()
+            if row != (table.model().rowCount() - 1):
+                self.undostack.push(SpeciesSwapRows(table, row, row + 1))
+
+    def get_shown_tab(self):
+        if self.tablesTab.currentIndex() == 0:
+            table = self.speciesView
+        elif self.tablesTab.currentIndex() == 1:
+            table = self.solidSpeciesView
         else:
-            pass
+            table = None
+        return table
+
+    def get_shown_tab_counter(self):
+        table = self.get_shown_tab()
+        if self.tablesTab.currentIndex() == 0:
+            counter = self.numSpecies
+        elif self.tablesTab.currentIndex() == 1:
+            counter = self.numPhases
+        else:
+            counter = None
+        return counter
 
     def calculate(self):
         # Disable the button, one omptimization calculation at the time
@@ -919,26 +1079,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def logger(self, log):
         self.consoleOutput.append(log)
 
-    def imodeUpdater(self, imode):
-        """
-        Enables and disables Debye-Huckle parameters fields
-        while making it clear grayingout also the corresponding
-        fields in the modelviews
-        """
-        if imode == 1:
-            for field in self.imode_fields:
-                field.setEnabled(True)
-
-            self.speciesView.model().setColumnReadOnly(range(4, 8), False)
-            self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), False)
-
-        else:
-            for field in self.imode_fields:
-                field.setEnabled(False)
-
-            self.speciesView.model().setColumnReadOnly(range(4, 8), True)
-            self.solidSpeciesView.model().setColumnReadOnly(range(4, 8), True)
-
     def exportDist(self):
         """
         Export calculated distribution in csv/excel format
@@ -963,52 +1103,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.PlotWindow = PlotWindow(self)
         self.PlotWindow.show()
 
-    def dmodeUpdater(self, mode):
-        """
-        Conditionally show one settings input or another
-        if we want to work in distribution or titration mode.
-        """
-        if mode == 0:
-            self.dmode0Input.show()
-            self.dmode1Input.hide()
-        else:
-            self.dmode0Input.hide()
-            self.dmode1Input.show()
-
-    def indipendentUpdater(self, comp):
-        """
-        If working in "distribution mode"
-        gray out indipendent component.
-        """
-        try:
-            self.dmode1_concView.model().setRowReadOnly([self.previousIndComp], False)
-        except:
-            pass
-        self.previousIndComp = self.indComp.currentIndex()
-        self.dmode1_concView.model().setRowReadOnly([comp], True)
-        self.initialLog_label.setText(f"Initial -log[{self.indComp.currentText()}]:")
-        self.finalLog_label.setText(f"Final -log[f{self.indComp.currentText()}]:")
-
-        self.logInc_label.setText(f"-log[{self.indComp.currentText()}] Increment:")
-
-    def relErrorsUpdater(self, mode):
-        """
-        If relative errors aren't requested
-        gray out the corresponding columns in tableviews.
-        """
-        if mode == 0:
-            self.speciesView.model().setColumnReadOnly([3], False)
-            self.solidSpeciesView.model().setColumnReadOnly([3], False)
-            self.dmode1_concView.model().setColumnReadOnly([2, 3], False)
-            self.dmode0_concView.model().setColumnReadOnly([2, 3], False)
-        else:
-            # print(self.speciesView.model())
-            # print(self.solidSpeciesView.model())
-            self.speciesView.model().setColumnReadOnly([3], True)
-            self.solidSpeciesView.model().setColumnReadOnly([3], True)
-            self.dmode1_concView.model().setColumnReadOnly([2, 3], True)
-            self.dmode0_concView.model().setColumnReadOnly([2, 3], True)
-
     def v0Updater(self, value):
         self.initv.setMinimum(value)
 
@@ -1016,6 +1110,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         Cleanup before closing.
         """
+        if not self.undostack.isClean():
+            choice = NotSavedDialog().exec()
+
+            if choice == QMessageBox.StandardButton.Cancel:
+                event.ignore()
+            elif choice == QMessageBox.StandardButton.Discard:
+                pass
+            elif choice == QMessageBox.StandardButton.Save:
+                if not self.file_save():
+                    event.ignore()
+
         self.settings.setValue("mainwindow/geometry", self.saveGeometry())
 
         # Close any secondary window still open
@@ -1024,4 +1129,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.PlotWindow:
             self.PlotWindow.close()
 
-        event.accept()
+    def check_clean_state(self, clean: bool) -> None:
+        title = self.windowTitle()
+        if not clean:
+            self.setWindowTitle(f"* {title}")
+        else:
+            self.setWindowTitle(title.lstrip("* "))
+
+    def check_solid_presence(self):
+        if self.solidSpeciesModel.rowCount() == 0:
+            self.solidSpeciesView.setEnabled(False)
+        else:
+            self.solidSpeciesView.setEnabled(True)
+
+    def displayUncertaintyInfo(self):
+        UncertaintyInfoDialog(parent=self).exec()
+
+    def displayIonicStrengthInfo(self):
+        IonicStrengthInfoDialog(parent=self).exec()
+
+
+def value_or_problem(d: dict, field: str, default, message: str, problems: list[str]):
+    value = d.get(field)
+    if value is None:
+        value = default
+        problems.append(message + f" ({field})")
+    return value

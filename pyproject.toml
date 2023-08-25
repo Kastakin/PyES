@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyes"
-version = "1.0.0"
+version = "1.1.2"
 description = ""
 authors = ["Lorenzo Castellino <castellino96@gmail.com>"]
 license = "GPLv3"
@@ -11,7 +11,7 @@ ppg = {git = "ssh://git@github.com/Kastakin/ppg.git", rev = "main"}
 pandas = "^1.5.0"
 openpyxl = "^3.0.9"
 PySide6-Essentials = "~6.4.0"
-pyqtgraph = "^0.13.1"
+pyqtgraph = "^0.13.0"
 
 [tool.poetry.group.dev.dependencies]
 tbump = "^6.7.0"

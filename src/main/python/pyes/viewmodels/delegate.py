@@ -1,16 +1,65 @@
-from PySide6.QtCore import QEvent, QPoint, QRect, Qt, QTimer
+from PySide6.QtCore import QEvent, QLocale, QObject, QPoint, QRect, Qt, QTimer
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
     QAbstractItemDelegate,
     QApplication,
     QColorDialog,
     QComboBox,
     QItemDelegate,
+    QLineEdit,
     QStyle,
     QStyledItemDelegate,
     QStyleOptionButton,
     QStyleOptionComboBox,
     QStyleOptionViewItem,
 )
+from ui.widgets import LineSpinBox
+
+
+class NumberFormatDelegate(QItemDelegate):
+    def __init__(
+        self,
+        parent=None,
+        bottom: float = -float("inf"),
+        top: float = float("inf"),
+        decimals: int = -1,
+    ) -> None:
+        super().__init__(parent)
+        self.bottom = bottom
+        self.top = top
+        self.decimals = decimals
+
+    def createEditor(self, parent, option, index):
+        editor = LineSpinBox(
+            parent,
+            bottom=self.bottom,
+            top=self.top,
+            decimals=self.decimals,
+        )
+        return editor
+
+    def setEditorData(self, editor, index):
+        data = index.data(Qt.DisplayRole)
+        editor.setText(data)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.text(), Qt.EditRole)
+
+
+class LineEditDelegate(QItemDelegate):
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+
+    def createEditor(self, parent, option, index):
+        editor = QLineEdit(parent=parent)
+        return editor
+
+    def setEditorData(self, editor, index):
+        data = index.data(Qt.DisplayRole)
+        editor.setText(data)
+
+    def setModelData(self, editor, model, index):
+        model.setData(index, editor.text(), Qt.EditRole)
 
 
 class CheckBoxDelegate(QStyledItemDelegate):
@@ -111,8 +160,8 @@ class CheckBoxDelegate(QStyledItemDelegate):
 
 
 class ComboBoxDelegate(QItemDelegate):
-    def __init__(self, owner, view, choices):
-        super().__init__(owner)
+    def __init__(self, view, choices, parent=None):
+        QItemDelegate.__init__(self, parent)
         self.items = choices
         self._view = view
 

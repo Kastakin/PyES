@@ -21,13 +21,13 @@ class ExportWindow(QWidget, Ui_ExportWindow):
         else:
             self.project_name = os.path.splitext(os.path.basename(self.path))[0]
 
-        if "species_sigma" not in self.result:
+        if self.result["species_sigma"].empty:
             self.errors_check_excel.setChecked(False)
             self.errors_check_excel.setEnabled(False)
             self.errors_check_csv.setChecked(False)
             self.errors_check_csv.setEnabled(False)
 
-        if "formation_constants" not in self.result:
+        if self.result["formation_constants"].empty:
             self.adjlogb_check_excel.setChecked(False)
             self.adjlogb_check_excel.setEnabled(False)
             self.adjlogb_check_csv.setChecked(False)
@@ -57,7 +57,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                     )
                     skip_cols += self.result["species_info"].shape[1]
 
-                    if "solid_info" in self.result:
+                    if not self.result["solid_info"].empty:
                         self.result["solid_info"].to_excel(
                             writer,
                             sheet_name="Model Info",
@@ -99,7 +99,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                             wb, "Species SD", self.result["species_sigma"]
                         )
 
-                    if "solid_distribution" in self.result:
+                    if not self.result["solid_distribution"].empty:
                         self.result["solid_distribution"].to_excel(
                             writer, sheet_name="Solid Distribution"
                         )
@@ -127,7 +127,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                         wb, "Species Percentages", self.result["species_percentages"]
                     )
 
-                    if "solid_percentages" in self.result:
+                    if not self.result["solid_percentages"].empty:
                         self.result["solid_percentages"].to_excel(
                             writer, sheet_name="Solid Percentages"
                         )
@@ -149,7 +149,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                         self.result["formation_constants"],
                     )
 
-                    if "solubility_products" in self.result:
+                    if not self.result["solubility_products"].empty:
                         self.result["solubility_products"].to_excel(
                             writer,
                             sheet_name="Adjusted Solubility Products",
@@ -182,7 +182,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                     base_name + "_species_distribution.csv"
                 )
 
-                if "solid_distribution" in self.result:
+                if not self.result["solid_distribution"].empty:
                     self.result["solid_distribution"].to_csv(
                         base_name + "_solid_distribution.csv"
                     )
@@ -192,7 +192,7 @@ class ExportWindow(QWidget, Ui_ExportWindow):
                     base_name + "_species_percentages.csv"
                 )
 
-                if "solid_percentages" in self.result:
+                if not self.result["solid_percentages"].empty:
                     self.result["solid_percentages"].to_csv(
                         base_name + "_solid_percentages.csv"
                     )
@@ -200,11 +200,11 @@ class ExportWindow(QWidget, Ui_ExportWindow):
             if self.adjlogb_check_csv.isChecked():
                 self.result["formation_constants"].to_csv(base_name + "_logb.csv")
 
-                if "solubility_products" in self.result:
+                if not self.result["solubility_products"].empty:
                     self.result["solubility_products"].to_csv(base_name + "_logks.csv")
 
             if self.errors_check_csv.isChecked():
                 self.result["species_sigma"].to_csv(base_name + "_species_SD.csv")
 
-                if "solid_sigma" in self.result:
+                if not self.result["solid_sigma"].empty:
                     self.result["solid_sigma"].to_csv(base_name + "_solid_SD.csv")

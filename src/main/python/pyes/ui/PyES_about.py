@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'PyES_about.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.0
+## Created by: Qt User Interface Compiler version 6.4.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -107,7 +107,7 @@ class Ui_dialogAbout(object):
             QCoreApplication.translate("dialogAbout", "About", None)
         )
         self.label.setText(
-            QCoreApplication.translate("dialogAbout", "PyES Version 1.0.0", None)
+            QCoreApplication.translate("dialogAbout", "PyES Version 1.1.2", None)
         )
         self.label_3.setText(
             QCoreApplication.translate(

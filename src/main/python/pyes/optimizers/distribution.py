@@ -29,7 +29,7 @@ class Distribution:
         else:
             self.distribution = True
 
-        if data["emode"] == 0:
+        if data["emode"] == 1:
             self.errors = True
         else:
             self.errors = False
@@ -117,6 +117,8 @@ class Distribution:
         )
 
         # Remove the concentration and charge data relative to those
+        if not self.distribution:
+            self.c_added = np.delete(self.c_added, ignored_comps, 0)
         self.c_tot = np.delete(self.c_tot, ignored_comps, 0)
         self.comp_charge = np.delete(self.comp_charge, ignored_comps)
 
@@ -631,7 +633,7 @@ class Distribution:
                     index=self.solid_names,
                 ).rename_axis(index="Solid Names")
             else:
-                solid_info = None
+                solid_info = pd.DataFrame()
 
             if self.imode == 1:
                 species_info.insert(1, "Ref. I", self.species_ris[self.nc :])
@@ -737,7 +739,6 @@ class Distribution:
 
             saturation_index_calc = np.zeros(self.nf)
             adjust_solids = True and (self.nf > 0)
-            counter = 0
             while adjust_solids:
                 saturation_index = self._getSaturationIndex(
                     species_conc_calc[: self.nc], log_ks
@@ -887,6 +888,7 @@ class Distribution:
                 log_beta = self.log_beta_ris
                 log_ks = self.log_ks_ris
                 cis = [None]
+            c, c_spec = self._damping(point, c, cp, log_beta, c_tot, fixed_c)
 
         # Calculate total concentration given the species concentration
         c_tot_calc, c_spec = self._speciesConcentration(c, cp, log_beta)
@@ -903,7 +905,7 @@ class Distribution:
             shifts_to_calculate[-self.nf :],
         )
 
-        while iteration < 200:
+        while iteration < 2000:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION %s ON POINT %s", iteration, point
             )
@@ -916,12 +918,12 @@ class Distribution:
                 shifts_to_skip[-self.nf :],
             )
 
-            # J, delta = self._scaleMatrix(J, delta, with_solids)
-
             if self.distribution:
                 # Ignore row and column relative to the independent component
                 J = np.delete(J, self.ind_comp, axis=0)
                 J = np.delete(J, self.ind_comp, axis=1)
+
+            # J, delta = self._scaleMatrix(J, delta)
 
             # Solve the equations to obtain newton step
             shifts = np.linalg.solve(J, -delta)
@@ -979,12 +981,12 @@ class Distribution:
             iteration += 1
             # If convergence criteria is met return check if any solid has to be considered
             if with_solids:
-                if comp_conv_criteria < 1e-16 and all(
+                if comp_conv_criteria < 1e-12 and all(
                     abs(i) <= 1e-9 for i in solid_delta
                 ):
                     return c_spec, cp, log_beta, log_ks, cis
             else:
-                if comp_conv_criteria < 1e-16:
+                if comp_conv_criteria < 1e-12:
                     return c_spec, cp, log_beta, log_ks, cis
 
         # If during the first or second run you exceed the iteration limit report it
@@ -1023,7 +1025,6 @@ class Distribution:
         saturation_index: NDArray = np.array([]),
         solid_concentrations: NDArray = np.array([]),
     ):
-
         negative_cp = solid_concentrations < 0
         supersaturated_solid = saturation_index > 1 + 1e-9
 
@@ -1417,6 +1418,7 @@ class Distribution:
         invalid_comp_encoder = dict(
             zip(ignored_comp_names, range(len(ignored_comp_names)))
         )
+        default_value = self.ind_comp if self.distribution else 0
         species_perc_int = self.species_perc_str
         solid_perc_int = self.solid_perc_str
         self.species_perc_str = np.concatenate(
@@ -1429,12 +1431,11 @@ class Distribution:
             solid_perc_int = np.where(solid_perc_int == key, value, solid_perc_int)
         for key, value in invalid_comp_encoder.items():
             species_perc_int = np.where(
-                species_perc_int == key, self.ind_comp, species_perc_int
+                species_perc_int == key, default_value, species_perc_int
             )
             solid_perc_int = np.where(
-                solid_perc_int == key, self.ind_comp, solid_perc_int
+                solid_perc_int == key, default_value, solid_perc_int
             )
-
         return species_perc_int.astype(int), solid_perc_int.astype(int)
 
     def _computeErrors(
@@ -1636,3 +1637,12 @@ class Distribution:
             )
 
         return dataframe
+
+    def _scaleMatrix(self, J: NDArray, delta: NDArray):
+        d1 = np.diag(np.sqrt(J.max(axis=1)))
+        d2 = np.diag(np.sqrt(J.max(axis=0)))
+        # d1 = np.diag(np.sqrt(np.diag(J)))
+        # d2 = np.diag(np.sqrt(np.diag(J)))
+        J = d1 @ J @ d2
+        delta = d1 @ delta
+        return J, delta

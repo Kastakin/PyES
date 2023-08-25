@@ -1,9 +1,11 @@
 import logging
 import os
 import time
+import traceback
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 from optimizers.distribution import Distribution
 from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 
@@ -54,7 +56,12 @@ class optimizeWorker(QRunnable):
         try:
             optimizer.fit(self.data)
         except Exception as e:
-            self.signals.aborted.emit(str(e))
+            if self.debug:
+                self.signals.aborted.emit(
+                    "".join(traceback.TracebackException.from_exception(e).format())
+                )
+            else:
+                self.signals.aborted.emit(str(e))
             return None
 
         self.signals.log.emit(r"DATA LOADED!")
@@ -94,35 +101,26 @@ class optimizeWorker(QRunnable):
             optimizer.speciesPercentages(), "species_percentages", log=True
         )
 
-        if self.data["emode"] == 0:
-            self._storeResult(optimizer.speciesSigmas(), "species_sigma", log=True)
+        self._storeResult(optimizer.speciesSigmas(), "species_sigma", log=True)
 
-        if not optimizer.solidDistribution().empty:
-            # Store input info regarding solids
-            self._storeResult(solid_info, "solid_info")
-            # Print and store solid species results
-            self._storeResult(
-                optimizer.solidDistribution(), "solid_distribution", log=True
-            )
+        # Store input info regarding solids
+        self._storeResult(solid_info, "solid_info")
+        # Print and store solid species results
+        self._storeResult(optimizer.solidDistribution(), "solid_distribution", log=True)
 
-            # Print and store solid species percentages
-            self._storeResult(
-                optimizer.solidPercentages(), "solid_percentages", log=True
-            )
+        # Print and store solid species percentages
+        self._storeResult(optimizer.solidPercentages(), "solid_percentages", log=True)
 
-            if self.data["emode"] == 0:
-                self._storeResult(optimizer.solidSigmas(), "solid_sigma", log=True)
+        self._storeResult(optimizer.solidSigmas(), "solid_sigma", log=True)
 
         # If working at variable ionic strength print and store formation constants/solubility products aswell
-        if self.data["imode"] == 1:
-            self._storeResult(
-                optimizer.formationConstants(), "formation_constants", log=True
-            )
+        self._storeResult(
+            optimizer.formationConstants(), "formation_constants", log=True
+        )
 
-            if not optimizer.solidDistribution().empty:
-                self._storeResult(
-                    optimizer.solubilityProducts(), "solubility_products", log=True
-                )
+        self._storeResult(
+            optimizer.solubilityProducts(), "solubility_products", log=True
+        )
 
         self.signals.log.emit("Elapsed Time: %s s" % elapsed_time)
 
@@ -131,8 +129,9 @@ class optimizeWorker(QRunnable):
 
         return None
 
-    def _storeResult(self, data, name, log=False):
+    def _storeResult(self, data: pd.DataFrame, name: str, log=False):
         self.signals.result.emit(data, name)
-        if log == True:
+        if log == True and not data.empty:
+            self.signals.log.emit("\t\t" + name.replace("_", " ").upper() + "\n")
             self.signals.log.emit(data.to_string())
             self.signals.log.emit("--" * 40)

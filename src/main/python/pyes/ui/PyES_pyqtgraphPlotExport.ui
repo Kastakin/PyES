@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>945</width>
+    <height>704</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -49,7 +49,7 @@
         <number>2</number>
        </property>
        <property name="topMargin">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="rightMargin">
         <number>2</number>
@@ -75,7 +75,82 @@
           <property name="spacing">
            <number>2</number>
           </property>
-          <item row="2" column="0">
+          <item row="9" column="1">
+           <widget class="QComboBox" name="c_unit">
+            <item>
+             <property name="text">
+              <string>mol/l</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>mmol/l</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>μmol/l</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="2">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="2">
+           <widget class="QCheckBox" name="regions_check">
+            <property name="text">
+             <string>Solids as regions</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QCheckBox" name="errors_check">
+            <property name="text">
+             <string>Plot error bars</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="v_unit_label">
+            <property name="text">
+             <string>Volume Units</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QLabel" name="plot_options_label">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Plot Options&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QComboBox" name="v_unit">
+            <item>
+             <property name="text">
+              <string>l</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>ml</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="deselect_all">
+            <property name="text">
+             <string>Deselect All</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
            <widget class="QPushButton" name="select_all">
             <property name="text">
              <string>Select All</string>
@@ -150,13 +225,6 @@
             </widget>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="deselect_all">
-            <property name="text">
-             <string>Deselect All</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="0" colspan="2">
            <widget class="QPushButton" name="filter">
             <property name="text">
@@ -164,10 +232,24 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QCheckBox" name="regions_check">
+          <item row="9" column="0">
+           <widget class="QLabel" name="c_unit_label">
             <property name="text">
-             <string>Solids as regions</string>
+             <string>Concentration Units</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QCheckBox" name="monochrome_check">
+            <property name="text">
+             <string>Monochrome</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="ColorButton" name="monochrome_color">
+            <property name="text">
+             <string/>
             </property>
            </widget>
           </item>
@@ -178,55 +260,118 @@
      </widget>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget">
-      <property name="currentIndex">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <property name="spacing">
+       <number>2</number>
+      </property>
+      <property name="leftMargin">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="perc_tab">
-       <attribute name="title">
-        <string>Percentages</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1">
-        <property name="leftMargin">
-         <number>1</number>
+      <item>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>0</number>
         </property>
-        <property name="topMargin">
-         <number>1</number>
+        <widget class="QWidget" name="conc_tab">
+         <attribute name="title">
+          <string>Concentrations</string>
+         </attribute>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="PlotWidget" name="conc_graph" native="true"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="perc_tab">
+         <attribute name="title">
+          <string>Percentages</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1">
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="PlotWidget" name="perc_graph" native="true"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="titration_tab">
+         <attribute name="title">
+          <string>Titration Curve</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0">
+          <property name="leftMargin">
+           <number>1</number>
+          </property>
+          <property name="topMargin">
+           <number>1</number>
+          </property>
+          <property name="rightMargin">
+           <number>1</number>
+          </property>
+          <property name="bottomMargin">
+           <number>1</number>
+          </property>
+          <item>
+           <widget class="PlotWidget" name="titration_graph" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="componentLabel">
+              <property name="text">
+               <string>Component:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="componentComboBox"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="exportButton">
+        <property name="text">
+         <string>Export Graph</string>
         </property>
-        <property name="rightMargin">
-         <number>1</number>
-        </property>
-        <property name="bottomMargin">
-         <number>1</number>
-        </property>
-        <item>
-         <widget class="PlotWidget" name="perc_graph" native="true"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="conc_tab">
-       <attribute name="title">
-        <string>Concentrations</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="leftMargin">
-         <number>1</number>
-        </property>
-        <property name="topMargin">
-         <number>1</number>
-        </property>
-        <property name="rightMargin">
-         <number>1</number>
-        </property>
-        <property name="bottomMargin">
-         <number>1</number>
-        </property>
-        <item>
-         <widget class="PlotWidget" name="conc_graph" native="true"/>
-        </item>
-       </layout>
-      </widget>
-     </widget>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -237,6 +382,11 @@
    <extends>QWidget</extends>
    <header>pyqtgraph</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ColorButton</class>
+   <extends>QPushButton</extends>
+   <header>ui.widgets</header>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -296,12 +446,28 @@
    <slot>changeSolidsGraphics()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>93</x>
-     <y>520</y>
+     <x>97</x>
+     <y>510</y>
     </hint>
     <hint type="destinationlabel">
      <x>289</x>
      <y>519</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>errors_check</sender>
+   <signal>clicked()</signal>
+   <receiver>PlotWindow</receiver>
+   <slot>changeErrorsGraphics()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>518</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>485</y>
     </hint>
    </hints>
   </connection>
@@ -311,5 +477,6 @@
   <slot>deselectAll()</slot>
   <slot>filterSpecies()</slot>
   <slot>changeSolidsGraphics()</slot>
+  <slot>changeErrorsGraphics()</slot>
  </slots>
 </ui>

@@ -1,6 +1,27 @@
 import numpy as np
 import pandas as pd
 from openpyxl.utils import get_column_letter
+from PySide6.QtCore import QAbstractItemModel
+from PySide6.QtWidgets import QComboBox, QTableView
+from viewmodels.delegate import ComboBoxDelegate
+
+
+def addSpeciesComp(position: int, added_rows: int, view: QTableView, comp_names):
+    view.setItemDelegateForColumn(view.model().columnCount() - 1, None)
+    view.model().insertColumns(position, added_rows)
+    view.setItemDelegateForColumn(
+        view.model().columnCount() - 1,
+        ComboBoxDelegate(view, comp_names),
+    )
+
+
+def removeSpeciesComp(position: int, removed_rows: int, view: QTableView, comp_names):
+    view.setItemDelegateForColumn(view.model().columnCount() - 1, None)
+    view.model().removeColumns(position, removed_rows)
+    view.setItemDelegateForColumn(
+        view.model().columnCount() - 1,
+        ComboBoxDelegate(view, comp_names),
+    )
 
 
 # TODO: has to be updated from legacy code
@@ -15,7 +36,7 @@ def returnDataDict(self, saving=True):
         "nc": self.numComp.value(),
         "ns": self.numSpecies.value(),
         "np": self.numPhases.value(),
-        "emode": self.uncertaintyMode.currentIndex(),
+        "emode": self.uncertaintyMode.isChecked(),
         "imode": self.imode.currentIndex(),
         "ris": self.refIonicStr.value(),
         "a": self.A.value(),
@@ -60,20 +81,52 @@ def returnDataDict(self, saving=True):
     return data_list
 
 
-def indCompUpdater(self):
+def updateCompNames(
+    comp_model: QAbstractItemModel,
+    species_table: QTableView,
+    solids_table: QTableView,
+    conc_model: QAbstractItemModel,
+    ind_comp: QComboBox,
+):
+    """
+    Handles the displayed names in the species table when edited in the components one
+    """
+    species_tables = [species_table, solids_table]
+    species_models = [table.model() for table in species_tables]
+
+    updated_comps = comp_model._data["Name"].tolist()
+
+    for table, model in zip(species_tables, species_models):
+        table.setItemDelegateForColumn(
+            model.columnCount() - 1,
+            ComboBoxDelegate(table, updated_comps),
+        )
+        model.updateHeader(updated_comps)
+        model.updateCompName(updated_comps)
+
+    conc_model.updateIndex(updated_comps)
+
+    updateIndComponent(comp_model, ind_comp)
+
+
+def updateIndComponent(comp_model: QAbstractItemModel, components_combobox: QComboBox):
     """
     Update the selected indipendent component, tries to preserve the last one picked.
     """
-    old_selected = self.indComp.currentIndex()
+    old_selected = components_combobox.currentIndex()
     if old_selected < 0:
         old_selected = 0
-    self.indComp.clear()
-    self.indComp.addItems(self.compModel._data["Name"])
-    num_elements = self.indComp.count()
-    if num_elements >= old_selected:
-        self.indComp.setCurrentIndex(old_selected)
+
+    components_combobox.blockSignals(True)
+    components_combobox.clear()
+    components_combobox.addItems(comp_model._data["Name"])
+    components_combobox.blockSignals(False)
+
+    num_elements = components_combobox.count()
+    if num_elements > old_selected:
+        components_combobox.setCurrentIndex(old_selected)
     else:
-        self.indComp.setCurrentIndex(num_elements)
+        components_combobox.setCurrentIndex(num_elements - 1)
 
 
 def cleanData():
@@ -85,17 +138,17 @@ def cleanData():
     conc_data = pd.DataFrame(
         [[0.0 for x in range(4)]],
         columns=["C0", "CT", "Sigma C0", "Sigma CT"],
-        index=["COMP1"],
+        index=["A"],
     )
     comp_data = pd.DataFrame(
-        [["COMP1", 0]],
+        [["A", 0]],
         columns=[
             "Name",
             "Charge",
         ],
     )
     species_data = pd.DataFrame(
-        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
+        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["A"]],
         columns=[
             "Ignored",
             "Name",
@@ -105,22 +158,22 @@ def cleanData():
             "CG",
             "DG",
             "EG",
-            "COMP1",
+            "A",
             "Ref. Comp.",
         ],
     )
     solid_species_data = pd.DataFrame(
-        [[False] + [""] + [0.0 for x in range(6)] + [0] + ["COMP1"]],
+        [[False] + [""] + [0.0 for x in range(6)] + [int(0)] + ["A"]],
         columns=[
             "Ignored",
             "Name",
-            "LogB",
+            "LogKs",
             "Sigma",
             "Ref. Ionic Str.",
             "CG",
             "DG",
             "EG",
-            "COMP1",
+            "A",
             "Ref. Comp.",
         ],
     ).drop(0)
@@ -132,6 +185,7 @@ def getName(vector):
     """
     Get name of species given their coefficients.
     """
+    # TODO: rewrite, this is garbage and difficult to understand, maybe refactor
     comps = vector.index.to_numpy(copy=True)
     coeff = vector.to_numpy(copy=True)
     comps = comps[coeff != 0]
@@ -141,7 +195,7 @@ def getName(vector):
     comps = np.where(
         coeff > 1, "(" + comps + ")" + coeff.astype(str), "(" + comps + ")"
     )
-    return comps.sum()
+    return "".join(comps)
 
 
 def getColWidths(dataframe):

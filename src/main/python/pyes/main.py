@@ -7,8 +7,15 @@ from windows.window import MainWindow
 
 class AppContext(ApplicationContext):
     def run(self):
-        self.main_window.show()
-        return self.app.exec()
+        w = self.main_window
+        a = self.app
+        args = a.arguments()
+        if len(args) > 1:
+            file_to_open = args[-1]
+            w.load_project_file(file_to_open)
+
+        w.show()
+        return a.exec()
 
     @cached_property
     def app(self):
