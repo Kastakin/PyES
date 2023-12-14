@@ -3,6 +3,7 @@ from collections import deque
 
 import numpy as np
 import pandas as pd
+from numba import jit, njit, prange
 from numpy.typing import NDArray
 
 
@@ -1085,30 +1086,18 @@ class Distribution:
         else:
             nt = self.nc
 
-        J = np.zeros(shape=(nt, nt))
-
-        # Compute Jacobian
-        # Jacobian for aqueous species
-        J[: self.nc, : self.nc] = (
-            (
-                np.tile(c_spec, (self.nc, self.nc, 1))
-                / np.tile(
-                    c_spec[: self.nc].reshape((self.nc, 1)),
-                    (self.nc, 1, self.ns + self.nc),
-                )
-            )
-            * np.tile(self.model, (self.nc, 1, 1))
-            * np.rot90(np.tile(self.model, (self.nc, 1, 1)), -1, axes=(0, 1))
-        ).sum(axis=-1)
+        J = numba_jacobian(
+            self.nc,
+            nt,
+            c_spec,
+            saturation_index,
+            self.model,
+            self.solid_model,
+            with_solids,
+        )
+        # print(numba_jacobian.parallel_diagnostics(level=4))
 
         if with_solids:
-            # Jacobian for solid species
-            J[: self.nc, self.nc : nt] = self.solid_model
-
-            J[self.nc : nt, : self.nc] = -self.solid_model.T * (
-                np.tile(saturation_index, (self.nc, 1)).T
-                / np.tile(c_spec[: self.nc], (nt - self.nc, 1))
-            )
             # Remove rows and columns referring to under-saturated solids
             J = np.delete(J, to_skip, axis=0)
             J = np.delete(J, to_skip, axis=1)
@@ -1507,10 +1496,16 @@ class Distribution:
 
             f = np.concatenate((f, np.diag(saturation_index / ks)), axis=0)
             b = np.concatenate(
-                (b, [[0 for _ in range(self.ns)] for _ in range(self.nf)])
+                (
+                    b,
+                    [[0 for _ in range(self.ns)] for _ in range(self.nf)],
+                )
             )
             d = np.concatenate(
-                (d, [[0 for _ in range(self.nc)] for _ in range(self.nf)])
+                (
+                    d,
+                    [[0 for _ in range(self.nc)] for _ in range(self.nf)],
+                )
             )
 
             der_solid_beta = np.delete(der_solid_beta, c_solid == 0, axis=0)
@@ -1662,3 +1657,30 @@ class Distribution:
         J = d1 @ J @ d2
         delta = d1 @ delta
         return J, delta
+
+
+@njit(parallel=True, cache=True)
+def numba_jacobian(nc, nt, c_spec, saturation_index, model, solid_model, with_solids):
+    J = np.empty(shape=(nt, nt))
+    ns = len(c_spec)
+    # Compute Jacobian
+    # Jacobian for aqueous species
+    for j in prange(nc):
+        for k in prange(nc):
+            val = 0
+            for z in prange(ns):
+                val += model[j, z] * model[k, z] * (c_spec[z] / c_spec[k])
+            J[j, k] = val
+
+    if with_solids:
+        # Jacobian for solid species
+        for j in range(nc):
+            for k in range(nc, nt):
+                J[j, k] = solid_model[j, (k - nc)]
+
+        for j in range(nc, nt):
+            for k in range(nc):
+                J[j, k] = -(solid_model[k, (j - nc)]) * (
+                    saturation_index[(j - nc)] / c_spec[k]
+                )
+    return J
