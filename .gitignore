@@ -553,4 +553,6 @@ fabric.properties
 .VSCodeCounter
 /benchmark/benchmark_results
 /benchmark/profiles
+.tool-versions
+
 benchmark/profile.html
