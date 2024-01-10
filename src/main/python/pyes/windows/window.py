@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import sys
 
 import numpy as np
 import pandas as pd
@@ -74,6 +75,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Initiate threadpool
         self.threadpool = QThreadPool()
+
+        if sys.platform.startswith("darwin"):
+            self.threadpool.setStackSize(16 * 2 ** 20)
+            
         self.undostack = QUndoStack()
 
         self.undostack.cleanChanged.connect(self.check_clean_state)
