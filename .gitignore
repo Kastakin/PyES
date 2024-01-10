@@ -556,3 +556,5 @@ fabric.properties
 .tool-versions
 
 benchmark/profile.html
+
+.DS_Store
