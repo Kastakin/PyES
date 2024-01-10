@@ -5,10 +5,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from commands import (
+    AddTab,
     ComponentsAddRows,
     ComponentsRemoveRows,
     ComponentsSwapRows,
     DoubleSpinBoxEdit,
+    RemoveTab,
     SpeciesAddRows,
     SpeciesEditColumn,
     SpeciesRemoveRows,
@@ -35,12 +37,18 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDoubleSpinBox,
     QFileDialog,
+    QHBoxLayout,
     QHeaderView,
+    QLineEdit,
     QMainWindow,
     QMessageBox,
+    QSpinBox,
+    QStackedWidget,
+    QTabBar,
     QWidget,
 )
 from ui.PyES_main import Ui_MainWindow
+from ui.widgets import inputTitrationOpt
 from utils_func import cleanData, returnDataDict, updateCompNames, updateIndComponent
 from viewmodels.delegate import (
     CheckBoxDelegate,
@@ -163,7 +171,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 dmodeEdit(
                     self.dmode,
                     index,
-                    self.dmode_inputs,
+                    [self.dmode_inputs, self.mode_views],
                     self.concView,
                 )
             )
@@ -303,7 +311,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.resetFields()
         self.project_path = None
         self.setWindowTitle("PyES - New Project")
-
         # Resets results
         self.result = {}
 
@@ -1183,6 +1190,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def displayIonicStrengthInfo(self):
         IonicStrengthInfoDialog(parent=self).exec()
+
+    def addTitration(self):
+        self.undostack.push(AddTab(self.titration_tabs))
+
+    def removeTitration(self):
+        if (
+            QMessageBox.question(
+                self,
+                "Deleting Titration",
+                "Are you sure you want to delete the currently selected titration?",
+            )
+            == QMessageBox.Yes
+        ):
+            self.undostack.push(RemoveTab(self.titration_tabs))
+
+    def test(self):
+        inputs = []
+        for i in range(self.titration_tabs.count()):
+            inputs.append(
+                self.titration_tabs.widget(i)
+                .findChild(inputTitrationOpt)
+                .retrive_data()
+            )
+
+        print(inputs)
 
 
 def value_or_problem(d: dict, field: str, default, message: str, problems: list[str]):

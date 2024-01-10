@@ -54,6 +54,8 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QLayout,
+    QListWidget,
+    QListWidgetItem,
     QMainWindow,
     QMenu,
     QMenuBar,
@@ -71,7 +73,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from ui.widgets import CustomComboBox, CustomSpinBox
+from ui.widgets import CustomComboBox, CustomSpinBox, inputTitrationOpt
 
 
 class Ui_MainWindow(object):
@@ -844,6 +846,7 @@ class Ui_MainWindow(object):
         self.dmodeSelector.setSizePolicy(sizePolicy6)
         self.horizontalLayout_2 = QHBoxLayout(self.dmodeSelector)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.dmode_label = QLabel(self.dmodeSelector)
         self.dmode_label.setObjectName("dmode_label")
         sizePolicy6.setHeightForWidth(self.dmode_label.sizePolicy().hasHeightForWidth())
@@ -854,6 +857,7 @@ class Ui_MainWindow(object):
         self.dmode = CustomComboBox(self.dmodeSelector)
         self.dmode.addItem("")
         self.dmode.addItem("")
+        self.dmode.addItem("")
         self.dmode.setObjectName("dmode")
         sizePolicy7.setHeightForWidth(self.dmode.sizePolicy().hasHeightForWidth())
         self.dmode.setSizePolicy(sizePolicy7)
@@ -862,13 +866,21 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_7.addWidget(self.dmodeSelector)
 
-        self.dmode0Input = QWidget(self.Settings)
+        self.mode_views = QStackedWidget(self.Settings)
+        self.mode_views.setObjectName("mode_views")
+        self.pyes_modes = QWidget()
+        self.pyes_modes.setObjectName("pyes_modes")
+        self.horizontalLayout_7 = QHBoxLayout(self.pyes_modes)
+        self.horizontalLayout_7.setSpacing(0)
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.dmode0Input = QWidget(self.pyes_modes)
         self.dmode0Input.setObjectName("dmode0Input")
         sizePolicy9.setHeightForWidth(self.dmode0Input.sizePolicy().hasHeightForWidth())
         self.dmode0Input.setSizePolicy(sizePolicy9)
         self.horizontalLayout_3 = QHBoxLayout(self.dmode0Input)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 100, 0)
         self.dmode_inputs = QStackedWidget(self.dmode0Input)
         self.dmode_inputs.setObjectName("dmode_inputs")
         sizePolicy4.setHeightForWidth(
@@ -1152,7 +1164,149 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.widget)
 
-        self.verticalLayout_7.addWidget(self.dmode0Input)
+        self.horizontalLayout_7.addWidget(self.dmode0Input)
+
+        self.mode_views.addWidget(self.pyes_modes)
+        self.bstac_modes = QWidget()
+        self.bstac_modes.setObjectName("bstac_modes")
+        self.verticalLayout_10 = QVBoxLayout(self.bstac_modes)
+        self.verticalLayout_10.setSpacing(0)
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.verticalLayout_10.setContentsMargins(0, 0, 0, 0)
+        self.frame_3 = QFrame(self.bstac_modes)
+        self.frame_3.setObjectName("frame_3")
+        sizePolicy1.setHeightForWidth(self.frame_3.sizePolicy().hasHeightForWidth())
+        self.frame_3.setSizePolicy(sizePolicy1)
+        self.frame_3.setFrameShape(QFrame.StyledPanel)
+        self.frame_3.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_11 = QHBoxLayout(self.frame_3)
+        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
+        self.add_titration = QToolButton(self.frame_3)
+        self.add_titration.setObjectName("add_titration")
+        icon21 = QIcon()
+        icon21.addFile(":/icons/plus.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.add_titration.setIcon(icon21)
+        self.add_titration.setIconSize(QSize(18, 18))
+        self.add_titration.setAutoRaise(True)
+
+        self.horizontalLayout_11.addWidget(self.add_titration)
+
+        self.remove_titration = QToolButton(self.frame_3)
+        self.remove_titration.setObjectName("remove_titration")
+        icon22 = QIcon()
+        icon22.addFile(":/icons/minus.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.remove_titration.setIcon(icon22)
+        self.remove_titration.setIconSize(QSize(18, 18))
+        self.remove_titration.setAutoRaise(True)
+
+        self.horizontalLayout_11.addWidget(self.remove_titration)
+
+        self.pushButton = QPushButton(self.frame_3)
+        self.pushButton.setObjectName("pushButton")
+
+        self.horizontalLayout_11.addWidget(self.pushButton)
+
+        self.horizontalSpacer_4 = QSpacerItem(
+            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
+        )
+
+        self.horizontalLayout_11.addItem(self.horizontalSpacer_4)
+
+        self.verticalLayout_10.addWidget(self.frame_3)
+
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName("horizontalLayout_13")
+        self.verticalLayout_13 = QVBoxLayout()
+        self.verticalLayout_13.setObjectName("verticalLayout_13")
+        self.verticalLayout_13.setContentsMargins(-1, 10, -1, -1)
+        self.label_7 = QLabel(self.bstac_modes)
+        self.label_7.setObjectName("label_7")
+
+        self.verticalLayout_13.addWidget(self.label_7)
+
+        self.label = QLabel(self.bstac_modes)
+        self.label.setObjectName("label")
+
+        self.verticalLayout_13.addWidget(self.label)
+
+        self.listWidget = QListWidget(self.bstac_modes)
+        __qlistwidgetitem = QListWidgetItem(self.listWidget)
+        __qlistwidgetitem.setCheckState(Qt.Unchecked)
+        __qlistwidgetitem.setFlags(
+            Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
+        )
+        __qlistwidgetitem1 = QListWidgetItem(self.listWidget)
+        __qlistwidgetitem1.setCheckState(Qt.Unchecked)
+        __qlistwidgetitem1.setFlags(
+            Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
+        )
+        __qlistwidgetitem2 = QListWidgetItem(self.listWidget)
+        __qlistwidgetitem2.setCheckState(Qt.Unchecked)
+        __qlistwidgetitem2.setFlags(
+            Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
+        )
+        __qlistwidgetitem3 = QListWidgetItem(self.listWidget)
+        __qlistwidgetitem3.setCheckState(Qt.Unchecked)
+        __qlistwidgetitem3.setFlags(
+            Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled
+        )
+        self.listWidget.setObjectName("listWidget")
+
+        self.verticalLayout_13.addWidget(self.listWidget)
+
+        self.label_5 = QLabel(self.bstac_modes)
+        self.label_5.setObjectName("label_5")
+
+        self.verticalLayout_13.addWidget(self.label_5)
+
+        self.listWidget_2 = QListWidget(self.bstac_modes)
+        self.listWidget_2.setObjectName("listWidget_2")
+
+        self.verticalLayout_13.addWidget(self.listWidget_2)
+
+        self.label_6 = QLabel(self.bstac_modes)
+        self.label_6.setObjectName("label_6")
+
+        self.verticalLayout_13.addWidget(self.label_6)
+
+        self.listWidget_3 = QListWidget(self.bstac_modes)
+        self.listWidget_3.setObjectName("listWidget_3")
+
+        self.verticalLayout_13.addWidget(self.listWidget_3)
+
+        self.verticalLayout_13.setStretch(2, 2)
+        self.verticalLayout_13.setStretch(4, 1)
+        self.verticalLayout_13.setStretch(6, 1)
+
+        self.horizontalLayout_13.addLayout(self.verticalLayout_13)
+
+        self.titration_tabs = QTabWidget(self.bstac_modes)
+        self.titration_tabs.setObjectName("titration_tabs")
+        self.tab = QWidget()
+        self.tab.setObjectName("tab")
+        sizePolicy11 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy11.setHorizontalStretch(0)
+        sizePolicy11.setVerticalStretch(0)
+        sizePolicy11.setHeightForWidth(self.tab.sizePolicy().hasHeightForWidth())
+        self.tab.setSizePolicy(sizePolicy11)
+        self.horizontalLayout_12 = QHBoxLayout(self.tab)
+        self.horizontalLayout_12.setObjectName("horizontalLayout_12")
+        self.widget_5 = inputTitrationOpt(self.tab)
+        self.widget_5.setObjectName("widget_5")
+
+        self.horizontalLayout_12.addWidget(self.widget_5)
+
+        self.titration_tabs.addTab(self.tab, "")
+
+        self.horizontalLayout_13.addWidget(self.titration_tabs)
+
+        self.horizontalLayout_13.setStretch(1, 1)
+
+        self.verticalLayout_10.addLayout(self.horizontalLayout_13)
+
+        self.mode_views.addWidget(self.bstac_modes)
+
+        self.verticalLayout_7.addWidget(self.mode_views)
 
         self.tabWidget.addTab(self.Settings, "")
         self.Calc = QWidget()
@@ -1282,10 +1436,15 @@ class Ui_MainWindow(object):
         self.select_all_button.clicked.connect(MainWindow.checkAll)
         self.deselect_all_button.clicked.connect(MainWindow.uncheckAll)
         self.edit_column_button.clicked.connect(MainWindow.massEditColumn)
+        self.add_titration.clicked.connect(MainWindow.addTitration)
+        self.remove_titration.clicked.connect(MainWindow.removeTitration)
+        self.pushButton.clicked.connect(MainWindow.test)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         self.dmode.setCurrentIndex(0)
+        self.mode_views.setCurrentIndex(1)
         self.dmode_inputs.setCurrentIndex(0)
+        self.titration_tabs.setCurrentIndex(0)
 
         QMetaObject.connectSlotsByName(MainWindow)
 
@@ -1709,6 +1868,9 @@ class Ui_MainWindow(object):
         self.dmode.setItemText(
             1, QCoreApplication.translate("MainWindow", "Distribution", None)
         )
+        self.dmode.setItemText(
+            2, QCoreApplication.translate("MainWindow", "Refine Potentiometric", None)
+        )
 
         # if QT_CONFIG(statustip)
         self.dmode.setStatusTip(
@@ -1881,6 +2043,48 @@ class Ui_MainWindow(object):
                 '<html><head/><body><p><span style=" font-weight:600;">Analytical Concentrations:</span></p></body></html>',
                 None,
             )
+        )
+        self.add_titration.setText("")
+        self.remove_titration.setText("")
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", "TEST", None))
+        self.label_7.setText(
+            QCoreApplication.translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-weight:700;">Parameters to refine</span></p></body></html>',
+                None,
+            )
+        )
+        self.label.setText(QCoreApplication.translate("MainWindow", "Constants", None))
+
+        __sortingEnabled = self.listWidget.isSortingEnabled()
+        self.listWidget.setSortingEnabled(False)
+        ___qlistwidgetitem = self.listWidget.item(0)
+        ___qlistwidgetitem.setText(
+            QCoreApplication.translate("MainWindow", "test1", None)
+        )
+        ___qlistwidgetitem1 = self.listWidget.item(1)
+        ___qlistwidgetitem1.setText(
+            QCoreApplication.translate("MainWindow", "test2", None)
+        )
+        ___qlistwidgetitem2 = self.listWidget.item(2)
+        ___qlistwidgetitem2.setText(
+            QCoreApplication.translate("MainWindow", "test3", None)
+        )
+        ___qlistwidgetitem3 = self.listWidget.item(3)
+        ___qlistwidgetitem3.setText(
+            QCoreApplication.translate("MainWindow", "test4", None)
+        )
+        self.listWidget.setSortingEnabled(__sortingEnabled)
+
+        self.label_5.setText(
+            QCoreApplication.translate("MainWindow", "Parameters 2", None)
+        )
+        self.label_6.setText(
+            QCoreApplication.translate("MainWindow", "Parameters 3", None)
+        )
+        self.titration_tabs.setTabText(
+            self.titration_tabs.indexOf(self.tab),
+            QCoreApplication.translate("MainWindow", "1", None),
         )
         self.tabWidget.setTabText(
             self.tabWidget.indexOf(self.Settings),

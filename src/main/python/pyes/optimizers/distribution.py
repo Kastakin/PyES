@@ -940,6 +940,27 @@ class Distribution:
 
             # Solve the equations to obtain newton step
             shifts = np.linalg.solve(J, -delta)
+            if with_solids:
+                np.savetxt("/home/lorenzo/Coding/PyES/jacobian.csv", J, delimiter=",")
+                np.savetxt(
+                    "/home/lorenzo/Coding/PyES/model.csv", self.model, delimiter=","
+                )
+                np.savetxt(
+                    "/home/lorenzo/Coding/PyES/model_solids.csv",
+                    self.solid_model,
+                    delimiter=",",
+                )
+                np.savetxt(
+                    "/home/lorenzo/Coding/PyES/si.csv", saturation_index, delimiter=","
+                )
+                np.savetxt("/home/lorenzo/Coding/PyES/conc.csv", c_spec, delimiter=",")
+                np.savetxt(
+                    "/home/lorenzo/Coding/PyES/conc_solids.csv", cp, delimiter=","
+                )
+                np.savetxt("/home/lorenzo/Coding/PyES/delta.csv", delta, delimiter=",")
+                np.savetxt(
+                    "/home/lorenzo/Coding/PyES/log_beta.csv", log_beta, delimiter=","
+                )
 
             actual_shifts = np.zeros(self.nc + self.nf)
             actual_shifts[shifts_to_calculate] = shifts

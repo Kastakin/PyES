@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>minus.png</file>
     <file>table--pencil.png</file>
     <file>ui-check-box.png</file>
     <file>ui-check-box-uncheck.png</file>
@@ -21,6 +22,7 @@
     <file>document-excel.png</file>
     <file>folder-open-document.png</file>
     <file>document.png</file>
+    <file>plus.png</file>
     <file>disk.png</file>
   </qresource>
   <qresource prefix="equations">

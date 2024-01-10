@@ -125,7 +125,7 @@ class dmodeEdit(QUndoCommand):
         self,
         field: QComboBox,
         index: int,
-        affected_fields: QStackedWidget,
+        affected_fields: list[QStackedWidget],
         affected_table: QTableView,
     ):
         QUndoCommand.__init__(self)
@@ -141,7 +141,7 @@ class dmodeEdit(QUndoCommand):
             self.to_hide = True
 
     def undo(self) -> None:
-        self.affected_fields.setCurrentIndex(self.previous_index)
+        self.show_stacked_widgets(self.previous_index)
         self.affected_table.setColumnHidden(1, not self.to_hide)
         self.affected_table.setColumnHidden(3, not self.to_hide)
 
@@ -155,7 +155,7 @@ class dmodeEdit(QUndoCommand):
         self.field.blockSignals(False)
 
     def redo(self) -> None:
-        self.affected_fields.setCurrentIndex(self.index)
+        self.show_stacked_widgets(self.index)
         self.affected_table.setColumnHidden(1, self.to_hide)
         self.affected_table.setColumnHidden(3, self.to_hide)
 
@@ -167,6 +167,16 @@ class dmodeEdit(QUndoCommand):
         self.field.blockSignals(True)
         self.field.setCurrentIndex(self.index)
         self.field.blockSignals(False)
+
+    def show_stacked_widgets(self, index):
+        if index > 1:
+            self.affected_fields[1].setCurrentIndex(1)
+        else:
+            self.affected_fields[1].setCurrentIndex(0)
+            if index == 0:
+                self.affected_fields[0].setCurrentIndex(0)
+            else:
+                self.affected_fields[0].setCurrentIndex(1)
 
 
 class imodeEdit(QUndoCommand):

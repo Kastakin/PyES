@@ -16,6 +16,7 @@ from .models import (
     SpeciesRemoveRows,
     SpeciesSwapRows,
 )
+from .widgets import AddTab, RemoveTab
 
 __all__ = [
     uncertaintyEdit,
