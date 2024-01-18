@@ -11,9 +11,21 @@ class Distribution:
     Newton-Raphson method to solve iteratively mass balance equations.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        epsl: int = 200,
+        max_nr_iters: int = 200,
+        jacobian_mode: str = "Normal mode",
+    ):
         # Set limit for underflow/overflow exp
-        self.epsl = 200
+        self.epsl = epsl
+
+        # Set method for jacobian calculation and, in turn,
+        # the objective of the newton-raphson method
+        self.jacobian_mode = jacobian_mode
+        self.max_nr_iters = max_nr_iters
+
         # Set flag to report that computation is done
         self.done_flag = False
 
@@ -24,6 +36,23 @@ class Distribution:
         :param data: data as given from the GUI.
         """
         logging.info("--- START DATA LOADING ---")
+        match self.jacobian_mode:
+            case "Normal mode":
+                self.jacobian_function = self._computeNormalJacobian
+                self.residual_function = self._computeNormalDelta
+                self.apply_shift_function = self._applyNormalShift
+            case "Mixed mode":
+                self.jacobian_function = self._computeMixedJacobian
+                self.residual_function = self._computeMixedDelta
+                self.apply_shift_function = self._applyMixedShift
+            case "Log mode":
+                self.jacobian_function = self._computeLogJacobian
+                self.residual_function = self._computeLogDelta
+                self.apply_shift_function = self._applyLogShift
+
+            case _:
+                raise Exception("Jacobian method not available")
+
         # Titration or Distribution mode
         if data["dmode"] == 0:
             self.distribution = False
@@ -910,21 +939,22 @@ class Distribution:
         saturation_index = self._getSaturationIndex(c, log_ks)
 
         # Compute difference between total concentrations and calculated one
-        delta, can_delta, solid_delta = self._computeDelta(
+        delta, can_delta, solid_delta = self.residual_function(
+            c,
             c_tot,
             c_tot_calc,
+            log_ks,
             with_solids,
-            saturation_index,
             shifts_to_calculate[-self.nf :],
         )
 
-        while iteration < 2000:
+        while iteration < self.max_nr_iters:
             logging.debug(
                 "-> BEGINNING NEWTON-RAPHSON ITERATION %s ON POINT %s", iteration, point
             )
 
             # Compute Jacobian
-            J = self._computeJacobian(
+            J = self.jacobian_function(
                 c_spec,
                 saturation_index,
                 with_solids,
@@ -939,28 +969,8 @@ class Distribution:
             # J, delta = self._scaleMatrix(J, delta)
 
             # Solve the equations to obtain newton step
+            # print(delta)
             shifts = np.linalg.solve(J, -delta)
-            if with_solids:
-                np.savetxt("/home/lorenzo/Coding/PyES/jacobian.csv", J, delimiter=",")
-                np.savetxt(
-                    "/home/lorenzo/Coding/PyES/model.csv", self.model, delimiter=","
-                )
-                np.savetxt(
-                    "/home/lorenzo/Coding/PyES/model_solids.csv",
-                    self.solid_model,
-                    delimiter=",",
-                )
-                np.savetxt(
-                    "/home/lorenzo/Coding/PyES/si.csv", saturation_index, delimiter=","
-                )
-                np.savetxt("/home/lorenzo/Coding/PyES/conc.csv", c_spec, delimiter=",")
-                np.savetxt(
-                    "/home/lorenzo/Coding/PyES/conc_solids.csv", cp, delimiter=","
-                )
-                np.savetxt("/home/lorenzo/Coding/PyES/delta.csv", delta, delimiter=",")
-                np.savetxt(
-                    "/home/lorenzo/Coding/PyES/log_beta.csv", log_beta, delimiter=","
-                )
 
             actual_shifts = np.zeros(self.nc + self.nf)
             actual_shifts[shifts_to_calculate] = shifts
@@ -976,14 +986,8 @@ class Distribution:
             # if with_solids:
             #     one_over_del = -shifts / (0.5 * np.append(c, cp))
             # else:
-            one_over_del = -shifts[: self.nc] / (0.5 * c)
 
-            rev_del = 1 / np.where(one_over_del > 1, one_over_del, 1)
-
-            c = c + rev_del[: self.nc] * shifts[: self.nc]
-
-            # if with_solids:
-            cp = cp + shifts[self.nc :]
+            c, cp = self.apply_shift_function(c, cp, shifts)
 
             logging.debug("Newton-Raphson updated free concentrations: %s", c)
             logging.debug("Newton-Raphson updated precipitate concentrations: %s", cp)
@@ -995,11 +999,12 @@ class Distribution:
             saturation_index = self._getSaturationIndex(c, log_ks)
 
             # Compute difference between total concentrations
-            delta, can_delta, solid_delta = self._computeDelta(
+            delta, can_delta, solid_delta = self.residual_function(
+                c,
                 c_tot,
                 c_tot_calc,
+                log_ks,
                 with_solids,
-                saturation_index,
                 shifts_to_calculate[-self.nf :],
             )
 
@@ -1014,7 +1019,6 @@ class Distribution:
                 iteration,
                 comp_conv_criteria,
             )
-
             iteration += 1
             # If convergence criteria is met return check if any solid has to be considered
             if with_solids:
@@ -1084,13 +1088,54 @@ class Distribution:
 
         return shifts_to_calculate, shifts_to_skip
 
-    def _computeDelta(
-        self, c_tot, c_tot_calc, with_solids, saturation_index, cp_to_calculate
+    def _applyNormalShift(self, c, cp, shifts):
+        one_over_del = -shifts[: self.nc] / (0.5 * c)
+
+        rev_del = 1 / np.where(one_over_del > 1, one_over_del, 1)
+        c = c + rev_del[: self.nc] * shifts[: self.nc]
+
+        # if with_solids:
+        cp = cp + shifts[self.nc :]
+
+        return c, cp
+
+    def _applyMixedShift(self, c, cp, shifts):
+        one_over_del = (-shifts[: self.nc] * c) / (0.5 * c)
+
+        rev_del = 1 / np.where(one_over_del > 1, one_over_del, 1)
+        c = c + shifts[: self.nc] * c * rev_del[: self.nc]
+
+        # if with_solids:
+        cp = cp + shifts[self.nc :]
+
+        return c, cp
+
+    def _applyLogShift(self, c, cp, shifts):
+        # one_over_del = -shifts[: self.nc] / (0.5 * np.log10(c))
+
+        # rev_del = 1 / np.where(one_over_del > 1, one_over_del, 1)
+        # c = c + rev_del[: self.nc] * shifts[: self.nc]
+        c = 10 ** (np.log10(c) + shifts[: self.nc])
+
+        # if with_solids:
+        # cp = cp + shifts[self.nc :]
+        cp = 10 ** (np.log10(cp) + shifts[self.nc :])
+
+        return c, cp
+
+    def _computeNormalDelta(
+        self,
+        c,
+        c_tot,
+        c_tot_calc,
+        log_ks,
+        with_solids,
+        cp_to_calculate,
     ):
         can_delta = c_tot_calc - c_tot
 
         if with_solids:
-            solid_delta = np.ones(self.nf) - saturation_index
+            solid_delta = np.ones(self.nf) - self._getSaturationIndex(c, log_ks)
             solid_delta = solid_delta[cp_to_calculate]
         else:
             solid_delta = []
@@ -1099,12 +1144,64 @@ class Distribution:
 
         return delta, can_delta, solid_delta
 
-    def _computeJacobian(self, c_spec, saturation_index, with_solids, to_skip):
+    def _computeMixedDelta(
+        self,
+        c,
+        c_tot,
+        c_tot_calc,
+        log_ks,
+        with_solids,
+        cp_to_calculate,
+    ):
+        can_delta = c_tot_calc - c_tot
+
+        if with_solids:
+            solid_delta = (
+                np.sum(np.tile(np.log10(c), [self.nf, 1]).T * self.solid_model, axis=0)
+                - log_ks
+            )
+            solid_delta = solid_delta[cp_to_calculate]
+        else:
+            solid_delta = []
+
+        delta = np.concatenate((can_delta, solid_delta))
+
+        return delta, can_delta, solid_delta
+
+    def _computeLogDelta(
+        self,
+        c,
+        c_tot,
+        c_tot_calc,
+        log_ks,
+        with_solids,
+        cp_to_calculate,
+    ):
+        can_delta = c_tot_calc - c_tot
+
+        if with_solids:
+            solid_delta = (
+                np.sum(np.tile(np.log10(c), [self.nf, 1]).T * self.solid_model, axis=0)
+                - log_ks
+            )
+            solid_delta = solid_delta[cp_to_calculate]
+        else:
+            solid_delta = []
+
+        delta = np.concatenate((can_delta, solid_delta))
+
+        return delta, can_delta, solid_delta
+
+    def _computeNormalJacobian(self, c_spec, saturation_index, with_solids, to_skip):
         if with_solids:
             nt = self.nc + self.nf
-            to_skip = np.concatenate(([False for _ in range(self.nc)], to_skip))
+            to_skip_with_species = np.concatenate((
+                [False for _ in range(self.nc)],
+                to_skip,
+            ))
         else:
             nt = self.nc
+            to_skip_with_species = np.array([False for _ in range(self.nc)])
 
         J = np.zeros(shape=(nt, nt))
 
@@ -1131,10 +1228,61 @@ class Distribution:
                 / np.tile(c_spec[: self.nc], (nt - self.nc, 1))
             )
             # Remove rows and columns referring to under-saturated solids
-            J = np.delete(J, to_skip, axis=0)
-            J = np.delete(J, to_skip, axis=1)
 
-        return J
+        return J[np.ix_(~to_skip_with_species, ~to_skip_with_species)]
+
+    def _computeLogJacobian(
+        self, c_spec: NDArray, saturation_index, with_solids: bool, to_skip: list[bool]
+    ):
+        if with_solids:
+            nt = self.nc + self.nf
+            to_skip = np.concatenate(([False for _ in range(self.nc)], to_skip))
+        else:
+            nt = self.nc
+
+        J = np.zeros(shape=(nt, nt) if with_solids else (self.nc, self.nc))
+
+        # Compute Jacobian for binary components only
+        J[np.tril_indices(self.nc)] = (
+            c_spec[: self.nc].T @ self.model[: self.nc] @ c_spec[: self.nc]
+        )
+
+        # Add solid contribution to diagonal if necessary
+        if with_solids:
+            for i in range(self.nc, self.nc + self.nt):
+                for j in range(self.nc):
+                    J[i, j] = (
+                        self.solid_model[i, saturation_index - 1]
+                        * c_spec[saturation_index + self.nc]
+                    )
+        # Remove rows and columns referring to under-saturated solids if necessary
+        return J[: nt - sum(to_skip), : nt - sum(to_skip)][~np.array(to_skip)]
+
+    def _computeMixedJacobian(self, c_spec, saturation_index, with_solids, to_skip):
+        if with_solids:
+            nt = self.nc + self.nf
+            to_skip_with_species = np.concatenate((
+                [False for _ in range(self.nc)],
+                to_skip,
+            ))
+        else:
+            nt = self.nc
+            to_skip_with_species = np.array([False for _ in range(self.nc)])
+
+        J = np.zeros(shape=(nt, nt))
+
+        # Compute Jacobian for binary components only
+        J[: self.nc, : self.nc] = self.model @ np.diag(c_spec) @ self.model.T
+        J[np.diag_indices(self.nc)] += c_spec[: self.nc]
+        # Add solid contribution to diagonal if necessary
+        if with_solids:
+            J[self.nc : self.nc + self.nf, : self.nc] = self.solid_model.T
+            J[: self.nc, self.nc : self.nc + self.nf] = self.solid_model
+            # for i in range(self.nc, self.nc+self.nf):
+            #     for j in range(self.nc):
+            #         J[i, j] = self.solid_model[i - self.nc, j]
+        # Remove rows and columns referring to under-saturated solids if necessary
+        return J[np.ix_(~to_skip_with_species, ~to_skip_with_species)]
 
     def _speciesConcentration(self, c, cp, log_beta):
         """
@@ -1422,21 +1570,17 @@ class Distribution:
         return updated_log_beta
 
     def _computePercTable(self, cans, calculated_c, model, percent_to, solids=False):
-        can_to_perc = np.array(
-            [
-                [cans[point, index] for index in percent_to]
-                for point in range(cans.shape[0])
-            ]
-        )
+        can_to_perc = np.array([
+            [cans[point, index] for index in percent_to]
+            for point in range(cans.shape[0])
+        ])
 
         if not solids:
             can_to_perc = np.concatenate((cans, can_to_perc), axis=1)
-        adjust_factor = np.array(
-            [
-                model[component, index + (self.nc if not solids else 0)]
-                for index, component in enumerate(percent_to)
-            ]
-        )
+        adjust_factor = np.array([
+            model[component, index + (self.nc if not solids else 0)]
+            for index, component in enumerate(percent_to)
+        ])
         adjust_factor = np.where(adjust_factor <= 0, 1, adjust_factor)
         if not solids:
             adjust_factor = np.concatenate(
@@ -1527,12 +1671,14 @@ class Distribution:
             )
 
             f = np.concatenate((f, np.diag(saturation_index / ks)), axis=0)
-            b = np.concatenate(
-                (b, [[0 for _ in range(self.ns)] for _ in range(self.nf)])
-            )
-            d = np.concatenate(
-                (d, [[0 for _ in range(self.nc)] for _ in range(self.nf)])
-            )
+            b = np.concatenate((
+                b,
+                [[0 for _ in range(self.ns)] for _ in range(self.nf)],
+            ))
+            d = np.concatenate((
+                d,
+                [[0 for _ in range(self.nc)] for _ in range(self.nf)],
+            ))
 
             der_solid_beta = np.delete(der_solid_beta, c_solid == 0, axis=0)
             der_solid_tot = np.delete(der_solid_tot, c_solid == 0, axis=0)

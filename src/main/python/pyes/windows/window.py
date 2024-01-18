@@ -50,7 +50,7 @@ from PySide6.QtWidgets import (
 )
 from ui.PyES_main import Ui_MainWindow
 from ui.widgets import inputTitrationOpt
-from utils_func import cleanData, returnDataDict, updateCompNames, updateIndComponent
+from utils_func import cleanData, updateCompNames, updateIndComponent
 from viewmodels.delegate import (
     CheckBoxDelegate,
     ComboBoxDelegate,
@@ -77,8 +77,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.threadpool = QThreadPool()
 
         if sys.platform.startswith("darwin"):
-            self.threadpool.setStackSize(16 * 2 ** 20)
-            
+            self.threadpool.setStackSize(16 * 2**20)
+
         self.undostack = QUndoStack()
 
         self.undostack.cleanChanged.connect(self.check_clean_state)
@@ -383,7 +383,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             file_name = file_name.with_suffix(".json")
 
             # dictionary that holds all the relevant data locations
-            data_list = returnDataDict(self)
+            data_list = self.returnDataDict()
             data = {**self.check_line, **data_list}
 
             with open(
@@ -592,6 +592,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cback.setValue(
             value_or_problem(
                 jsdata, "cback", 0, "Concentration of background ions", problems
+            )
+        )
+
+        # Calculate tab
+
+        self.jacobianModeComboBox.setCurrentText(
+            value_or_problem(
+                jsdata,
+                "jacobian_mode",
+                "Normal mode",
+                "Computation mode for the jacobian matrix",
+                problems,
+            )
+        )
+
+        self.maxNewtonRaphsonIterationsSpinBox.setValue(
+            value_or_problem(
+                jsdata,
+                "max_nr_iters",
+                200,
+                "Maximum number of iterations of the Newton-Raphson procedure",
+                problems,
             )
         )
 
@@ -1092,7 +1114,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Clear Logger
         self.consoleOutput.setText("")
-        data_list = returnDataDict(self, saving=False)
+        data_list = self.returnDataDict(saving=False)
         debug = self.debug.isChecked()
         worker = optimizeWorker(data_list, debug)
 
@@ -1208,6 +1230,64 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             == QMessageBox.Yes
         ):
             self.undostack.push(RemoveTab(self.titration_tabs))
+
+    # TODO: has to be updated from legacy code
+    def returnDataDict(self, saving=True):
+        """
+        Returns a dict containing the relevant data extracted from the form.
+
+        If saving is True dataframes/tables are returned as dictionaries for ease of storage reasons.
+        Otherwise dictionay will simply hold the dataframes as they are.
+        """
+        data_list = {
+            "nc": self.numComp.value(),
+            "ns": self.numSpecies.value(),
+            "np": self.numPhases.value(),
+            "emode": self.uncertaintyMode.isChecked(),
+            "imode": self.imode.currentIndex(),
+            "ris": self.refIonicStr.value(),
+            "a": self.A.value(),
+            "b": self.B.value(),
+            "c0": self.c0.value(),
+            "c1": self.c1.value(),
+            "d0": self.d0.value(),
+            "d1": self.d1.value(),
+            "e0": self.e0.value(),
+            "e1": self.e1.value(),
+            "dmode": self.dmode.currentIndex(),
+            "v0": self.v0.value(),
+            "initv": self.initv.value(),
+            "vinc": self.vinc.value(),
+            "nop": self.nop.value(),
+            "c0back": self.c0back.value(),
+            "ctback": self.ctback.value(),
+            "ind_comp": self.indComp.currentIndex(),
+            "initialLog": self.initialLog.value(),
+            "finalLog": self.finalLog.value(),
+            "logInc": self.logInc.value(),
+            "cback": self.cback.value(),
+            "jacobian_mode": self.jacobianModeComboBox.currentText(),
+            "max_nr_iters": self.maxNewtonRaphsonIterationsSpinBox.value(),
+        }
+
+        if saving:
+            data_models = {
+                "compModel": self.compModel._data.to_dict(),
+                "concModel": self.concModel._data.to_dict(),
+            }
+            data_models["speciesModel"] = self.speciesModel._data.to_dict()
+            data_models["solidSpeciesModel"] = self.solidSpeciesModel._data.to_dict()
+        else:
+            data_models = {
+                "compModel": self.compModel._data,
+                "speciesModel": self.speciesModel._data,
+                "solidSpeciesModel": self.solidSpeciesModel._data,
+                "concModel": self.concModel._data,
+            }
+
+        data_list = {**data_list, **data_models}
+
+        return data_list
 
     def test(self):
         inputs = []

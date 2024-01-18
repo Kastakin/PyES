@@ -168,6 +168,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="mouseTracking">
+             <bool>false</bool>
+            </property>
             <property name="currentIndex">
              <number>0</number>
             </property>

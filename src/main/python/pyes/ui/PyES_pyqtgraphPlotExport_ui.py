@@ -112,6 +112,7 @@ class Ui_PlotWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.tabWidget_2.sizePolicy().hasHeightForWidth())
         self.tabWidget_2.setSizePolicy(sizePolicy1)
+        self.tabWidget_2.setMouseTracking(False)
         self.species = QWidget()
         self.species.setObjectName(u"species")
         self.horizontalLayout_4 = QHBoxLayout(self.species)

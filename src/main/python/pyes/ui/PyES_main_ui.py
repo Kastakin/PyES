@@ -17,13 +17,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QCheckBox,
-    QFormLayout, QFrame, QGridLayout, QHBoxLayout,
-    QHeaderView, QLabel, QLayout, QListWidget,
-    QListWidgetItem, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
-    QStackedWidget, QStatusBar, QTabWidget, QTableView,
-    QTextEdit, QToolBar, QToolButton, QVBoxLayout,
-    QWidget)
+    QComboBox, QFormLayout, QFrame, QGridLayout,
+    QHBoxLayout, QHeaderView, QLabel, QLayout,
+    QListWidget, QListWidgetItem, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QSizePolicy, QSpacerItem,
+    QSpinBox, QStackedWidget, QStatusBar, QTabWidget,
+    QTableView, QTextEdit, QToolBar, QToolButton,
+    QVBoxLayout, QWidget)
 
 from ui.widgets import (CustomComboBox, CustomSpinBox, inputTitrationOpt)
 import resources_rc
@@ -691,8 +691,6 @@ class Ui_MainWindow(object):
 
         self.tablesTab = QTabWidget(self.widget_2)
         self.tablesTab.setObjectName(u"tablesTab")
-        self.tablesTab.setTabPosition(QTabWidget.North)
-        self.tablesTab.setTabShape(QTabWidget.Rounded)
         self.tablesTab.setUsesScrollButtons(False)
         self.species = QWidget()
         self.species.setObjectName(u"species")
@@ -805,6 +803,7 @@ class Ui_MainWindow(object):
         self.page.setSizePolicy(sizePolicy4)
         self.horizontalLayout_9 = QHBoxLayout(self.page)
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.widget_3 = QWidget(self.page)
         self.widget_3.setObjectName(u"widget_3")
         sizePolicy10 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
@@ -815,7 +814,7 @@ class Ui_MainWindow(object):
         self.widget_3.setMinimumSize(QSize(263, 287))
         self.verticalLayout_9 = QVBoxLayout(self.widget_3)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.verticalLayout_9.setContentsMargins(0, 15, 0, 0)
+        self.verticalLayout_9.setContentsMargins(0, 25, 0, 0)
         self.frame = QFrame(self.widget_3)
         self.frame.setObjectName(u"frame")
         sizePolicy6.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
@@ -943,6 +942,7 @@ class Ui_MainWindow(object):
         self.page_2.setSizePolicy(sizePolicy4)
         self.horizontalLayout_10 = QHBoxLayout(self.page_2)
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.horizontalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.widget_11 = QWidget(self.page_2)
         self.widget_11.setObjectName(u"widget_11")
         sizePolicy10.setHeightForWidth(self.widget_11.sizePolicy().hasHeightForWidth())
@@ -950,7 +950,7 @@ class Ui_MainWindow(object):
         self.widget_11.setMinimumSize(QSize(263, 287))
         self.verticalLayout_11 = QVBoxLayout(self.widget_11)
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
-        self.verticalLayout_11.setContentsMargins(0, 15, 0, 0)
+        self.verticalLayout_11.setContentsMargins(0, 25, 0, 0)
         self.frame_2 = QFrame(self.widget_11)
         self.frame_2.setObjectName(u"frame_2")
         sizePolicy2.setHeightForWidth(self.frame_2.sizePolicy().hasHeightForWidth())
@@ -1131,7 +1131,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
         self.verticalLayout_13 = QVBoxLayout()
         self.verticalLayout_13.setObjectName(u"verticalLayout_13")
-        self.verticalLayout_13.setContentsMargins(-1, 10, -1, -1)
+        self.verticalLayout_13.setContentsMargins(-1, 0, -1, -1)
         self.label_7 = QLabel(self.bstac_modes)
         self.label_7.setObjectName(u"label_7")
 
@@ -1236,6 +1236,42 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.consoleOutput)
 
+        self.formLayout_8 = QFormLayout()
+        self.formLayout_8.setObjectName(u"formLayout_8")
+        self.formLayout_8.setSizeConstraint(QLayout.SetNoConstraint)
+        self.formLayout_8.setLabelAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.formLayout_8.setFormAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignTop)
+        self.maxNewtonRaphsonIterationsLabel = QLabel(self.Calc)
+        self.maxNewtonRaphsonIterationsLabel.setObjectName(u"maxNewtonRaphsonIterationsLabel")
+
+        self.formLayout_8.setWidget(0, QFormLayout.LabelRole, self.maxNewtonRaphsonIterationsLabel)
+
+        self.maxNewtonRaphsonIterationsSpinBox = QSpinBox(self.Calc)
+        self.maxNewtonRaphsonIterationsSpinBox.setObjectName(u"maxNewtonRaphsonIterationsSpinBox")
+        self.maxNewtonRaphsonIterationsSpinBox.setMinimum(1)
+        self.maxNewtonRaphsonIterationsSpinBox.setMaximum(999999)
+        self.maxNewtonRaphsonIterationsSpinBox.setValue(200)
+
+        self.formLayout_8.setWidget(0, QFormLayout.FieldRole, self.maxNewtonRaphsonIterationsSpinBox)
+
+        self.jacobianModeLabel = QLabel(self.Calc)
+        self.jacobianModeLabel.setObjectName(u"jacobianModeLabel")
+
+        self.formLayout_8.setWidget(1, QFormLayout.LabelRole, self.jacobianModeLabel)
+
+        self.jacobianModeComboBox = QComboBox(self.Calc)
+        self.jacobianModeComboBox.addItem("")
+        self.jacobianModeComboBox.addItem("")
+        self.jacobianModeComboBox.addItem("")
+        self.jacobianModeComboBox.setObjectName(u"jacobianModeComboBox")
+        sizePolicy3.setHeightForWidth(self.jacobianModeComboBox.sizePolicy().hasHeightForWidth())
+        self.jacobianModeComboBox.setSizePolicy(sizePolicy3)
+
+        self.formLayout_8.setWidget(1, QFormLayout.FieldRole, self.jacobianModeComboBox)
+
+
+        self.verticalLayout_2.addLayout(self.formLayout_8)
+
         self.calcButton = QPushButton(self.Calc)
         self.calcButton.setObjectName(u"calcButton")
         sizePolicy3.setHeightForWidth(self.calcButton.sizePolicy().hasHeightForWidth())
@@ -1274,7 +1310,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1283, 26))
+        self.menubar.setGeometry(QRect(0, 0, 1283, 24))
         self.menuFile = QMenu(self.menubar)
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
@@ -1346,9 +1382,10 @@ class Ui_MainWindow(object):
         self.remove_titration.clicked.connect(MainWindow.removeTitration)
         self.pushButton.clicked.connect(MainWindow.test)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
+        self.tablesTab.setCurrentIndex(0)
         self.dmode.setCurrentIndex(0)
-        self.mode_views.setCurrentIndex(1)
+        self.mode_views.setCurrentIndex(0)
         self.dmode_inputs.setCurrentIndex(0)
         self.titration_tabs.setCurrentIndex(0)
 
@@ -1657,6 +1694,12 @@ class Ui_MainWindow(object):
         self.debug.setStatusTip(QCoreApplication.translate("MainWindow", u"Create a Debug Log to file.", None))
 #endif // QT_CONFIG(statustip)
         self.debug.setText(QCoreApplication.translate("MainWindow", u"Debug to file", None))
+        self.maxNewtonRaphsonIterationsLabel.setText(QCoreApplication.translate("MainWindow", u"Max Newton-Raphson iterations", None))
+        self.jacobianModeLabel.setText(QCoreApplication.translate("MainWindow", u"Jacobian Mode", None))
+        self.jacobianModeComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Normal mode", None))
+        self.jacobianModeComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Mixed mode", None))
+        self.jacobianModeComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"Log mode", None))
+
 #if QT_CONFIG(statustip)
         self.calcButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Launch the calculation routine.", None))
 #endif // QT_CONFIG(statustip)

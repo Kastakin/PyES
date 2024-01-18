@@ -45,7 +45,10 @@ class optimizeWorker(QRunnable):
             log.addHandler(filehandler)
             log.setLevel(logging.DEBUG)
 
-        optimizer = Distribution()
+        optimizer = Distribution(
+            max_nr_iters=self.data["max_nr_iters"],
+            jacobian_mode=self.data["jacobian_mode"],
+        )
         # Start timer to time entire process
         start_time = time.time()
 

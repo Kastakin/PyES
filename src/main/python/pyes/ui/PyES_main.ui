@@ -48,7 +48,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <property name="usesScrollButtons">
        <bool>false</bool>
@@ -1239,11 +1239,8 @@
            </item>
            <item>
             <widget class="QTabWidget" name="tablesTab">
-             <property name="tabPosition">
-              <enum>QTabWidget::North</enum>
-             </property>
-             <property name="tabShape">
-              <enum>QTabWidget::Rounded</enum>
+             <property name="currentIndex">
+              <number>0</number>
              </property>
              <property name="usesScrollButtons">
               <bool>false</bool>
@@ -1454,7 +1451,7 @@
         <item>
          <widget class="QStackedWidget" name="mode_views">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="pyes_modes">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -1513,6 +1510,18 @@
                    </sizepolicy>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_9">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <item>
                     <widget class="QWidget" name="widget_3" native="true">
                      <property name="sizePolicy">
@@ -1532,7 +1541,7 @@
                        <number>0</number>
                       </property>
                       <property name="topMargin">
-                       <number>15</number>
+                       <number>25</number>
                       </property>
                       <property name="rightMargin">
                        <number>0</number>
@@ -1791,6 +1800,18 @@
                    </sizepolicy>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_10">
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
                    <item>
                     <widget class="QWidget" name="widget_11" native="true">
                      <property name="sizePolicy">
@@ -1810,7 +1831,7 @@
                        <number>0</number>
                       </property>
                       <property name="topMargin">
-                       <number>15</number>
+                       <number>25</number>
                       </property>
                       <property name="rightMargin">
                        <number>0</number>
@@ -2150,7 +2171,7 @@
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0,0,2,0,1,0,1">
                 <property name="topMargin">
-                 <number>10</number>
+                 <number>0</number>
                 </property>
                 <item>
                  <widget class="QLabel" name="label_7">
@@ -2314,6 +2335,71 @@
          </widget>
         </item>
         <item>
+         <layout class="QFormLayout" name="formLayout_8">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetNoConstraint</enum>
+          </property>
+          <property name="labelAlignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+          </property>
+          <property name="formAlignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="maxNewtonRaphsonIterationsLabel">
+            <property name="text">
+             <string>Max Newton-Raphson iterations</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="maxNewtonRaphsonIterationsSpinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>999999</number>
+            </property>
+            <property name="value">
+             <number>200</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="jacobianModeLabel">
+            <property name="text">
+             <string>Jacobian Mode</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="jacobianModeComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Normal mode</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Mixed mode</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Log mode</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
          <widget class="QPushButton" name="calcButton">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -2400,7 +2486,7 @@
      <x>0</x>
      <y>0</y>
      <width>1283</width>
-     <height>26</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
