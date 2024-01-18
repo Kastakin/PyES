@@ -13,7 +13,7 @@ from PySide6.QtGui import QColorConstants, QPalette, QUndoStack
 from utils_func import getName
 
 
-class GenericModel(QAbstractTableModel):
+class _GenericModel(QAbstractTableModel):
     def __init__(
         self, data: pd.DataFrame | None = None, undo_stack: QUndoStack | None = None
     ) -> None:
@@ -134,7 +134,7 @@ class GenericModel(QAbstractTableModel):
         raise NotImplementedError
 
 
-class ConcentrationsModel(GenericModel):
+class ConcentrationsModel(_GenericModel):
     def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
         super().__init__(data, undo_stack)
         self.previous_ind_comp = 0
@@ -182,7 +182,7 @@ class ConcentrationsModel(GenericModel):
         self.previous_ind_comp = index
 
 
-class ComponentsModel(GenericModel):
+class ComponentsModel(_GenericModel):
     def __init__(self, data: pd.DataFrame, undo_stack: QUndoStack):
         self.default_names = set(
             "".join(x) for x in permutations(string.ascii_uppercase, 2)
@@ -249,7 +249,7 @@ class ComponentsModel(GenericModel):
         super().insertRows(empty_rows, position, rows, index)
 
 
-class GenericSpeciesModel(GenericModel):
+class GenericSpeciesModel(_GenericModel):
     def __init__(
         self, data: pd.DataFrame, undo_stack: QUndoStack, template_header: list[str]
     ):
