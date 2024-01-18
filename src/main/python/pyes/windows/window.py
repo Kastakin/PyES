@@ -1069,7 +1069,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return table
 
     def get_shown_tab_counter(self):
-        table = self.get_shown_tab()
         if self.tablesTab.currentIndex() == 0:
             counter = self.numSpecies
         elif self.tablesTab.currentIndex() == 1:
