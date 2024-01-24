@@ -27,7 +27,6 @@ __all__ = [
     ComponentsAddRows,
     ComponentsRemoveRows,
     ComponentsSwapRows,
-    ComponentsRemoveRows,
     ComponentsCellEdit,
     SpeciesAddRows,
     SpeciesCellEdit,
